@@ -1,3 +1,7 @@
+use ui::start_ui;
+
+mod ui;
+
 fn main() {
-    println!("Hello, world!");
+    start_ui();
 }
