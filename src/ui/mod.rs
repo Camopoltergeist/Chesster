@@ -1,3 +1,5 @@
+pub mod board_renderer;
+
 use raylib::{color::Color, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
 const WINDOW_WIDTH: i32 = 1280;
