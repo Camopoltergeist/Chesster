@@ -16,11 +16,30 @@ pub fn start_ui() {
 	}
 }
 
+fn draw_bitboard(draw_handle: &mut RaylibDrawHandle, bitboard: u64) {
+	const OFF_COLOR: Color = Color {r: 0, g: 0, b: 255, a: 127};
+	const ON_COLOR: Color = Color {r: 255, g: 0, b: 0, a: 127};
+
+	for bit_offset in 0..64 {
+		let bit = (bitboard & 1 << bit_offset) != 0;
+
+		let color = if bit { ON_COLOR } else { OFF_COLOR };
+
+		let x = bit_offset % 8;
+		let y = 7 - bit_offset / 8;
+
+		let pos = get_tile_pos(x, y, 720);
+
+		draw_handle.draw_rectangle(pos.0, pos.1, pos.2, pos.2, color);
+	}
+}
+
 fn draw(rl: &mut RaylibHandle, thread: &RaylibThread) {
 	let mut draw_handle = rl.begin_drawing(&thread);
 
 	draw_handle.clear_background(Color::GRAY);
 	draw_board(&mut draw_handle, false);
+	draw_bitboard(&mut draw_handle, 3);
 }
 
 fn get_tile_pos(column: i32, rank: i32, available_size: i32) -> (i32, i32, i32) {
