@@ -7,6 +7,7 @@ pub fn start_ui() {
 	let (mut rl, thread) = raylib::init()
 		.vsync()
 		.size(WINDOW_WIDTH, WINDOW_HEIGHT)
+		.resizable()
 		.title("Chesster")
 		.build();
 
@@ -22,45 +23,66 @@ fn draw(rl: &mut RaylibHandle, thread: &RaylibThread) {
 	draw_board(&mut draw_handle, false);
 }
 
+fn get_tile_pos(column: i32, rank: i32, available_size: i32) -> (i32, i32, i32) {
+	const BOARD_SIZE: f32 = 8.0;
+
+	let tile_size = available_size as f32 / BOARD_SIZE;
+
+	let x = column as f32 * tile_size;
+	let y = rank as f32 * tile_size;
+
+	return (x as i32, y as i32, tile_size as i32);
+}
+
 fn draw_board(draw_handle: &mut RaylibDrawHandle, black_view: bool) {
-	const MARGIN: i32 = 32;
+	const UNSCALED_MARGIN: f32 = 32.0;
+	const UNSCALED_FONT_SIZE: f32 = 16.0;
 
-	let start_x = MARGIN;
-	let start_y = MARGIN;
+	const BOARD_SIZE: i32 = 8;
+	const COLUMNS: &str = "ABCDEFGH";
 
-	let tile_size = (WINDOW_HEIGHT - MARGIN * 2) / 8;
+	let screen_height = draw_handle.get_screen_height();
+	let scale: f32 = screen_height as f32 / WINDOW_HEIGHT as f32;
+	let available_size = (WINDOW_HEIGHT as f32 - UNSCALED_MARGIN * 2.0) * scale;
 
-	for i in 0..8 {
-		for j in 0..8 {
+	let margin = (UNSCALED_MARGIN * scale) as i32;
+	let font_size = (UNSCALED_FONT_SIZE * scale) as i32;
+
+	for i in 0..BOARD_SIZE {
+		for j in 0..BOARD_SIZE {
 			let color = if (i + j) % 2 == 0 { Color::WHITE } else { Color::BLACK };
 
-			let x = i * tile_size + start_x;
-			let y = j * tile_size + start_y;
+			let tile_pos = get_tile_pos(i, j, available_size as i32);
 
-			draw_handle.draw_rectangle(x, y, tile_size, tile_size, color);
+			draw_handle.draw_rectangle(tile_pos.0 + margin, tile_pos.1 + margin, tile_pos.2, tile_pos.2, color);
 		}
 	}
 
-	const FONT_SIZE: i32 = 16;
-
-	for i in 0..8 {
+	for i in 0..BOARD_SIZE {
 		let rank = if black_view { i + 1 } else { 8 - i };
 
-		let x = MARGIN / 2 - FONT_SIZE / 4;
-		let y = i * tile_size + start_y + tile_size / 2 - FONT_SIZE / 2;
+		let pos = get_tile_pos(0, i, available_size as i32);
 
-		draw_handle.draw_text(&(rank).to_string(), x, y, FONT_SIZE, Color::BLACK);
+		let rank_str = rank.to_string();
+		let text_width = draw_handle.measure_text(&rank_str, font_size);
+
+		let x = margin / 2 - text_width / 2;
+		let y = margin + pos.1 + pos.2 / 2 - font_size / 2;
+
+		draw_handle.draw_text(&(rank).to_string(), x, y, font_size, Color::BLACK);
 	}
 
-	const COLUMNS: &str = "ABCDEFGH";
-
-	for i in 0..8 {
+	for i in 0..BOARD_SIZE {
 		let char_index = if black_view { 7 - i } else { i };
 		let column = COLUMNS.chars().nth(char_index as usize).expect("failed to get column letter");
 
-		let x = i * tile_size + start_x + tile_size / 2 - FONT_SIZE / 4;
-		let y = WINDOW_HEIGHT - MARGIN / 2 - FONT_SIZE / 2;
+		let pos = get_tile_pos(i, 0, available_size as i32);
 
-		draw_handle.draw_text(&column.to_string(), x, y, FONT_SIZE, Color::BLACK);
+		let text_width = draw_handle.measure_text(&column.to_string(), font_size);
+
+		let x = margin + pos.0 + pos.2 / 2 - text_width / 2;
+		let y = screen_height - margin / 2 - font_size / 2;
+
+		draw_handle.draw_text(&column.to_string(), x, y, font_size, Color::BLACK);
 	}
 }
