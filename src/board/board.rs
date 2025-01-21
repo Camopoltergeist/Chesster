@@ -1,4 +1,4 @@
-use super::bitboard::Bitboard;
+use super::bitboard::{self, Bitboard};
 
 pub struct Board {
     pub white_pieces: Bitboard,
@@ -27,5 +27,32 @@ impl Default for Board {
 }
 
 impl Board {
+    fn check_overlaps(a: Bitboard, b: Bitboard) -> bool {
+        a.0 & b.0 != 0
+    }
     
+    fn validate(&self) -> bool {
+        !(
+            Board::check_overlaps(self.pawns, self.rooks) ||
+            Board::check_overlaps(self.pawns, self.knights) ||
+            Board::check_overlaps(self.pawns, self.bishops) ||
+            Board::check_overlaps(self.pawns, self.queens) ||
+            Board::check_overlaps(self.pawns, self.kings) ||
+
+            Board::check_overlaps(self.rooks, self.knights) ||
+            Board::check_overlaps(self.rooks, self.bishops) ||
+            Board::check_overlaps(self.rooks, self.queens) ||
+            Board::check_overlaps(self.rooks, self.kings) ||
+
+            Board::check_overlaps(self.knights, self.bishops) ||
+            Board::check_overlaps(self.knights, self.queens) ||
+            Board::check_overlaps(self.knights, self.kings) ||
+
+            Board::check_overlaps(self.bishops, self.queens) ||
+            Board::check_overlaps(self.bishops, self.kings) ||
+
+            Board::check_overlaps(self.queens, self.kings)
+        )
+
+    }
 }
