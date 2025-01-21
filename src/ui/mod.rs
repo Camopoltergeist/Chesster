@@ -14,7 +14,11 @@ pub fn start_ui() {
 		.title("Chesster")
 		.build();
 
-	let br = BoardRenderer::new(0, 0, WINDOW_HEIGHT, 32, crate::player::Player::White);
+	let mut br = BoardRenderer::new(0, 0, WINDOW_HEIGHT, 32, crate::player::Player::Black);
+
+	let bitboard = 1 | 1 << 7;
+
+	br.set_bitboard_overlay(bitboard);
 
 	while !rl.window_should_close() {
 		// draw(&mut rl, &thread);

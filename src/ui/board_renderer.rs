@@ -1,3 +1,5 @@
+use std::num::Saturating;
+
 use raylib::{color::Color, prelude::{RaylibDraw, RaylibDrawHandle}};
 
 use crate::player::Player;
@@ -15,6 +17,12 @@ pub struct BoardRenderer {
     light_color: Color,
 
     font_size: i32,
+
+    draw_bitboard: bool,
+    bitboard: u64,
+
+    bitboard_on_color: Color,
+    bitboard_off_color: Color,
 }
 
 impl BoardRenderer {
@@ -28,6 +36,43 @@ impl BoardRenderer {
             dark_color: Color::BLACK,
             light_color: Color::WHITE,
             font_size: 16,
+            draw_bitboard: false,
+            bitboard: 0,
+            bitboard_on_color: Color { r: 255, g: 0, b: 0, a: 127 },
+            bitboard_off_color: Color { r: 0, g: 0, b: 255, a: 127 }
+        }
+    }
+
+    pub fn set_bitboard_overlay(&mut self, bitboard: u64) {
+        self.bitboard = bitboard;
+        self.draw_bitboard = true;
+    }
+
+    pub fn clear_bitboard_overlay(&mut self) {
+        self.bitboard = 0;
+        self.draw_bitboard = false;
+    }
+
+    fn draw_bitboard_overlay(&self, draw_handle: &mut RaylibDrawHandle) {
+        let start_x = self.margin;
+        let start_y = self.margin;
+
+        for bit_offset in 0..64 {
+            let bit = (self.bitboard & 1 << bit_offset) != 0;
+            let color = if bit { self.bitboard_on_color } else { self.bitboard_off_color };
+
+            let flipped = matches!(self.player, Player::Black);
+
+            let column = if flipped { 7 - bit_offset % 8 } else { bit_offset % 8 };
+            let rank = if flipped { bit_offset / 8 } else { 7 - bit_offset / 8 };
+
+            let pos = self.get_tile_pos(rank, column);
+            let tile_size = self.tile_size();
+
+            let x = start_x + pos.0;
+            let y = start_y + pos.1;
+
+            draw_handle.draw_rectangle(x, y, tile_size, tile_size, color);
         }
     }
 
@@ -39,6 +84,10 @@ impl BoardRenderer {
         self.draw_tiles(draw_handle);
         self.draw_ranks(draw_handle);
         self.draw_columns(draw_handle);
+
+        if self.draw_bitboard {
+            self.draw_bitboard_overlay(draw_handle);
+        }
     }
 
     fn draw_tiles(&self, draw_handle: &mut RaylibDrawHandle) {
