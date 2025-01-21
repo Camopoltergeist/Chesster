@@ -1,4 +1,4 @@
-use super::bitboard::{self, Bitboard};
+use super::bitboard::Bitboard;
 
 pub struct Board {
     pub white_pieces: Bitboard,
