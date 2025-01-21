@@ -2,6 +2,8 @@ pub mod board_renderer;
 
 use board_renderer::BoardRenderer;
 
+use crate::board::Board;
+
 const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;
 
@@ -15,9 +17,9 @@ pub fn start_ui() {
 
 	let mut br = BoardRenderer::new(0, 0, WINDOW_HEIGHT, 32, crate::player::Player::Black);
 
-	let bitboard = 1 | 1 << 7;
+	let board = Board::default();
 
-	br.set_bitboard_overlay(bitboard);
+	br.set_bitboard_overlay(board.kings.0);
 
 	while !rl.window_should_close() {
 		let mut draw_handle = rl.begin_drawing(&thread);
