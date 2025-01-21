@@ -6,7 +6,7 @@ fn main() {
     let board = Board::default();
 
 
-    print_bitboard(board.kings);
+    print_bitboard(board.pawns.0);
 }
 
 fn print_bitboard(bitboard: u64) {
