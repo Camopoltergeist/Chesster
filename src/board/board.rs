@@ -53,6 +53,5 @@ impl Board {
 
             Board::check_overlaps(self.queens, self.kings)
         )
-
     }
 }
