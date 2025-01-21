@@ -13,6 +13,8 @@ pub struct BoardRenderer {
 
     dark_color: Color,
     light_color: Color,
+
+    font_size: i32,
 }
 
 impl BoardRenderer {
@@ -24,7 +26,8 @@ impl BoardRenderer {
             margin,
             player,
             dark_color: Color::BLACK,
-            light_color: Color::WHITE
+            light_color: Color::WHITE,
+            font_size: 16,
         }
     }
 
@@ -34,6 +37,7 @@ impl BoardRenderer {
 
     pub fn draw_board(&self, draw_handle: &mut RaylibDrawHandle) {
         self.draw_tiles(draw_handle);
+        self.draw_ranks(draw_handle);
     }
 
     fn draw_tiles(&self, draw_handle: &mut RaylibDrawHandle) {
@@ -53,6 +57,25 @@ impl BoardRenderer {
 
                 draw_handle.draw_rectangle(x, y, tile_size, tile_size, color);
             }
+        }
+    }
+
+    fn draw_ranks(&self, draw_handle: &mut RaylibDrawHandle) {
+        let start_x = self.margin / 2;
+        let start_y = self.margin;
+
+        let tile_size = self.tile_size();
+
+        for i in 0..8 {
+            let rank = if let Player::Black = self.player { i + 1 } else { 8 - i };
+            let pos = self.get_tile_pos(i, 0);
+            let rank_string = rank.to_string();
+            let text_width = draw_handle.measure_text(&rank_string, self.font_size);
+
+            let x = start_x - text_width / 2;
+            let y = start_y + pos.1 + tile_size / 2 - self.font_size / 2;
+
+            draw_handle.draw_text(&rank_string, x, y, self.font_size, Color::WHITE);
         }
     }
 
