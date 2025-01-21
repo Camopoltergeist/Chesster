@@ -1,5 +1,6 @@
 pub mod board_renderer;
 
+use board_renderer::BoardRenderer;
 use raylib::{color::Color, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
 const WINDOW_WIDTH: i32 = 1280;
@@ -13,8 +14,12 @@ pub fn start_ui() {
 		.title("Chesster")
 		.build();
 
+	let br = BoardRenderer::new(0, 0, WINDOW_HEIGHT, 32, crate::player::Player::White);
+
 	while !rl.window_should_close() {
-		draw(&mut rl, &thread);
+		// draw(&mut rl, &thread);
+		let mut draw_handle = rl.begin_drawing(&thread);
+		br.draw_board(&mut draw_handle);
 	}
 }
 
