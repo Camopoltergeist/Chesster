@@ -61,8 +61,8 @@ impl BoardRenderer {
     }
 
     fn draw_ranks(&self, draw_handle: &mut RaylibDrawHandle) {
-        let start_x = self.margin / 2;
-        let start_y = self.margin;
+        let start_x = self.x + self.margin / 2;
+        let start_y = self.y + self.margin;
 
         let tile_size = self.tile_size();
 
