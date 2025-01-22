@@ -75,28 +75,19 @@ impl BoardRenderer {
         self.draw_bitboard = false;
     }
 
-    // fn draw_bitboard_overlay(&self, draw_handle: &mut RaylibDrawHandle) {
-    //     let start_x = self.margin;
-    //     let start_y = self.margin;
+    fn draw_bitboard_overlay(&self, draw_handle: &mut RaylibDrawHandle) {
+        for bit_offset in 0..64 {
+            let bit = (self.bitboard & 1 << bit_offset) != 0;
+            let color = if bit { self.bitboard_on_color } else { self.bitboard_off_color };
 
-    //     for bit_offset in 0..64 {
-    //         let bit = (self.bitboard & 1 << bit_offset) != 0;
-    //         let color = if bit { self.bitboard_on_color } else { self.bitboard_off_color };
+            let (column, rank) = self.bit_offset_to_tile_pos(bit_offset);
 
-    //         let flipped = matches!(self.player, Player::Black);
+            let pos = self.get_tile_pixel_pos(column, rank);
+            let tile_size = self.tile_size();
 
-    //         let column = if flipped { 7 - bit_offset % 8 } else { bit_offset % 8 };
-    //         let rank = if flipped { bit_offset / 8 } else { 7 - bit_offset / 8 };
-
-    //         let pos = self.get_tile_pixel_pos(rank, column);
-    //         let tile_size = self.tile_size();
-
-    //         let x = start_x + pos.0;
-    //         let y = start_y + pos.1;
-
-    //         draw_handle.draw_rectangle(x, y, tile_size, tile_size, color);
-    //     }
-    // }
+            draw_handle.draw_rectangle(pos.0, pos.1, tile_size, tile_size, color);
+        }
+    }
 
     pub fn set_player(&mut self, player: Player) {
         self.player = player;
@@ -108,9 +99,9 @@ impl BoardRenderer {
         self.draw_columns(draw_handle);
         // self.draw_piece(draw_handle, PieceTexture::new(Player::Black, crate::piece::Piece::Pawn), 1, 1);
 
-        // if self.draw_bitboard {
-        //     self.draw_bitboard_overlay(draw_handle);
-        // }
+        if self.draw_bitboard {
+            self.draw_bitboard_overlay(draw_handle);
+        }
     }
 
     fn draw_tiles(&self, draw_handle: &mut RaylibDrawHandle) {
@@ -197,5 +188,12 @@ impl BoardRenderer {
         let pixel_y = self.margin + self.y + tile_y * tile_size;
 
         return (pixel_x, pixel_y);
+    }
+
+    fn bit_offset_to_tile_pos(&self, bit_offset: i32) -> (i32, i32) {
+        let column = bit_offset % 8;
+        let rank = 7 - bit_offset / 8;
+
+        return (column, rank);
     }
 }
