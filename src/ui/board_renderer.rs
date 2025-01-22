@@ -21,6 +21,8 @@ pub struct BoardRenderer {
 
     bitboard_on_color: Color,
     bitboard_off_color: Color,
+
+    
 }
 
 impl BoardRenderer {
