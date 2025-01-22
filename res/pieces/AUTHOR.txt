@@ -2,3 +2,5 @@ JohnPablok's improved Cburnett chess set
 https://opengameart.org/content/chess-pieces-and-board-squares
 
 License: https://creativecommons.org/licenses/by-sa/3.0/
+
+Modified the pngs to be square shaped. No other modifications were made.
