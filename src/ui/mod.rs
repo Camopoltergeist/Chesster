@@ -2,6 +2,7 @@ pub mod board_renderer;
 pub mod texture;
 
 use board_renderer::BoardRenderer;
+use raylib::{color::{self, Color}, prelude::RaylibDraw};
 use texture::load_piece_textures;
 
 use crate::board::Board;
@@ -25,10 +26,11 @@ pub fn start_ui() {
 
 	let board = Board::default();
 
-	br.set_bitboard_overlay(board.kings.0);
+	// br.set_bitboard_overlay(board.kings.0);
 
 	while !rl.window_should_close() {
 		let mut draw_handle = rl.begin_drawing(&thread);
+		draw_handle.clear_background(Color::GRAY);
 		br.draw_board(&mut draw_handle);
 	}
 }
