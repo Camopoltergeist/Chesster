@@ -105,7 +105,7 @@ impl BoardRenderer {
     pub fn draw_board(&self, draw_handle: &mut RaylibDrawHandle) {
         self.draw_tiles(draw_handle);
         self.draw_ranks(draw_handle);
-        // self.draw_columns(draw_handle);
+        self.draw_columns(draw_handle);
         // self.draw_piece(draw_handle, PieceTexture::new(Player::Black, crate::piece::Piece::Pawn), 1, 1);
 
         // if self.draw_bitboard {
@@ -143,26 +143,23 @@ impl BoardRenderer {
         }
     }
 
-    // fn draw_columns(&self, draw_handle: &mut RaylibDrawHandle) {
-    //     const COLUMNS: &str = "ABCDEFGH";
+    fn draw_columns(&self, draw_handle: &mut RaylibDrawHandle) {
+        const COLUMNS: &str = "ABCDEFGH";
 
-    //     let start_x = self.x + self.margin;
-    //     let start_y = self.y + self.size - self.margin / 2;
+        let tile_size = self.tile_size();
 
-    //     let tile_size = self.tile_size();
+        for i in 0..8 {
+            let column = if let Player::Black = self.player { 7 - i } else { i };
+            let column_string = COLUMNS.chars().nth(column as usize).expect("failed to get column letter").to_string();
 
-    //     for i in 0..8 {
-    //         let column = if let Player::Black = self.player { 7 - i } else { i };
-    //         let pos = self.get_tile_pixel_pos(0, i);
-    //         let column_string = COLUMNS.chars().nth(column as usize).expect("failed to get column letter").to_string();
-    //         let text_width = draw_handle.measure_text(&column_string, self.font_size);
+            let text_width = draw_handle.measure_text(&column_string, self.font_size);
 
-    //         let x = start_x + pos.0 - text_width / 2 + tile_size / 2;
-    //         let y = start_y - self.font_size / 2;
+            let x = self.x + self.margin + tile_size * i + tile_size / 2 - text_width / 2;
+            let y = self.y + self.size - self.margin / 2 - self.font_size / 2;
 
-    //         draw_handle.draw_text(&column_string, x, y, self.font_size, Color::WHITE);
-    //     }
-    // }
+            draw_handle.draw_text(&column_string, x, y, self.font_size, Color::WHITE);
+        }
+    }
 
     fn tile_size(&self) -> i32 {
         let available_area = self.size - self.margin * 2;
