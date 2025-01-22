@@ -1,6 +1,10 @@
-use raylib::{color::Color, prelude::{RaylibDraw, RaylibDrawHandle}};
+use std::collections::HashMap;
+
+use raylib::{color::Color, prelude::{RaylibDraw, RaylibDrawHandle}, texture::Texture2D};
 
 use crate::player::Player;
+
+use super::texture::{load_piece_textures, PieceTexture};
 
 pub struct BoardRenderer {
     player: Player,
@@ -22,11 +26,11 @@ pub struct BoardRenderer {
     bitboard_on_color: Color,
     bitboard_off_color: Color,
 
-    
+    textures: HashMap<PieceTexture, Texture2D>,
 }
 
 impl BoardRenderer {
-    pub fn new(x: i32, y: i32, size: i32, margin: i32, player: Player) -> Self {
+    pub fn new(x: i32, y: i32, size: i32, margin: i32, player: Player, piece_textures: HashMap<PieceTexture, Texture2D>) -> Self {
         Self {
             x,
             y,
@@ -39,7 +43,8 @@ impl BoardRenderer {
             draw_bitboard: false,
             bitboard: 0,
             bitboard_on_color: Color { r: 255, g: 0, b: 0, a: 127 },
-            bitboard_off_color: Color { r: 0, g: 0, b: 255, a: 127 }
+            bitboard_off_color: Color { r: 0, g: 0, b: 255, a: 127 },
+            textures: piece_textures
         }
     }
 

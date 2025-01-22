@@ -1,6 +1,8 @@
 pub mod board_renderer;
+pub mod texture;
 
 use board_renderer::BoardRenderer;
+use texture::load_piece_textures;
 
 use crate::board::Board;
 
@@ -15,7 +17,11 @@ pub fn start_ui() {
 		.title("Chesster")
 		.build();
 
-	let mut br = BoardRenderer::new(0, 0, WINDOW_HEIGHT, 32, crate::player::Player::Black);
+	let piece_textures = load_piece_textures(&mut rl, &thread);
+
+	println!("{:?}", piece_textures);
+
+	let mut br = BoardRenderer::new(0, 0, WINDOW_HEIGHT, 32, crate::player::Player::Black, piece_textures);
 
 	let board = Board::default();
 
