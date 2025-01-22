@@ -118,9 +118,9 @@ impl BoardRenderer {
 
         for i in 0..8 {
             for j in 0..8 {
-                let color = if (i + j) % 2 == 0 { self.light_color } else { self.dark_color };
+                let color = if (i + j) % 2 == 0 { self.dark_color } else { self.light_color };
 
-                let pos = self.get_tile_pixel_pos(i, j, false);
+                let pos = self.get_tile_pixel_pos(i, j);
 
                 draw_handle.draw_rectangle(pos.0, pos.1, tile_size, tile_size, color);
             }
@@ -128,9 +128,6 @@ impl BoardRenderer {
     }
 
     // fn draw_ranks(&self, draw_handle: &mut RaylibDrawHandle) {
-    //     let start_x = self.x + self.margin / 2;
-    //     let start_y = self.y + self.margin;
-
     //     let tile_size = self.tile_size();
 
     //     for i in 0..8 {
@@ -173,7 +170,9 @@ impl BoardRenderer {
         available_area / 8
     }
 
-    fn get_tile_pixel_pos(&self, column: i32, rank: i32, flipped: bool) -> (i32, i32) {
+    fn get_tile_pixel_pos(&self, column: i32, rank: i32) -> (i32, i32) {
+        let flipped = self.player == Player::Black;
+
         let tile_x = if flipped { 7 - column } else { column };
         let tile_y = if flipped { rank } else { 7 - rank };
         
