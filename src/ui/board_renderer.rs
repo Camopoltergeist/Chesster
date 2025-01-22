@@ -48,22 +48,19 @@ impl BoardRenderer {
         }
     }
 
-    // fn draw_piece(&self, draw_handle: &mut RaylibDrawHandle, piece_texture: PieceTexture, rank: i32, column: i32) {
-    //     let start_x = self.margin;
-    //     let start_y = self.margin;
+    fn draw_piece(&self, draw_handle: &mut RaylibDrawHandle, piece_texture: PieceTexture, column: i32, rank: i32) {
+        let pos = self.get_tile_pixel_pos(rank, column);
+        let tile_size = self.tile_size();
 
-    //     let pos = self.get_tile_pixel_pos(rank, column);
-    //     let tile_size = self.tile_size();
+        let x = pos.0;
+        let y = pos.1;
 
-    //     let x = start_x + pos.0;
-    //     let y = start_y + pos.1;
+        let texture = self.textures.get(&piece_texture).expect("invalid piece texture");
 
-    //     let texture = self.textures.get(&piece_texture).expect("invalid piece texture");
+        let scale = tile_size as f32 / texture.height as f32;
 
-    //     let scale = tile_size as f32 / texture.height as f32;
-
-    //     draw_handle.draw_texture_ex(texture, Vector2::new(x as f32, y as f32), 0.0, scale, Color::WHITE);
-    // }
+        draw_handle.draw_texture_ex(texture, Vector2::new(x as f32, y as f32), 0.0, scale, Color::WHITE);
+    }
 
     pub fn set_bitboard_overlay(&mut self, bitboard: u64) {
         self.bitboard = bitboard;
@@ -97,7 +94,7 @@ impl BoardRenderer {
         self.draw_tiles(draw_handle);
         self.draw_ranks(draw_handle);
         self.draw_columns(draw_handle);
-        // self.draw_piece(draw_handle, PieceTexture::new(Player::Black, crate::piece::Piece::Pawn), 1, 1);
+        self.draw_piece(draw_handle, PieceTexture::new(Player::Black, crate::piece::Piece::Pawn), 1, 1);
 
         if self.draw_bitboard {
             self.draw_bitboard_overlay(draw_handle);
