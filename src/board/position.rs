@@ -18,13 +18,12 @@ impl Default for Position {
         Self {
             board: Board::default(),
             current_player: Player::White,
-        
+
             en_passant: false,
             white_short_castling: true,
             white_long_castling: true,
             black_short_castling: true,
             black_long_castling: true,
         }
-        
     }
 }

@@ -11,7 +11,8 @@ impl Bitboard {
 
     pub fn print_bitboard(&self) {
         let bin_str: String = format!("{:064b}", self.value()).chars().rev().collect();
-        let out_str = format!("{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n",
+        let out_str = format!(
+            "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n",
             &bin_str[56..64],
             &bin_str[48..56],
             &bin_str[40..48],
@@ -21,7 +22,7 @@ impl Bitboard {
             &bin_str[8..16],
             &bin_str[0..8],
         );
-    
+
         println!("{}", out_str);
     }
 
@@ -44,8 +45,8 @@ impl Bitboard {
 
     pub fn offset_to_coordinates(bit_offset: u32) -> (i32, i32) {
         let pos = bit_offset.trailing_zeros();
-        let x= (pos % 8) as i32;
-        let y= (pos / 8) as i32;
+        let x = (pos % 8) as i32;
+        let y = (pos / 8) as i32;
         (x, y)
         /* If better to iterate:
         for pos in 0..31 (or amnt of bits) {
@@ -54,6 +55,5 @@ impl Bitboard {
         let y = pos / 8;
         }
         } */
-
     }
 }
