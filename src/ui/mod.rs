@@ -5,7 +5,7 @@ use board_renderer::BoardRenderer;
 use raylib::{color::{self, Color}, prelude::RaylibDraw};
 use texture::load_piece_textures;
 
-use crate::board::Board;
+use crate::board::board::Board;
 
 const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;
