@@ -2,7 +2,7 @@ pub mod board_renderer;
 pub mod texture;
 
 use board_renderer::BoardRenderer;
-use raylib::{color::{self, Color}, prelude::RaylibDraw};
+use raylib::{color::Color, prelude::RaylibDraw};
 use texture::load_piece_textures;
 
 use crate::board::board::Board;
