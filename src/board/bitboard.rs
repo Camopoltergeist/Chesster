@@ -2,6 +2,8 @@
 
 pub struct Bitboard(pub u64);
 
+//Bitwise operation reminder: |= offset -> place a piece, &= !offset -> remove a piece
+
 impl Bitboard {
     pub fn value(&self) -> u64 {
         self.0
@@ -26,6 +28,18 @@ impl Bitboard {
     pub fn check_bit(&self, bit_offset: u32) -> bool {
         let bitmask = 1 << bit_offset;
         (self.0 & bitmask) != 0
+    }
+
+    pub fn move_bit(&mut self, from: u32, to: u32) {
+        //The basis of moving a bit: checks if there is a 1 there, makes it a 0, and makes another field a 1.
+        if self.check_bit(from) {
+            let rmv_bitmask = 1 << from;
+            self.0 &= !rmv_bitmask;
+
+            //Thinking ahead, there could be some logic here to know if it's stepping on a 1?
+            let add_bitmask = 1 << to;
+            self.0 |= add_bitmask;
+        }
     }
 
     pub fn offset_to_coordinates(bit_offset: u32) -> (i32, i32) {

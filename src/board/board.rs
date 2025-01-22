@@ -1,4 +1,6 @@
-use super::bitboard::Bitboard;
+use crate::player::{self, Player};
+use super::{bitboard::Bitboard, piece::Piece};
+
 
 pub struct Board {
     pub white_pieces: Bitboard,
@@ -27,11 +29,11 @@ impl Default for Board {
 }
 
 impl Board {
-    fn check_overlaps(a: Bitboard, b: Bitboard) -> bool {
+    pub fn check_overlaps(a: Bitboard, b: Bitboard) -> bool {
         a.0 & b.0 != 0
     }
     
-    fn validate(&self) -> bool {
+    pub fn validate(&self) -> bool {
         !(
             Board::check_overlaps(self.pawns, self.rooks) ||
             Board::check_overlaps(self.pawns, self.knights) ||
@@ -53,5 +55,24 @@ impl Board {
 
             Board::check_overlaps(self.queens, self.kings)
         )
+    }
+
+    pub fn move_piece(&mut self, player: player::Player, piece: Piece, from: u32, to: u32) {
+        //Checks the player's color and edits both that color's and a piece's bitboard
+        //Every piece's possible move mask(s) probably need to also be implemented l8r
+        match piece {
+            Piece::Pawn => Bitboard::move_bit(&mut self.pawns, from, to),
+            Piece::Rook => Bitboard::move_bit(&mut self.rooks, from, to),
+            Piece::Knight => Bitboard::move_bit(&mut self.knights, from, to),
+            Piece::Bishop => Bitboard::move_bit(&mut self.bishops, from, to),
+            Piece::Queen => Bitboard::move_bit(&mut self.queens, from, to),
+            Piece::King => Bitboard::move_bit(&mut self.kings, from, to),
+        }
+
+        match player {
+            Player::White => Bitboard::move_bit(&mut self.white_pieces, from, to),
+            Player::Black => Bitboard::move_bit(&mut self.black_pieces, from, to),
+        }
+
     }
 }
