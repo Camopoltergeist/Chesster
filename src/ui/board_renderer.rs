@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use raylib::{color::Color, math::Vector2, prelude::{RaylibDraw, RaylibDrawHandle}, texture::Texture2D};
 
-use crate::player::Player;
+use crate::{board::bitboard::Bitboard, player::Player};
 
 use super::texture::PieceTexture;
 
@@ -77,7 +77,7 @@ impl BoardRenderer {
             let bit = (self.bitboard & 1 << bit_offset) != 0;
             let color = if bit { self.bitboard_on_color } else { self.bitboard_off_color };
 
-            let (column, rank) = self.bit_offset_to_tile_pos(bit_offset);
+            let (column, rank) = Bitboard::bit_offset_to_coordinates(bit_offset);
 
             let pos = self.get_tile_pixel_pos(column, rank);
             let tile_size = self.tile_size();
@@ -185,12 +185,5 @@ impl BoardRenderer {
         let pixel_y = self.margin + self.y + tile_y * tile_size;
 
         return (pixel_x, pixel_y);
-    }
-
-    fn bit_offset_to_tile_pos(&self, bit_offset: i32) -> (i32, i32) {
-        let column = bit_offset % 8;
-        let rank = 7 - bit_offset / 8;
-
-        return (column, rank);
     }
 }

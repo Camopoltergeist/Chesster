@@ -29,7 +29,7 @@ impl Bitboard {
         (self.0 & bitmask) != 0
     }
 
-    fn bit_offset_to_coordinates(bit_offset: i32) -> (i32, i32) {
+    pub fn bit_offset_to_coordinates(bit_offset: i32) -> (i32, i32) {
         let column = bit_offset % 8;
         let rank = 7 - bit_offset / 8;
 
