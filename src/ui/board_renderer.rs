@@ -127,8 +127,26 @@ impl BoardRenderer {
         }
     }
 
-    fn draw_ranks(&self, draw_handle: &mut RaylibDrawHandle) {
+    fn get_rank_label_x(&self) -> i32 {
+        self.x + self.margin / 2
+    }
+
+    fn get_column_label_y(&self) -> i32 {
+        self.y + self.size - self.margin / 2
+    }
+
+    fn get_rank_centered_y(&self, rank: i32) -> i32 {
         let tile_size = self.tile_size();
+        self.y + tile_size * rank + tile_size / 2 + self.margin
+    }
+
+    fn get_column_centered_x(&self, column: i32) -> i32 {
+        let tile_size = self.tile_size();
+        self.x + self.margin + tile_size * column + tile_size / 2
+    }
+
+    fn draw_ranks(&self, draw_handle: &mut RaylibDrawHandle) {
+        let rank_label_x = self.get_rank_label_x();
 
         for i in 0..8 {
             let rank = if let Player::Black = self.player { i + 1 } else { 8 - i };
@@ -136,8 +154,8 @@ impl BoardRenderer {
             
             let text_width = draw_handle.measure_text(&rank_string, self.font_size);
 
-            let x = self.x + self.margin / 2 - text_width / 2;
-            let y = self.y + tile_size * i + tile_size / 2 + self.margin - self.font_size / 2;
+            let x = rank_label_x - text_width / 2;
+            let y = self.get_rank_centered_y(i) - self.font_size / 2;
 
             draw_handle.draw_text(&rank_string, x, y, self.font_size, Color::WHITE);
         }
@@ -146,7 +164,7 @@ impl BoardRenderer {
     fn draw_columns(&self, draw_handle: &mut RaylibDrawHandle) {
         const COLUMNS: &str = "ABCDEFGH";
 
-        let tile_size = self.tile_size();
+        let column_label_y = self.get_column_label_y();
 
         for i in 0..8 {
             let column = if let Player::Black = self.player { 7 - i } else { i };
@@ -154,8 +172,8 @@ impl BoardRenderer {
 
             let text_width = draw_handle.measure_text(&column_string, self.font_size);
 
-            let x = self.x + self.margin + tile_size * i + tile_size / 2 - text_width / 2;
-            let y = self.y + self.size - self.margin / 2 - self.font_size / 2;
+            let x = self.get_column_centered_x(i) - text_width / 2;
+            let y = column_label_y - self.font_size / 2;
 
             draw_handle.draw_text(&column_string, x, y, self.font_size, Color::WHITE);
         }
