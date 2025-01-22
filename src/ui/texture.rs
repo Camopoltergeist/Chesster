@@ -59,6 +59,7 @@ pub fn load_piece_textures(rl: &mut RaylibHandle, thread: &RaylibThread) -> Hash
 		let file_path = format!("{}{}", texture_dir, piece_texture.texture_string());
 
 		let mut texture = rl.load_texture(thread, &file_path).expect("failed to load piece texture");
+		texture.set_texture_filter(thread, raylib::ffi::TextureFilter::TEXTURE_FILTER_TRILINEAR);
 		texture.gen_texture_mipmaps();
 
 		texture_map.insert(piece_texture, texture);
