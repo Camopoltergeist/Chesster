@@ -1,4 +1,6 @@
-use super::{bitboard::Bitboard, piece::Piece};
+use raylib::ffi::PI;
+
+use super::{bitboard::Bitboard, piece::{self, Piece}};
 use crate::player::{self, Player};
 
 pub struct Board {
@@ -43,6 +45,8 @@ impl Default for Board {
     }
 }
 
+struct GetPieceResult(Player, Piece);
+
 impl Board {
     pub fn check_overlaps(a: Bitboard, b: Bitboard) -> bool {
         a.0 & b.0 != 0
@@ -82,5 +86,22 @@ impl Board {
             Player::White => Bitboard::move_bit(&mut self.white_pieces, from, to),
             Player::Black => Bitboard::move_bit(&mut self.black_pieces, from, to),
         }
+    }
+
+    pub fn get_piece(&self, index: u32) -> (Player, Piece){
+        //Not ready: how to implement empty spaces, should there be a None in enum? is matching the way to go?
+        //Or Option<(Player, Piece)>?
+        let player = if Bitboard::check_bit(&self.white_pieces, index) {Player::White} else {Player::Black};
+        let piece = match () {
+            _ if Bitboard::check_bit(&self.pawns, index) => Piece::Pawn,
+            _ if Bitboard::check_bit(&self.rooks, index) => Piece::Rook,
+            _ if Bitboard::check_bit(&self.knights, index) => Piece::Knight,
+            _ if Bitboard::check_bit(&self.bishops, index) => Piece::Bishop,
+            _ if Bitboard::check_bit(&self.queens, index) => Piece::Queen,
+            _ if Bitboard::check_bit(&self.kings, index) => Piece::King,
+            _ => Piece::Pawn,
+        };
+
+        (player, piece)
     }
 }
