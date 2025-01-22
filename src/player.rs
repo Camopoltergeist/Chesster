@@ -1,3 +1,4 @@
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub enum Player {
     White,
     Black

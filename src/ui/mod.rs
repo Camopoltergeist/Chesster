@@ -1,6 +1,11 @@
 pub mod board_renderer;
+pub mod texture;
 
 use board_renderer::BoardRenderer;
+use raylib::{color::{self, Color}, prelude::RaylibDraw};
+use texture::load_piece_textures;
+
+use crate::board::Board;
 
 const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;
@@ -13,14 +18,19 @@ pub fn start_ui() {
 		.title("Chesster")
 		.build();
 
-	let mut br = BoardRenderer::new(0, 0, WINDOW_HEIGHT, 32, crate::player::Player::Black);
+	let piece_textures = load_piece_textures(&mut rl, &thread);
 
-	let bitboard = 1 | 1 << 7;
+	println!("{:?}", piece_textures);
 
-	br.set_bitboard_overlay(bitboard);
+	let mut br = BoardRenderer::new(0, 0, WINDOW_HEIGHT, 32, crate::player::Player::White, piece_textures);
+
+	let board = Board::default();
+
+	// br.set_bitboard_overlay(board.kings.0);
 
 	while !rl.window_should_close() {
 		let mut draw_handle = rl.begin_drawing(&thread);
+		draw_handle.clear_background(Color::GRAY);
 		br.draw_board(&mut draw_handle);
 	}
 }
