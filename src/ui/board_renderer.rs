@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
-use raylib::{color::Color, prelude::{RaylibDraw, RaylibDrawHandle}, texture::Texture2D};
+use raylib::{color::Color, math::Vector2, prelude::{RaylibDraw, RaylibDrawHandle}, texture::Texture2D};
 
 use crate::player::Player;
 
-use super::texture::{load_piece_textures, PieceTexture};
+use super::texture::PieceTexture;
 
 pub struct BoardRenderer {
     player: Player,
@@ -48,6 +48,23 @@ impl BoardRenderer {
         }
     }
 
+    fn draw_piece(&self, draw_handle: &mut RaylibDrawHandle, piece_texture: PieceTexture, rank: i32, column: i32) {
+        let start_x = self.margin;
+        let start_y = self.margin;
+
+        let pos = self.get_tile_pos(rank, column);
+        let tile_size = self.tile_size();
+
+        let x = start_x + pos.0;
+        let y = start_y + pos.1;
+
+        let texture = self.textures.get(&piece_texture).expect("invalid piece texture");
+
+        let scale = tile_size as f32 / texture.height as f32;
+
+        draw_handle.draw_texture_ex(texture, Vector2::new(x as f32, y as f32), 0.0, scale, Color::WHITE);
+    }
+
     pub fn set_bitboard_overlay(&mut self, bitboard: u64) {
         self.bitboard = bitboard;
         self.draw_bitboard = true;
@@ -89,6 +106,7 @@ impl BoardRenderer {
         self.draw_tiles(draw_handle);
         self.draw_ranks(draw_handle);
         self.draw_columns(draw_handle);
+        self.draw_piece(draw_handle, PieceTexture::new(Player::Black, crate::piece::Piece::Pawn), 1, 1);
 
         if self.draw_bitboard {
             self.draw_bitboard_overlay(draw_handle);
