@@ -104,7 +104,7 @@ impl BoardRenderer {
 
     pub fn draw_board(&self, draw_handle: &mut RaylibDrawHandle) {
         self.draw_tiles(draw_handle);
-        // self.draw_ranks(draw_handle);
+        self.draw_ranks(draw_handle);
         // self.draw_columns(draw_handle);
         // self.draw_piece(draw_handle, PieceTexture::new(Player::Black, crate::piece::Piece::Pawn), 1, 1);
 
@@ -127,21 +127,21 @@ impl BoardRenderer {
         }
     }
 
-    // fn draw_ranks(&self, draw_handle: &mut RaylibDrawHandle) {
-    //     let tile_size = self.tile_size();
+    fn draw_ranks(&self, draw_handle: &mut RaylibDrawHandle) {
+        let tile_size = self.tile_size();
 
-    //     for i in 0..8 {
-    //         let rank = if let Player::Black = self.player { i + 1 } else { 8 - i };
-    //         let pos = self.get_tile_pixel_pos(i, 0);
-    //         let rank_string = rank.to_string();
-    //         let text_width = draw_handle.measure_text(&rank_string, self.font_size);
+        for i in 0..8 {
+            let rank = if let Player::Black = self.player { i + 1 } else { 8 - i };
+            let rank_string = rank.to_string();
+            
+            let text_width = draw_handle.measure_text(&rank_string, self.font_size);
 
-    //         let x = start_x - text_width / 2;
-    //         let y = start_y + pos.1 + tile_size / 2 - self.font_size / 2;
+            let x = self.x + self.margin / 2 - text_width / 2;
+            let y = self.y + tile_size * i + tile_size / 2 + self.margin - self.font_size / 2;
 
-    //         draw_handle.draw_text(&rank_string, x, y, self.font_size, Color::WHITE);
-    //     }
-    // }
+            draw_handle.draw_text(&rank_string, x, y, self.font_size, Color::WHITE);
+        }
+    }
 
     // fn draw_columns(&self, draw_handle: &mut RaylibDrawHandle) {
     //     const COLUMNS: &str = "ABCDEFGH";
