@@ -73,9 +73,23 @@ impl BitAnd for Bitboard {
     }
 }
 
+impl BitAnd<u64> for Bitboard {
+    type Output = Self;
+
+    fn bitand(self, rhs: u64) -> Self::Output {
+        Self(self.0 & rhs)
+    }
+}
+
 impl BitAndAssign for Bitboard {
     fn bitand_assign(&mut self, rhs: Self) {
         *self = Self(self.0 & rhs.0)
+    }
+}
+
+impl BitAndAssign<u64> for Bitboard {
+    fn bitand_assign(&mut self, rhs: u64) {
+        *self = Self(self.0 & rhs)
     }
 }
 
@@ -87,9 +101,23 @@ impl BitOr for Bitboard {
     }
 }
 
+impl BitOr<u64> for Bitboard {
+    type Output = Self;
+
+    fn bitor(self, rhs: u64) -> Self::Output {
+        Self(self.0 | rhs)
+    }
+}
+
 impl BitOrAssign for Bitboard {
     fn bitor_assign(&mut self, rhs: Self) {
         *self = Self(self.0 | rhs.0)
+    }
+}
+
+impl BitOrAssign<u64> for Bitboard {
+    fn bitor_assign(&mut self, rhs: u64) {
+        *self = Self(self.0 | rhs)
     }
 }
 
@@ -101,24 +129,38 @@ impl BitXor for Bitboard {
     }
 }
 
+impl BitXor<u64> for Bitboard {
+    type Output = Self;
+
+    fn bitxor(self, rhs: u64) -> Self::Output {
+        Self(self.0 ^ rhs)
+    }
+}
+
 impl BitXorAssign for Bitboard {
     fn bitxor_assign(&mut self, rhs: Self) {
         *self = Self(self.0 ^ rhs.0)
     }
 }
 
-impl Shl<i32> for Bitboard {
+impl BitXorAssign<u64> for Bitboard {
+    fn bitxor_assign(&mut self, rhs: u64) {
+        *self = Self(self.0 ^ rhs)
+    }
+}
+
+impl Shl<u64> for Bitboard {
     type Output = Self;
 
-    fn shl(self, rhs: i32) -> Self::Output {
+    fn shl(self, rhs: u64) -> Self::Output {
         Self(self.0 << rhs)
     }
 }
 
-impl Shr<i32> for Bitboard {
+impl Shr<u64> for Bitboard {
     type Output = Self;
 
-    fn shr(self, rhs: i32) -> Self::Output {
+    fn shr(self, rhs: u64) -> Self::Output {
         Self(self.0 >> rhs)
     }
 }
