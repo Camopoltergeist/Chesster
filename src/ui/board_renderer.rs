@@ -87,6 +87,10 @@ impl BoardRenderer {
         self.player = player;
     }
 
+    pub fn swap_player(&mut self) {
+        self.player = self.player.opposite();
+    }
+
     pub fn draw(&self, draw_handle: &mut RaylibDrawHandle) {
         self.draw_tiles(draw_handle);
         self.draw_ranks(draw_handle);
