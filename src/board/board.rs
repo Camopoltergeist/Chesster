@@ -6,6 +6,7 @@ use super::{
 };
 use crate::player::{self, Player};
 
+#[derive(Clone)]
 pub struct Board {
     pub white_pieces: Bitboard,
     pub black_pieces: Bitboard,
