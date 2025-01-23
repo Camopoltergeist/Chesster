@@ -1,0 +1,15 @@
+Because LSB should be offset/index = 0 = A1 and LSB is on the right side, bitboards are vertically mirrored
+A1 in (x, y) = (0, 0) = INDEX 0
+
+   B I T B O A R D           OFFSET/INDEX I32
+
+8  0 0 0 0_0 0 0 0    8  63 62 61 60 _ 59 58 57 56
+7  0 0 0 0_0 0 0 0    7  55 54 53 52 _ 51 50 49 48
+6  0 0 0 0_0 0 0 0    6  47 46 45 44 _ 43 42 41 40
+5  0 0 0 0_0 0 0 0    5  39 38 37 36 _ 35 34 33 32
+4  0 0 0 0_0 0 0 0    4  31 30 29 28 _ 27 26 25 24
+3  0 0 0 0_0 0 0 0    3  23 22 21 20 _ 19 18 17 16
+2  0 0 0 0_0 0 0 0    2  15 14 13 12 _ 11 10 09 08
+1  0 0 0 0_0 0 0 0    1  07 06 05 04 _ 03 02 01 00
+   
+   H G F E D C B A       H  G  F  E    D  C  B  A
