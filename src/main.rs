@@ -18,6 +18,6 @@ fn main() {
     );
     board.bishops.print_bitboard();
     board.white_pieces.print_bitboard();
-    let tuple = board.get_piece(62);
-    println!("{:?} {:?}", tuple.0, tuple.1);
+    let tuple = board.get_piece(61);
+    println!("{:?}", tuple);
 }

@@ -1,6 +1,9 @@
 use raylib::ffi::PI;
 
-use super::{bitboard::Bitboard, piece::{self, Piece}};
+use super::{
+    bitboard::Bitboard,
+    piece::{self, Piece},
+};
 use crate::player::{self, Player};
 
 pub struct Board {
@@ -88,10 +91,21 @@ impl Board {
         }
     }
 
-    pub fn get_piece(&self, index: u32) -> (Player, Piece){
+    pub fn get_piece(&self, index: u32) -> Option<(Player, Piece)> {
         //Not ready: how to implement empty spaces, should there be a None in enum? is matching the way to go?
         //Or Option<(Player, Piece)>?
-        let player = if Bitboard::check_bit(&self.white_pieces, index) {Player::White} else {Player::Black};
+        let player = if Bitboard::check_bit(&self.white_pieces, index) {
+            {
+                Player::White
+            }
+        } else if Bitboard::check_bit(&self.black_pieces, index) {
+            {
+                Player::Black
+            }
+        } else {
+            return None;
+        };
+
         let piece = match () {
             _ if Bitboard::check_bit(&self.pawns, index) => Piece::Pawn,
             _ if Bitboard::check_bit(&self.rooks, index) => Piece::Rook,
@@ -99,9 +113,9 @@ impl Board {
             _ if Bitboard::check_bit(&self.bishops, index) => Piece::Bishop,
             _ if Bitboard::check_bit(&self.queens, index) => Piece::Queen,
             _ if Bitboard::check_bit(&self.kings, index) => Piece::King,
-            _ => Piece::Pawn,
+            _ => return None,
         };
 
-        (player, piece)
+        Some((player, piece))
     }
 }
