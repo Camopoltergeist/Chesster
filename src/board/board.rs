@@ -1,9 +1,7 @@
 
-use super::{
-    bitboard::Bitboard,
-    piece::Piece,
-};
-use crate::player::{self, Player};
+use super::bitboard::Bitboard;
+
+use crate::{piece::Piece, player::{self, Player}};
 
 #[derive(Clone)]
 pub struct Board {
