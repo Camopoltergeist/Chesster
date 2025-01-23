@@ -5,7 +5,7 @@ use board_renderer::BoardRenderer;
 use raylib::{color::Color, ffi::KeyboardKey, prelude::RaylibDraw};
 use texture::load_piece_textures;
 
-use crate::board::board::Board;
+use crate::board::{bitboard::Bitboard, board::Board};
 
 const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;
@@ -27,6 +27,9 @@ pub fn start_ui() {
 	let board = Board::default();
 
 	br.set_board(Some(&board));
+
+	let rank_mask = Bitboard::get_rank_mask(4);
+	br.set_bitboard_overlay(Some(rank_mask.0));
 
 	let mut just_pressed = false;
 

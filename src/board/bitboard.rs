@@ -49,4 +49,10 @@ impl Bitboard {
 
         return (column, rank);
     }
+
+    pub fn get_rank_mask(rank: i32) -> Bitboard {
+        let rank_mask = 0xff << rank * 8;
+        Bitboard(rank_mask)
+    }
+
 }
