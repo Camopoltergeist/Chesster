@@ -1,5 +1,6 @@
 use super::bitboard::Bitboard;
 
+#[derive(Clone)]
 pub struct Board {
     pub white_pieces: Bitboard,
     pub black_pieces: Bitboard,
