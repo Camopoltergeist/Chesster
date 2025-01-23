@@ -122,3 +122,13 @@ impl Shr<i32> for Bitboard {
         Self(self.0 >> rhs)
     }
 }
+
+impl PartialEq<u64> for Bitboard {
+    fn eq(&self, other: &u64) -> bool {
+        self.0 == *other
+    }
+
+    fn ne(&self, other: &u64) -> bool {
+        self.0 != *other
+    }
+}
