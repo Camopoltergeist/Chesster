@@ -29,8 +29,8 @@ impl Bitboard {
     }
 
     pub fn check_bit(&self, bit_offset: u32) -> bool {
-        let bitmask = 1 << bit_offset;
-        (self.0 & bitmask) != 0
+        let bitmask: u64 = 1 << bit_offset;
+        (*self & bitmask) != 0
     }
 
     pub fn move_bit(&mut self, from_offset: u32, to_offset: u32) {
