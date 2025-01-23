@@ -2,7 +2,7 @@ pub mod board_renderer;
 pub mod texture;
 
 use board_renderer::BoardRenderer;
-use raylib::{color::Color, prelude::RaylibDraw};
+use raylib::{color::Color, ffi::KeyboardKey, prelude::RaylibDraw};
 use texture::load_piece_textures;
 
 use crate::board::board::Board;
@@ -26,11 +26,24 @@ pub fn start_ui() {
 
 	let board = Board::default();
 
-	// br.set_bitboard_overlay(board.kings.0);
+	br.set_board(Some(&board));
+
+	let mut just_pressed = false;
 
 	while !rl.window_should_close() {
+		if rl.is_key_down(KeyboardKey::KEY_SPACE) {
+			if !just_pressed {
+				br.swap_player();
+			}
+
+			just_pressed = true;
+		}
+		else {
+			just_pressed = false;
+		}
+
 		let mut draw_handle = rl.begin_drawing(&thread);
-		draw_handle.clear_background(Color::GRAY);
-		br.draw_board(&mut draw_handle);
+		draw_handle.clear_background(Color { r: 0, g: 65, b: 119, a: 255 });
+		br.draw(&mut draw_handle);
 	}
 }

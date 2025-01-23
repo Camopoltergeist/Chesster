@@ -1,6 +1,9 @@
 use super::bitboard::Bitboard;
 use crate::{piece::Piece, player::{self, Player}};
 
+use crate::{piece::Piece, player::{self, Player}};
+
+#[derive(Clone)]
 pub struct Board {
     pub white_pieces: Bitboard,
     pub black_pieces: Bitboard,

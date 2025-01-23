@@ -7,18 +7,5 @@ mod ui;
 pub mod piece;
 
 fn main() {
-    let mut board = Board::default();
-    board.bishops.print_bitboard();
-    board.white_pieces.print_bitboard();
-    Board::move_piece(
-        &mut board,
-        player::Player::White,
-        board::piece::Piece::Bishop,
-        2,
-        18,
-    );
-    board.bishops.print_bitboard();
-    board.white_pieces.print_bitboard();
-    let tuple = board.get_piece(61);
-    println!("{:?}", tuple);
+    start_ui();
 }
