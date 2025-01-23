@@ -43,7 +43,7 @@ pub fn start_ui() {
 		}
 
 		let mut draw_handle = rl.begin_drawing(&thread);
-		draw_handle.clear_background(Color::GRAY);
+		draw_handle.clear_background(Color { r: 0, g: 65, b: 119, a: 255 });
 		br.draw(&mut draw_handle);
 	}
 }
