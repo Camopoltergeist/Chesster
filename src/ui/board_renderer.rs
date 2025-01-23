@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use raylib::{color::Color, math::Vector2, prelude::{RaylibDraw, RaylibDrawHandle}, texture::Texture2D};
 
-use crate::{board::bitboard::Bitboard, player::Player};
+use crate::{board::{bitboard::Bitboard, board::Board}, player::Player};
 
 use super::texture::PieceTexture;
 
@@ -20,13 +20,14 @@ pub struct BoardRenderer {
 
     font_size: i32,
 
-    draw_bitboard: bool,
-    bitboard: u64,
+    bitboard: Option<u64>,
 
     bitboard_on_color: Color,
     bitboard_off_color: Color,
 
     textures: HashMap<PieceTexture, Texture2D>,
+
+    board: Option<Board>,
 }
 
 impl BoardRenderer {
@@ -40,11 +41,11 @@ impl BoardRenderer {
             dark_color: Color::BLACK,
             light_color: Color::WHITE,
             font_size: 16,
-            draw_bitboard: false,
-            bitboard: 0,
+            bitboard: None,
             bitboard_on_color: Color { r: 255, g: 0, b: 0, a: 127 },
             bitboard_off_color: Color { r: 0, g: 0, b: 255, a: 127 },
-            textures: piece_textures
+            textures: piece_textures,
+            board: None
         }
     }
 
@@ -62,27 +63,23 @@ impl BoardRenderer {
         draw_handle.draw_texture_ex(texture, Vector2::new(x as f32, y as f32), 0.0, scale, Color::WHITE);
     }
 
-    pub fn set_bitboard_overlay(&mut self, bitboard: u64) {
+    pub fn set_bitboard_overlay(&mut self, bitboard: Option<u64>) {
         self.bitboard = bitboard;
-        self.draw_bitboard = true;
-    }
-
-    pub fn clear_bitboard_overlay(&mut self) {
-        self.bitboard = 0;
-        self.draw_bitboard = false;
     }
 
     fn draw_bitboard_overlay(&self, draw_handle: &mut RaylibDrawHandle) {
-        for bit_offset in 0..64 {
-            let bit = (self.bitboard & 1 << bit_offset) != 0;
-            let color = if bit { self.bitboard_on_color } else { self.bitboard_off_color };
-
-            let (column, rank) = Bitboard::bit_offset_to_coordinates(bit_offset);
-
-            let pos = self.get_tile_pixel_pos(column, rank);
-            let tile_size = self.tile_size();
-
-            draw_handle.draw_rectangle(pos.0, pos.1, tile_size, tile_size, color);
+        if let Some(bitboard) = self.bitboard {
+            for bit_offset in 0..64 {
+                let bit = (bitboard & 1 << bit_offset) != 0;
+                let color = if bit { self.bitboard_on_color } else { self.bitboard_off_color };
+    
+                let (column, rank) = Bitboard::bit_offset_to_coordinates(bit_offset);
+    
+                let pos = self.get_tile_pixel_pos(column, rank);
+                let tile_size = self.tile_size();
+    
+                draw_handle.draw_rectangle(pos.0, pos.1, tile_size, tile_size, color);
+            }
         }
     }
 
@@ -96,9 +93,11 @@ impl BoardRenderer {
         self.draw_columns(draw_handle);
         self.draw_piece(draw_handle, PieceTexture::new(Player::Black, crate::piece::Piece::Pawn), 1, 1);
 
-        if self.draw_bitboard {
-            self.draw_bitboard_overlay(draw_handle);
-        }
+        self.draw_bitboard_overlay(draw_handle);
+    }
+
+    fn draw_board_pieces(&self, draw_handle: &mut RaylibDrawHandle) {
+
     }
 
     fn draw_tiles(&self, draw_handle: &mut RaylibDrawHandle) {
