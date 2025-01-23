@@ -4,6 +4,7 @@ use ui::start_ui;
 pub mod board;
 pub mod player;
 mod ui;
+pub mod piece;
 
 fn main() {
     let mut board = Board::default();

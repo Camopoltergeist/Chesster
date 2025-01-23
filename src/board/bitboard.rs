@@ -43,17 +43,10 @@ impl Bitboard {
         }
     }
 
-    pub fn offset_to_coordinates(bit_offset: u32) -> (i32, i32) {
-        let pos = bit_offset.trailing_zeros();
-        let x = (pos % 8) as i32;
-        let y = (pos / 8) as i32;
-        (x, y)
-        /* If better to iterate:
-        for pos in 0..31 (or amnt of bits) {
-        if (bit_offset << pos) & 1 == 1 {
-        let x = i % 8;
-        let y = pos / 8;
-        }
-        } */
+    pub fn bit_offset_to_coordinates(bit_offset: i32) -> (i32, i32) {
+        let column = bit_offset % 8;
+        let rank = 7 - bit_offset / 8;
+
+        return (column, rank);
     }
 }

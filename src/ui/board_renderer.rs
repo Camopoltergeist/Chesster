@@ -1,6 +1,10 @@
-use raylib::{color::Color, prelude::{RaylibDraw, RaylibDrawHandle}};
+use std::collections::HashMap;
 
-use crate::player::Player;
+use raylib::{color::Color, math::Vector2, prelude::{RaylibDraw, RaylibDrawHandle}, texture::Texture2D};
+
+use crate::{board::bitboard::Bitboard, player::Player};
+
+use super::texture::PieceTexture;
 
 pub struct BoardRenderer {
     player: Player,
@@ -21,10 +25,12 @@ pub struct BoardRenderer {
 
     bitboard_on_color: Color,
     bitboard_off_color: Color,
+
+    textures: HashMap<PieceTexture, Texture2D>,
 }
 
 impl BoardRenderer {
-    pub fn new(x: i32, y: i32, size: i32, margin: i32, player: Player) -> Self {
+    pub fn new(x: i32, y: i32, size: i32, margin: i32, player: Player, piece_textures: HashMap<PieceTexture, Texture2D>) -> Self {
         Self {
             x,
             y,
@@ -37,8 +43,23 @@ impl BoardRenderer {
             draw_bitboard: false,
             bitboard: 0,
             bitboard_on_color: Color { r: 255, g: 0, b: 0, a: 127 },
-            bitboard_off_color: Color { r: 0, g: 0, b: 255, a: 127 }
+            bitboard_off_color: Color { r: 0, g: 0, b: 255, a: 127 },
+            textures: piece_textures
         }
+    }
+
+    fn draw_piece(&self, draw_handle: &mut RaylibDrawHandle, piece_texture: PieceTexture, column: i32, rank: i32) {
+        let pos = self.get_tile_pixel_pos(rank, column);
+        let tile_size = self.tile_size();
+
+        let x = pos.0;
+        let y = pos.1;
+
+        let texture = self.textures.get(&piece_texture).expect("invalid piece texture");
+
+        let scale = tile_size as f32 / texture.height as f32;
+
+        draw_handle.draw_texture_ex(texture, Vector2::new(x as f32, y as f32), 0.0, scale, Color::WHITE);
     }
 
     pub fn set_bitboard_overlay(&mut self, bitboard: u64) {
@@ -52,25 +73,16 @@ impl BoardRenderer {
     }
 
     fn draw_bitboard_overlay(&self, draw_handle: &mut RaylibDrawHandle) {
-        let start_x = self.margin;
-        let start_y = self.margin;
-
         for bit_offset in 0..64 {
             let bit = (self.bitboard & 1 << bit_offset) != 0;
             let color = if bit { self.bitboard_on_color } else { self.bitboard_off_color };
 
-            let flipped = matches!(self.player, Player::Black);
+            let (column, rank) = Bitboard::bit_offset_to_coordinates(bit_offset);
 
-            let column = if flipped { 7 - bit_offset % 8 } else { bit_offset % 8 };
-            let rank = if flipped { bit_offset / 8 } else { 7 - bit_offset / 8 };
-
-            let pos = self.get_tile_pos(rank, column);
+            let pos = self.get_tile_pixel_pos(column, rank);
             let tile_size = self.tile_size();
 
-            let x = start_x + pos.0;
-            let y = start_y + pos.1;
-
-            draw_handle.draw_rectangle(x, y, tile_size, tile_size, color);
+            draw_handle.draw_rectangle(pos.0, pos.1, tile_size, tile_size, color);
         }
     }
 
@@ -82,6 +94,7 @@ impl BoardRenderer {
         self.draw_tiles(draw_handle);
         self.draw_ranks(draw_handle);
         self.draw_columns(draw_handle);
+        self.draw_piece(draw_handle, PieceTexture::new(Player::Black, crate::piece::Piece::Pawn), 1, 1);
 
         if self.draw_bitboard {
             self.draw_bitboard_overlay(draw_handle);
@@ -89,39 +102,48 @@ impl BoardRenderer {
     }
 
     fn draw_tiles(&self, draw_handle: &mut RaylibDrawHandle) {
-        let start_x = self.x + self.margin;
-        let start_y = self.y + self.margin;
-
         let tile_size = self.tile_size();
 
         for i in 0..8 {
             for j in 0..8 {
-                let color = if (i + j) % 2 == 0 { self.light_color } else { self.dark_color };
+                let color = if (i + j) % 2 == 0 { self.dark_color } else { self.light_color };
 
-                let pos = self.get_tile_pos(i, j);
+                let pos = self.get_tile_pixel_pos(i, j);
 
-                let x = pos.0 + start_x;
-                let y = pos.1 + start_y;
-
-                draw_handle.draw_rectangle(x, y, tile_size, tile_size, color);
+                draw_handle.draw_rectangle(pos.0, pos.1, tile_size, tile_size, color);
             }
         }
     }
 
-    fn draw_ranks(&self, draw_handle: &mut RaylibDrawHandle) {
-        let start_x = self.x + self.margin / 2;
-        let start_y = self.y + self.margin;
+    fn get_rank_label_x(&self) -> i32 {
+        self.x + self.margin / 2
+    }
 
+    fn get_column_label_y(&self) -> i32 {
+        self.y + self.size - self.margin / 2
+    }
+
+    fn get_rank_centered_y(&self, rank: i32) -> i32 {
         let tile_size = self.tile_size();
+        self.y + tile_size * rank + tile_size / 2 + self.margin
+    }
+
+    fn get_column_centered_x(&self, column: i32) -> i32 {
+        let tile_size = self.tile_size();
+        self.x + self.margin + tile_size * column + tile_size / 2
+    }
+
+    fn draw_ranks(&self, draw_handle: &mut RaylibDrawHandle) {
+        let rank_label_x = self.get_rank_label_x();
 
         for i in 0..8 {
             let rank = if let Player::Black = self.player { i + 1 } else { 8 - i };
-            let pos = self.get_tile_pos(i, 0);
             let rank_string = rank.to_string();
+            
             let text_width = draw_handle.measure_text(&rank_string, self.font_size);
 
-            let x = start_x - text_width / 2;
-            let y = start_y + pos.1 + tile_size / 2 - self.font_size / 2;
+            let x = rank_label_x - text_width / 2;
+            let y = self.get_rank_centered_y(i) - self.font_size / 2;
 
             draw_handle.draw_text(&rank_string, x, y, self.font_size, Color::WHITE);
         }
@@ -130,19 +152,16 @@ impl BoardRenderer {
     fn draw_columns(&self, draw_handle: &mut RaylibDrawHandle) {
         const COLUMNS: &str = "ABCDEFGH";
 
-        let start_x = self.x + self.margin;
-        let start_y = self.y + self.size - self.margin / 2;
-
-        let tile_size = self.tile_size();
+        let column_label_y = self.get_column_label_y();
 
         for i in 0..8 {
             let column = if let Player::Black = self.player { 7 - i } else { i };
-            let pos = self.get_tile_pos(0, i);
             let column_string = COLUMNS.chars().nth(column as usize).expect("failed to get column letter").to_string();
+
             let text_width = draw_handle.measure_text(&column_string, self.font_size);
 
-            let x = start_x + pos.0 - text_width / 2 + tile_size / 2;
-            let y = start_y - self.font_size / 2;
+            let x = self.get_column_centered_x(i) - text_width / 2;
+            let y = column_label_y - self.font_size / 2;
 
             draw_handle.draw_text(&column_string, x, y, self.font_size, Color::WHITE);
         }
@@ -154,12 +173,17 @@ impl BoardRenderer {
         available_area / 8
     }
 
-    fn get_tile_pos(&self, rank: i32, column: i32) -> (i32, i32) {
+    fn get_tile_pixel_pos(&self, column: i32, rank: i32) -> (i32, i32) {
+        let flipped = self.player == Player::Black;
+
+        let tile_x = if flipped { 7 - column } else { column };
+        let tile_y = if flipped { rank } else { 7 - rank };
+        
         let tile_size = self.tile_size();
 
-        let x = column * tile_size;
-        let y = rank * tile_size;
+        let pixel_x = self.margin + self.x + tile_x * tile_size;
+        let pixel_y = self.margin + self.y + tile_y * tile_size;
 
-        return (x, y);
+        return (pixel_x, pixel_y);
     }
 }
