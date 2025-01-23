@@ -95,14 +95,12 @@ impl Board {
         //Not ready: how to implement empty spaces, should there be a None in enum? is matching the way to go?
         //Or Option<(Player, Piece)>?
         let player = if Bitboard::check_bit(&self.white_pieces, index) {
-            {
-                Player::White
-            }
-        } else if Bitboard::check_bit(&self.black_pieces, index) {
-            {
-                Player::Black
-            }
-        } else {
+            Player::White
+        } 
+        else if Bitboard::check_bit(&self.black_pieces, index) {
+            Player::Black
+        } 
+        else {
             return None;
         };
 
