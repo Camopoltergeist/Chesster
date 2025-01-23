@@ -1,10 +1,5 @@
-use raylib::ffi::PI;
-
-use super::{
-    bitboard::Bitboard,
-    piece::{self, Piece},
-};
-use crate::player::{self, Player};
+use super::bitboard::Bitboard;
+use crate::{piece::Piece, player::{self, Player}};
 
 pub struct Board {
     pub white_pieces: Bitboard,
@@ -47,8 +42,6 @@ impl Default for Board {
         }
     }
 }
-
-struct GetPieceResult(Player, Piece);
 
 impl Board {
     pub fn check_overlaps(a: Bitboard, b: Bitboard) -> bool {
