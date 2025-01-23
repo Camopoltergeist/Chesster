@@ -55,4 +55,8 @@ impl Bitboard {
         Bitboard(rank_mask)
     }
 
+    pub fn get_column_mask(column: i32) -> Bitboard {
+        let column_mask = 0x101010101010101 << column;
+        Bitboard(column_mask)
+    }
 }

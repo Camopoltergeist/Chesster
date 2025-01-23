@@ -28,7 +28,7 @@ pub fn start_ui() {
 
 	br.set_board(Some(&board));
 
-	let rank_mask = Bitboard::get_rank_mask(4);
+	let rank_mask = Bitboard::get_column_mask(9);
 	br.set_bitboard_overlay(Some(rank_mask.0));
 
 	let mut just_pressed = false;
