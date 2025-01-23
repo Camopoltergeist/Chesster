@@ -6,27 +6,41 @@ use crate::{board::{bitboard::Bitboard, board::Board}, player::Player};
 
 use super::texture::PieceTexture;
 
+/// Renders a chess board with labels and all the pieces on it. Also includes bitboard overlay
 pub struct BoardRenderer {
+    /// Determines the player whose perspective is used to render the board
     player: Player,
 
+    /// X pixel offset on screen
     x: i32,
+    /// Y pixel offset on screen
     y: i32,
 
+    /// Entire size of the board including margins
     size: i32,
+    /// Margin of the board used to render labels
     margin: i32,
 
+    /// Color of the dark squares of the board
     dark_color: Color,
+    /// Color of the light squares of the board
     light_color: Color,
 
+    /// Font size of the labels
     font_size: i32,
 
+    /// Bitboard used to draw overlay. If None, no overlay will be drawn.
     bitboard: Option<u64>,
 
+    /// Color used to draw ON bits on the overlay 
     bitboard_on_color: Color,
+    /// Color used to draw OFF bits on the overlay
     bitboard_off_color: Color,
 
+    /// Map of chess piece textures
     textures: HashMap<PieceTexture, Texture2D>,
 
+    /// Board state used to draw pieces
     board: Option<Board>,
 }
 
@@ -49,6 +63,7 @@ impl BoardRenderer {
         }
     }
 
+    /// Draws a specified piece on the specified tile
     fn draw_piece(&self, draw_handle: &mut RaylibDrawHandle, piece_texture: PieceTexture, column: i32, rank: i32) {
         let pos = self.get_tile_pixel_pos(column, rank);
         let tile_size = self.tile_size();
@@ -63,10 +78,12 @@ impl BoardRenderer {
         draw_handle.draw_texture_ex(texture, Vector2::new(x as f32, y as f32), 0.0, scale, Color::WHITE);
     }
 
+    /// Sets bitboard used to draw overlay. None disables overlay.
     pub fn set_bitboard_overlay(&mut self, bitboard: Option<u64>) {
         self.bitboard = bitboard;
     }
 
+    /// If bitboard is Some, draw a representation of it as overlay.
     fn draw_bitboard_overlay(&self, draw_handle: &mut RaylibDrawHandle) {
         if let Some(bitboard) = self.bitboard {
             for bit_offset in 0..64 {
@@ -83,14 +100,17 @@ impl BoardRenderer {
         }
     }
 
+    /// Sets the perspective to the specified player
     pub fn set_player(&mut self, player: Player) {
         self.player = player;
     }
 
+    /// Flips the perspective to the other player
     pub fn swap_player(&mut self) {
         self.player = self.player.opposite();
     }
 
+    /// Draws the board on screen
     pub fn draw(&self, draw_handle: &mut RaylibDrawHandle) {
         self.draw_tiles(draw_handle);
         self.draw_ranks(draw_handle);
@@ -100,6 +120,7 @@ impl BoardRenderer {
         self.draw_bitboard_overlay(draw_handle);
     }
 
+    /// Sets the current board to be drawn. Set to None to disable pieces.
     pub fn set_board(&mut self, board: Option<&Board>) {
         self.board = board.cloned();
     }
