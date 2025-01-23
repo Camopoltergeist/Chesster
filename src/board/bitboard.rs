@@ -1,3 +1,5 @@
+use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Shl, Shr};
+
 #[derive(Clone, Copy)]
 
 pub struct Bitboard(pub u64);
@@ -27,26 +29,148 @@ impl Bitboard {
     }
 
     pub fn check_bit(&self, bit_offset: u32) -> bool {
-        let bitmask = 1 << bit_offset;
-        (self.0 & bitmask) != 0
+        let bitmask: u64 = 1 << bit_offset;
+        (*self & bitmask) != 0
     }
 
     pub fn move_bit(&mut self, from_offset: u32, to_offset: u32) {
         //The basis of moving a bit: checks if there is a 1 there, makes it a 0, and makes another field a 1.
         if self.check_bit(from_offset) {
             let rmv_bitmask = 1 << from_offset;
-            self.0 &= !rmv_bitmask;
+            *self &= !rmv_bitmask;
 
             //Thinking ahead, there could be some logic here to know if it's stepping on a 1?
             let add_bitmask = 1 << to_offset;
-            self.0 |= add_bitmask;
+            *self |= add_bitmask;
         }
     }
 
-    pub fn bit_offset_to_coordinates(bit_offset: i32) -> (i32, i32) {
+    pub fn bit_offset_to_coordinates(bit_offset: u32) -> (u32, u32) {
         let column = bit_offset % 8;
         let rank = bit_offset / 8;
 
         return (column, rank);
+    }
+}
+
+impl From<u64> for Bitboard {
+    fn from(value: u64) -> Self {
+        Bitboard(value)
+    }
+}
+
+impl From<Bitboard> for u64 {
+    fn from(value: Bitboard) -> Self {
+        value.0
+    }
+}
+
+impl BitAnd for Bitboard {
+    type Output = Self;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        Self(self.0 & rhs.0)
+    }
+}
+
+impl BitAnd<u64> for Bitboard {
+    type Output = Self;
+
+    fn bitand(self, rhs: u64) -> Self::Output {
+        Self(self.0 & rhs)
+    }
+}
+
+impl BitAndAssign for Bitboard {
+    fn bitand_assign(&mut self, rhs: Self) {
+        *self = Self(self.0 & rhs.0)
+    }
+}
+
+impl BitAndAssign<u64> for Bitboard {
+    fn bitand_assign(&mut self, rhs: u64) {
+        *self = Self(self.0 & rhs)
+    }
+}
+
+impl BitOr for Bitboard {
+    type Output = Self;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        Self(self.0 | rhs.0)
+    }
+}
+
+impl BitOr<u64> for Bitboard {
+    type Output = Self;
+
+    fn bitor(self, rhs: u64) -> Self::Output {
+        Self(self.0 | rhs)
+    }
+}
+
+impl BitOrAssign for Bitboard {
+    fn bitor_assign(&mut self, rhs: Self) {
+        *self = Self(self.0 | rhs.0)
+    }
+}
+
+impl BitOrAssign<u64> for Bitboard {
+    fn bitor_assign(&mut self, rhs: u64) {
+        *self = Self(self.0 | rhs)
+    }
+}
+
+impl BitXor for Bitboard {
+    type Output = Self;
+
+    fn bitxor(self, rhs: Self) -> Self::Output {
+        Self(self.0 ^ rhs.0)
+    }
+}
+
+impl BitXor<u64> for Bitboard {
+    type Output = Self;
+
+    fn bitxor(self, rhs: u64) -> Self::Output {
+        Self(self.0 ^ rhs)
+    }
+}
+
+impl BitXorAssign for Bitboard {
+    fn bitxor_assign(&mut self, rhs: Self) {
+        *self = Self(self.0 ^ rhs.0)
+    }
+}
+
+impl BitXorAssign<u64> for Bitboard {
+    fn bitxor_assign(&mut self, rhs: u64) {
+        *self = Self(self.0 ^ rhs)
+    }
+}
+
+impl Shl<u64> for Bitboard {
+    type Output = Self;
+
+    fn shl(self, rhs: u64) -> Self::Output {
+        Self(self.0 << rhs)
+    }
+}
+
+impl Shr<u64> for Bitboard {
+    type Output = Self;
+
+    fn shr(self, rhs: u64) -> Self::Output {
+        Self(self.0 >> rhs)
+    }
+}
+
+impl PartialEq<u64> for Bitboard {
+    fn eq(&self, other: &u64) -> bool {
+        self.0 == *other
+    }
+
+    fn ne(&self, other: &u64) -> bool {
+        self.0 != *other
     }
 }

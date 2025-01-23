@@ -46,7 +46,7 @@ impl Default for Board {
 
 impl Board {
     pub fn check_overlaps(a: Bitboard, b: Bitboard) -> bool {
-        a.0 & b.0 != 0
+        a & b != 0
     }
 
     pub fn validate(&self) -> bool {
