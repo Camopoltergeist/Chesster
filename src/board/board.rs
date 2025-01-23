@@ -73,44 +73,46 @@ impl Board {
             || Board::check_overlaps(self.queens, self.kings))
     }
 
-    pub fn move_piece(&mut self, player: player::Player, piece: Piece, from: u32, to: u32) {
+    pub fn move_piece(
+        &mut self,
+        player: player::Player,
+        piece: Piece,
+        from_offset: u32,
+        to_offset: u32,
+    ) {
         //Checks the player's color and edits both that color's and a piece's bitboard
         //Every piece's possible move mask(s) probably need to also be implemented l8r
         match piece {
-            Piece::Pawn => Bitboard::move_bit(&mut self.pawns, from, to),
-            Piece::Rook => Bitboard::move_bit(&mut self.rooks, from, to),
-            Piece::Knight => Bitboard::move_bit(&mut self.knights, from, to),
-            Piece::Bishop => Bitboard::move_bit(&mut self.bishops, from, to),
-            Piece::Queen => Bitboard::move_bit(&mut self.queens, from, to),
-            Piece::King => Bitboard::move_bit(&mut self.kings, from, to),
+            Piece::Pawn => Bitboard::move_bit(&mut self.pawns, from_offset, to_offset),
+            Piece::Rook => Bitboard::move_bit(&mut self.rooks, from_offset, to_offset),
+            Piece::Knight => Bitboard::move_bit(&mut self.knights, from_offset, to_offset),
+            Piece::Bishop => Bitboard::move_bit(&mut self.bishops, from_offset, to_offset),
+            Piece::Queen => Bitboard::move_bit(&mut self.queens, from_offset, to_offset),
+            Piece::King => Bitboard::move_bit(&mut self.kings, from_offset, to_offset),
         }
 
         match player {
-            Player::White => Bitboard::move_bit(&mut self.white_pieces, from, to),
-            Player::Black => Bitboard::move_bit(&mut self.black_pieces, from, to),
+            Player::White => Bitboard::move_bit(&mut self.white_pieces, from_offset, to_offset),
+            Player::Black => Bitboard::move_bit(&mut self.black_pieces, from_offset, to_offset),
         }
     }
 
-    pub fn get_piece(&self, index: u32) -> Option<(Player, Piece)> {
-        //Not ready: how to implement empty spaces, should there be a None in enum? is matching the way to go?
-        //Or Option<(Player, Piece)>?
-        let player = if Bitboard::check_bit(&self.white_pieces, index) {
+    pub fn get_piece(&self, bit_offset: u32) -> Option<(Player, Piece)> {
+        let player = if Bitboard::check_bit(&self.white_pieces, bit_offset) {
             Player::White
-        } 
-        else if Bitboard::check_bit(&self.black_pieces, index) {
+        } else if Bitboard::check_bit(&self.black_pieces, bit_offset) {
             Player::Black
-        } 
-        else {
+        } else {
             return None;
         };
 
         let piece = match () {
-            _ if Bitboard::check_bit(&self.pawns, index) => Piece::Pawn,
-            _ if Bitboard::check_bit(&self.rooks, index) => Piece::Rook,
-            _ if Bitboard::check_bit(&self.knights, index) => Piece::Knight,
-            _ if Bitboard::check_bit(&self.bishops, index) => Piece::Bishop,
-            _ if Bitboard::check_bit(&self.queens, index) => Piece::Queen,
-            _ if Bitboard::check_bit(&self.kings, index) => Piece::King,
+            _ if Bitboard::check_bit(&self.pawns, bit_offset) => Piece::Pawn,
+            _ if Bitboard::check_bit(&self.rooks, bit_offset) => Piece::Rook,
+            _ if Bitboard::check_bit(&self.knights, bit_offset) => Piece::Knight,
+            _ if Bitboard::check_bit(&self.bishops, bit_offset) => Piece::Bishop,
+            _ if Bitboard::check_bit(&self.queens, bit_offset) => Piece::Queen,
+            _ if Bitboard::check_bit(&self.kings, bit_offset) => Piece::King,
             _ => return None,
         };
 

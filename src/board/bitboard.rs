@@ -31,14 +31,14 @@ impl Bitboard {
         (self.0 & bitmask) != 0
     }
 
-    pub fn move_bit(&mut self, from: u32, to: u32) {
+    pub fn move_bit(&mut self, from_offset: u32, to_offset: u32) {
         //The basis of moving a bit: checks if there is a 1 there, makes it a 0, and makes another field a 1.
-        if self.check_bit(from) {
-            let rmv_bitmask = 1 << from;
+        if self.check_bit(from_offset) {
+            let rmv_bitmask = 1 << from_offset;
             self.0 &= !rmv_bitmask;
 
             //Thinking ahead, there could be some logic here to know if it's stepping on a 1?
-            let add_bitmask = 1 << to;
+            let add_bitmask = 1 << to_offset;
             self.0 |= add_bitmask;
         }
     }
