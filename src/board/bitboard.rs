@@ -1,4 +1,4 @@
-use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign};
+use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Shl, Shr};
 
 #[derive(Clone, Copy)]
 
@@ -104,5 +104,21 @@ impl BitXor for Bitboard {
 impl BitXorAssign for Bitboard {
     fn bitxor_assign(&mut self, rhs: Self) {
         *self = Self(self.0 ^ rhs.0)
+    }
+}
+
+impl Shl<i32> for Bitboard {
+    type Output = Self;
+
+    fn shl(self, rhs: i32) -> Self::Output {
+        Self(self.0 << rhs)
+    }
+}
+
+impl Shr<i32> for Bitboard {
+    type Output = Self;
+
+    fn shr(self, rhs: i32) -> Self::Output {
+        Self(self.0 >> rhs)
     }
 }
