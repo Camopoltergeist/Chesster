@@ -31,6 +31,6 @@ pub fn start_ui() {
 	while !rl.window_should_close() {
 		let mut draw_handle = rl.begin_drawing(&thread);
 		draw_handle.clear_background(Color::GRAY);
-		br.draw_board(&mut draw_handle);
+		br.draw(&mut draw_handle);
 	}
 }
