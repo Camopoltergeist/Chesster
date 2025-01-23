@@ -1,6 +1,7 @@
 use super::bitboard::Bitboard;
 
 pub static mut ROOK_MASKS: Vec<Bitboard> = Vec::new();
+pub static mut BISHOP_MASKS: Vec<Bitboard> = Vec::new();
 
 pub fn generate_rook_masks() {
     for i in 0..8 {
