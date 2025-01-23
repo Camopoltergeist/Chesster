@@ -26,7 +26,7 @@ pub fn start_ui() {
 
 	let board = Board::default();
 
-	// br.set_bitboard_overlay(board.kings.0);
+	br.set_board(Some(&board));
 
 	while !rl.window_should_close() {
 		let mut draw_handle = rl.begin_drawing(&thread);
