@@ -50,7 +50,7 @@ impl BoardRenderer {
     }
 
     fn draw_piece(&self, draw_handle: &mut RaylibDrawHandle, piece_texture: PieceTexture, column: i32, rank: i32) {
-        let pos = self.get_tile_pixel_pos(rank, column);
+        let pos = self.get_tile_pixel_pos(column, rank);
         let tile_size = self.tile_size();
 
         let x = pos.0;
@@ -91,13 +91,32 @@ impl BoardRenderer {
         self.draw_tiles(draw_handle);
         self.draw_ranks(draw_handle);
         self.draw_columns(draw_handle);
-        self.draw_piece(draw_handle, PieceTexture::new(Player::Black, crate::piece::Piece::Pawn), 1, 1);
+        self.draw_board_pieces(draw_handle);
 
         self.draw_bitboard_overlay(draw_handle);
     }
 
-    fn draw_board_pieces(&self, draw_handle: &mut RaylibDrawHandle) {
+    pub fn set_board(&mut self, board: Option<&Board>) {
+        self.board = board.cloned();
+    }
 
+    fn draw_board_pieces(&self, draw_handle: &mut RaylibDrawHandle) {
+        if let None = self.board {
+            return;
+        }
+
+        let board = self.board.as_ref().unwrap();
+
+        for bit_offset in 0..64 {
+            let tile_pos = Bitboard::bit_offset_to_coordinates(bit_offset);
+
+            if board.white_pieces.check_bit(bit_offset as u32) {
+                self.draw_piece(draw_handle, PieceTexture::new(Player::White, crate::piece::Piece::Pawn), tile_pos.0, tile_pos.1);
+            }
+            else if board.black_pieces.check_bit(bit_offset as u32) {
+                self.draw_piece(draw_handle, PieceTexture::new(Player::Black, crate::piece::Piece::Pawn), tile_pos.0, tile_pos.1);
+            }
+        }
     }
 
     fn draw_tiles(&self, draw_handle: &mut RaylibDrawHandle) {
