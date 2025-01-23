@@ -90,7 +90,7 @@ impl BoardRenderer {
         self.player = player;
     }
 
-    pub fn draw_board(&self, draw_handle: &mut RaylibDrawHandle) {
+    pub fn draw(&self, draw_handle: &mut RaylibDrawHandle) {
         self.draw_tiles(draw_handle);
         self.draw_ranks(draw_handle);
         self.draw_columns(draw_handle);
