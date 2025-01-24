@@ -113,21 +113,39 @@ impl Board {
         Some((player, piece))
     }
 
-    pub fn get_player_bitboard(&self, player: Player) -> Bitboard {
+    pub fn get_player_bitboard(&self, player: Player) -> &Bitboard {
         match player {
-            Player::White => self.white_pieces,
-            Player::Black => self.black_pieces
+            Player::White => &self.white_pieces,
+            Player::Black => &self.black_pieces
         }
     }
 
-    pub fn get_piece_bitboard(&self, piece: Piece) -> Bitboard {
+    pub fn get_player_bitboard_mut(&mut self, player: Player) -> &mut Bitboard {
+        match player {
+            Player::White => &mut self.white_pieces,
+            Player::Black => &mut self.black_pieces
+        }
+    }
+
+    pub fn get_piece_bitboard(&self, piece: Piece) -> &Bitboard {
         match piece {
-            Piece::Pawn => self.pawns,
-            Piece::Rook => self.rooks,
-            Piece::Knight => self.knights,
-            Piece::Bishop => self.bishops,
-            Piece::Queen => self.kings,
-            Piece::King => self.kings
+            Piece::Pawn => &self.pawns,
+            Piece::Rook => &self.rooks,
+            Piece::Knight => &self.knights,
+            Piece::Bishop => &self.bishops,
+            Piece::Queen => &self.kings,
+            Piece::King => &self.kings
+        }
+    }
+
+    pub fn get_piece_bitboard_mut(&mut self, piece: Piece) -> &mut Bitboard {
+        match piece {
+            Piece::Pawn => &mut self.pawns,
+            Piece::Rook => &mut self.rooks,
+            Piece::Knight => &mut self.knights,
+            Piece::Bishop => &mut self.bishops,
+            Piece::Queen => &mut self.queens,
+            Piece::King => &mut self.kings
         }
     }
 
@@ -146,12 +164,17 @@ impl Board {
     pub fn set_piece_to_offset(&mut self, player: Player, piece: Piece, bit_offset: u32) {
         self.remove_piece_from_offset(bit_offset);
 
-        self.get_player_bitboard(player).set_bit(bit_offset);
-        self.get_piece_bitboard(piece).set_bit(bit_offset);        
+        self.get_player_bitboard_mut(player).set_bit(bit_offset);
+        self.get_piece_bitboard_mut(piece).set_bit(bit_offset);
     }
 
     pub fn get_piece(&self, column: u32, rank: u32) -> Option<(Player, Piece)> {
         let bit_offset = Bitboard::coordinates_to_bit_offset(column, rank);
         return self.get_piece_from_offset(bit_offset);
+    }
+
+    pub fn set_piece(&mut self, player: Player, piece: Piece, column: u32, rank: u32) {
+        let bit_offset = Bitboard::coordinates_to_bit_offset(column, rank);
+        self.set_piece_to_offset(player, piece, bit_offset);
     }
 }
