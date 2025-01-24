@@ -112,4 +112,9 @@ impl Board {
 
         Some((player, piece))
     }
+
+    pub fn get_piece(&self, column: u32, rank: u32) -> Option<(Player, Piece)> {
+        let bit_offset = Bitboard::coordinates_to_bit_offset(column, rank);
+        return self.get_piece_from_offset(bit_offset);
+    }
 }

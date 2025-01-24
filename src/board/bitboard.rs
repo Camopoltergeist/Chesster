@@ -52,6 +52,10 @@ impl Bitboard {
         return (column, rank);
     }
 
+    pub fn coordinates_to_bit_offset(column: u32, rank: u32) -> u32 {
+        column + rank * 8
+    }
+
     pub fn get_rank_mask(rank: i32) -> Bitboard {
         //A bitboard that goes through the first rank, then moved by column
         let rank_mask = 0xff << rank * 8;
