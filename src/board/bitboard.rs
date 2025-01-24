@@ -74,8 +74,7 @@ impl Bitboard {
         if diff < 0 {
             cover_mask = u64::MAX << (-diff * 8);
             shifted_mask = initial_mask >> -diff;
-        }
-        else {
+        } else {
             cover_mask = u64::MAX >> (diff * 8);
             shifted_mask = initial_mask << diff;
         }
@@ -94,10 +93,9 @@ impl Bitboard {
         let cover_mask: u64;
 
         if sum < 7 {
-            cover_mask = u64::MAX >> ((7-sum) * 9);
-            shifted_mask = initial_mask >> (7-sum);
-        }
-        else {
+            cover_mask = u64::MAX >> ((7 - sum) * 9);
+            shifted_mask = initial_mask >> (7 - sum);
+        } else {
             cover_mask = u64::MAX << ((sum - 7) * 9);
             shifted_mask = initial_mask << (sum - 7);
         }
@@ -106,25 +104,4 @@ impl Bitboard {
 
         Bitboard(des_mask)
     }
-
-    // "\" -direction
-    // pub fn get_diagonal_mask_des (column: i32, rank: i32) -> Bitboard {
-    //     //Starts with a bitboard going from a7 to h1 diagonally
-    //     //This should be returned when col + rank == 7
-    //     let mut des_mask: u64 = 0x102040810204080;
-
-    //     if rank + column > 7 {
-    //         for _ in 0..(rank + column - 7) {
-    //             des_mask &= des_mask - 1;
-    //             des_mask <<= 1;
-    //         }
-    //     } else if rank + column < 7 {
-    //         for _ in 0..(7 - rank + column) {
-    //             des_mask ^= 1 << (63 - des_mask.leading_zeros());
-    //             des_mask >>= 1;
-    //         }
-    //     }
-
-        // Bitboard(des_mask)
-    // }
 }
