@@ -106,6 +106,37 @@ impl Bitboard {
 
         Bitboard(des_mask)
     }
+
+    pub fn get_knight_mask(column: i32, rank: i32) -> Bitboard {
+        // All possible knight directions from its place
+        let moves: [(i32, i32); 8] = [
+            (2, 1),
+            (2, -1),
+            (-2, 1),
+            (-2, -1),
+            (1, 2),
+            (1, -2),
+            (-1, 2),
+            (-1, -2),
+        ];
+
+        let mut knight_mask: u64 = 0;
+
+        // Iterate through directions
+        for (x, y) in moves {
+            let new_column = column + x;
+            let new_rank = rank + y;
+
+            // Check if the move is within the board
+            if (0..8).contains(&new_column) && (0..8).contains(&new_rank) {
+                // Calculate the bit index for the new position if it is, and add it to the mask
+                let offset = new_rank * 8 + new_column;
+                knight_mask |= 1 << offset;
+            }
+        }
+
+        Bitboard(knight_mask)
+    }
 }
 
 impl From<u64> for Bitboard {
