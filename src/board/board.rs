@@ -1,5 +1,5 @@
 use super::bitboard::Bitboard;
-use crate::{piece::Piece, player::{self, Player}};
+use crate::{piece::Piece, player::Player};
 
 #[derive(Clone)]
 pub struct Board {
@@ -69,26 +69,13 @@ impl Board {
 
     pub fn move_piece(
         &mut self,
-        player: player::Player,
+        player: Player,
         piece: Piece,
         from_offset: u32,
         to_offset: u32,
     ) {
-        //Checks the player's color and edits both that color's and a piece's bitboard
-        //Every piece's possible move mask(s) probably need to also be implemented l8r
-        match piece {
-            Piece::Pawn => Bitboard::move_bit(&mut self.pawns, from_offset, to_offset),
-            Piece::Rook => Bitboard::move_bit(&mut self.rooks, from_offset, to_offset),
-            Piece::Knight => Bitboard::move_bit(&mut self.knights, from_offset, to_offset),
-            Piece::Bishop => Bitboard::move_bit(&mut self.bishops, from_offset, to_offset),
-            Piece::Queen => Bitboard::move_bit(&mut self.queens, from_offset, to_offset),
-            Piece::King => Bitboard::move_bit(&mut self.kings, from_offset, to_offset),
-        }
-
-        match player {
-            Player::White => Bitboard::move_bit(&mut self.white_pieces, from_offset, to_offset),
-            Player::Black => Bitboard::move_bit(&mut self.black_pieces, from_offset, to_offset),
-        }
+        self.get_piece_bitboard_mut(piece).move_bit(from_offset, to_offset);
+        self.get_player_bitboard_mut(player).move_bit(from_offset, to_offset);
     }
 
     pub fn get_piece_from_offset(&self, bit_offset: u32) -> Option<(Player, Piece)> {
