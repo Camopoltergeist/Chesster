@@ -22,7 +22,8 @@ pub fn start_ui() {
 
 	let mut br = BoardRenderer::new(0, 0, WINDOW_HEIGHT, 32, crate::player::Player::White, piece_textures);
 
-	let board = Board::default();
+	let mut board = Board::default();
+	board.set_piece_to_offset(crate::player::Player::White, crate::piece::Piece::Queen, 0);
 
 	br.set_board(Some(&board));
 
