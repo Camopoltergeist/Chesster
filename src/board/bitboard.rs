@@ -33,6 +33,18 @@ impl Bitboard {
         (*self & bitmask) != 0
     }
 
+    pub fn set_bit(&mut self, bit_offset: u32) {
+        let mask = 1 << bit_offset;
+
+        self.0 |= mask;
+    }
+
+    pub fn unset_bit(&mut self, bit_offset: u32) {
+        let mask = !(1 << bit_offset);
+
+        self.0 &= mask;
+    }
+
     pub fn move_bit(&mut self, from_offset: u32, to_offset: u32) {
         //The basis of moving a bit: checks if there is a 1 there, makes it a 0, and makes another field a 1.
         if self.check_bit(from_offset) {
