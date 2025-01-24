@@ -2,6 +2,7 @@ use super::bitboard::Bitboard;
 
 pub static mut ROOK_MASKS: Vec<Bitboard> = Vec::new();
 pub static mut BISHOP_MASKS: Vec<Bitboard> = Vec::new();
+pub static mut KNIGHT_MASKS: Vec<Bitboard> = Vec::new();
 
 pub fn generate_rook_masks() {
     for i in 0..8 {
@@ -29,6 +30,18 @@ pub fn generate_bishop_masks() {
 
             unsafe {
                 BISHOP_MASKS.push(Bitboard(combined));
+            }
+        }
+    }
+}
+
+pub fn generate_knight_masks() {
+    for i in 0..8 {
+        for j in 0..8 {
+            let knight_mask = Bitboard::get_knight_mask(j, i);
+
+            unsafe {
+                KNIGHT_MASKS.push(knight_mask);
             }
         }
     }
