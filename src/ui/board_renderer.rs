@@ -30,7 +30,7 @@ pub struct BoardRenderer {
     font_size: i32,
 
     /// Bitboard used to draw overlay. If None, no overlay will be drawn.
-    bitboard: Option<u64>,
+    bitboard: Option<Bitboard>,
 
     /// Color used to draw ON bits on the overlay 
     bitboard_on_color: Color,
@@ -64,7 +64,7 @@ impl BoardRenderer {
     }
 
     /// Draws a specified piece on the specified tile
-    fn draw_piece(&self, draw_handle: &mut RaylibDrawHandle, piece_texture: PieceTexture, column: i32, rank: i32) {
+    fn draw_piece(&self, draw_handle: &mut RaylibDrawHandle, piece_texture: PieceTexture, column: u32, rank: u32) {
         let pos = self.get_tile_pixel_pos(column, rank);
         let tile_size = self.tile_size();
 
@@ -79,7 +79,7 @@ impl BoardRenderer {
     }
 
     /// Sets bitboard used to draw overlay. None disables overlay.
-    pub fn set_bitboard_overlay(&mut self, bitboard: Option<u64>) {
+    pub fn set_bitboard_overlay(&mut self, bitboard: Option<Bitboard>) {
         self.bitboard = bitboard;
     }
 
@@ -87,7 +87,7 @@ impl BoardRenderer {
     fn draw_bitboard_overlay(&self, draw_handle: &mut RaylibDrawHandle) {
         if let Some(bitboard) = self.bitboard {
             for bit_offset in 0..64 {
-                let bit = (bitboard & 1 << bit_offset) != 0;
+                let bit = bitboard.check_bit(bit_offset);
                 let color = if bit { self.bitboard_on_color } else { self.bitboard_off_color };
     
                 let (column, rank) = Bitboard::bit_offset_to_coordinates(bit_offset);
@@ -133,12 +133,12 @@ impl BoardRenderer {
         let board = self.board.as_ref().unwrap();
 
         for bit_offset in 0..64 {
-            let tile_pos = Bitboard::bit_offset_to_coordinates(bit_offset);
+            let (tile_x, tile_y) = Bitboard::bit_offset_to_coordinates(bit_offset);
 
             let piece_opt = board.get_piece(bit_offset as u32);
 
             if let Some((player, piece)) = piece_opt {
-                self.draw_piece(draw_handle, PieceTexture::new(player, piece), tile_pos.0, tile_pos.1);
+                self.draw_piece(draw_handle, PieceTexture::new(player, piece), tile_x, tile_y);
             }
         }
     }
@@ -215,11 +215,11 @@ impl BoardRenderer {
         available_area / 8
     }
 
-    fn get_tile_pixel_pos(&self, column: i32, rank: i32) -> (i32, i32) {
+    fn get_tile_pixel_pos(&self, column: u32, rank: u32) -> (i32, i32) {
         let flipped = self.player == Player::Black;
 
-        let tile_x = if flipped { 7 - column } else { column };
-        let tile_y = if flipped { rank } else { 7 - rank };
+        let tile_x = (if flipped { 7 - column } else { column } as i32);
+        let tile_y = (if flipped { rank } else { 7 - rank } as i32);
         
         let tile_size = self.tile_size();
 

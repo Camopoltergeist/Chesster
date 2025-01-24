@@ -20,8 +20,6 @@ pub fn start_ui() {
 
 	let piece_textures = load_piece_textures(&mut rl, &thread);
 
-	println!("{:?}", piece_textures);
-
 	let mut br = BoardRenderer::new(0, 0, WINDOW_HEIGHT, 32, crate::player::Player::White, piece_textures);
 
 	let board = Board::default();
