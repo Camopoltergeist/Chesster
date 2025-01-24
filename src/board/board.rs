@@ -160,6 +160,11 @@ impl Board {
         return self.get_piece_from_offset(bit_offset);
     }
 
+    pub fn remove_piece(&mut self, column: u32, rank: u32) {
+        let bit_offset = Bitboard::coordinates_to_bit_offset(column, rank);
+        self.remove_piece_from_offset(bit_offset);
+    }
+
     pub fn set_piece(&mut self, player: Player, piece: Piece, column: u32, rank: u32) {
         let bit_offset = Bitboard::coordinates_to_bit_offset(column, rank);
         self.set_piece_to_offset(player, piece, bit_offset);
