@@ -59,4 +59,28 @@ impl Bitboard {
         let column_mask = 0x101010101010101 << column;
         Bitboard(column_mask)
     }
+
+    // "/"-direction
+    pub fn get_diagonal_mask_asc(column: i32, rank: i32) -> Bitboard {
+
+        //Makes a bitboard from a1 to h8, going through the board diagonally
+        //This sould be returned when rank == column
+        let mut asc_mask: u64 = 0x8040201008040201;
+
+        if rank > column {
+            //Removes the least significant bit and shifts the board to the right (because bb is mirrored)
+            for _ in 0..rank - column {
+                asc_mask &= asc_mask - 1;
+                asc_mask >>= 1;
+        }
+        } else {
+            //Does the same to MSB and the other way around
+            for _ in 0..column - rank {
+                asc_mask ^= 1 << (63 - asc_mask.leading_zeros());
+                asc_mask <<= 1;
+            };
+        };
+
+        Bitboard(asc_mask)
+    }
 }
