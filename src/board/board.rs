@@ -91,7 +91,7 @@ impl Board {
         }
     }
 
-    pub fn get_piece(&self, bit_offset: u32) -> Option<(Player, Piece)> {
+    pub fn get_piece_from_offset(&self, bit_offset: u32) -> Option<(Player, Piece)> {
         let player = if Bitboard::check_bit(&self.white_pieces, bit_offset) {
             Player::White
         } else if Bitboard::check_bit(&self.black_pieces, bit_offset) {

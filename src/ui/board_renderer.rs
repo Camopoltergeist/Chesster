@@ -135,7 +135,7 @@ impl BoardRenderer {
         for bit_offset in 0..64 {
             let (tile_x, tile_y) = Bitboard::bit_offset_to_coordinates(bit_offset);
 
-            let piece_opt = board.get_piece(bit_offset as u32);
+            let piece_opt = board.get_piece_from_offset(bit_offset as u32);
 
             if let Some((player, piece)) = piece_opt {
                 self.draw_piece(draw_handle, PieceTexture::new(player, piece), tile_x, tile_y);
