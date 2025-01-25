@@ -169,6 +169,12 @@ impl Board {
         let bit_offset = Bitboard::coordinates_to_bit_offset(column, rank);
         self.set_piece_to_offset(player, piece, bit_offset);
     }
+
+    pub fn get_piece_debug(&self, tile: &str) -> Option<(Player, Piece)> {
+        let (column, rank) = Bitboard::tile_str_to_coordinates(tile).expect("invalid tile str passed");
+
+        self.get_piece(column, rank)
+    }
 }
 
 #[cfg(test)]
