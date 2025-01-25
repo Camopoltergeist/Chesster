@@ -5,7 +5,7 @@ use board_renderer::BoardRenderer;
 use raylib::{color::Color, ffi::KeyboardKey, prelude::RaylibDraw};
 use texture::load_piece_textures;
 
-use crate::board::board::Board;
+use crate::{board::board::Board, piece::Piece, player::Player};
 
 const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;
@@ -20,10 +20,10 @@ pub fn start_ui() {
 
 	let piece_textures = load_piece_textures(&mut rl, &thread);
 
-	let mut br = BoardRenderer::new(0, 0, WINDOW_HEIGHT, 32, crate::player::Player::White, piece_textures);
+	let mut br = BoardRenderer::new(0, 0, WINDOW_HEIGHT, 32, Player::White, piece_textures);
 
 	let mut board = Board::default();
-	board.set_piece_to_offset(crate::player::Player::White, crate::piece::Piece::Queen, 0);
+	board.set_piece_to_offset(Player::White, Piece::Queen, 0);
 
 	br.set_board(Some(&board));
 
