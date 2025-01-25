@@ -170,3 +170,15 @@ impl Board {
         self.set_piece_to_offset(player, piece, bit_offset);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::Board;
+
+    #[test]
+    fn starting_position_has_no_overlaps() {
+        let board = Board::default();
+
+        assert!(board.validate());
+    }
+}
