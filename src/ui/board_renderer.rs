@@ -63,6 +63,10 @@ impl BoardRenderer {
         }
     }
 
+    pub fn set_size(&mut self, size: i32) {
+        self.size = size;
+    }
+
     /// Draws a specified piece on the specified tile
     fn draw_piece(&self, draw_handle: &mut RaylibDrawHandle, piece_texture: PieceTexture, column: u32, rank: u32) {
         let pos = self.get_tile_pixel_pos(column, rank);

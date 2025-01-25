@@ -41,6 +41,9 @@ pub fn start_ui() {
 			just_pressed = false;
 		}
 
+		let min_dimension = i32::min(rl.get_screen_width(), rl.get_screen_height());
+		br.set_size(min_dimension);
+
 		let mut draw_handle = rl.begin_drawing(&thread);
 		draw_handle.clear_background(Color { r: 0, g: 65, b: 119, a: 255 });
 		br.draw(&mut draw_handle);
