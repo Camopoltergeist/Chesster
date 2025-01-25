@@ -68,6 +68,45 @@ impl Bitboard {
         column + rank * 8
     }
 
+    /// Converts a tile &str to coordinates. For example b1 => (1, 0)
+    /// Used for debugging purposes only. This function is kinda slow.
+    pub fn tile_str_to_coordinates(tile: &str) -> Result<(u32, u32), ()> {
+        if tile.len() != 2 {
+            return Err(());
+        };
+
+        let tile = tile.to_ascii_lowercase();
+
+        let column_char = tile.chars().nth(0).unwrap();
+        let rank_char = tile.chars().nth(1).unwrap();
+
+        let column = match column_char {
+            'a' => 0,
+            'b' => 1,
+            'c' => 2,
+            'd' => 3,
+            'e' => 4,
+            'f' => 5,
+            'g' => 6,
+            'h' => 7,
+            _ => return Err(())
+        };
+
+        let rank = match rank_char {
+            '1' => 0,
+            '2' => 1,
+            '3' => 2,
+            '4' => 3,
+            '5' => 4,
+            '6' => 5,
+            '7' => 6,
+            '8' => 7,
+            _ => return Err(())
+        };
+
+        Ok((column, rank))
+    }
+
     pub fn get_rank_mask(rank: i32) -> Bitboard {
         //A bitboard that goes through the first rank, then moved by column
         let rank_mask = 0xff << rank * 8;
