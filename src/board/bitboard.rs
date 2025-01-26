@@ -91,7 +91,7 @@ impl Bitboard {
             'f' => 5,
             'g' => 6,
             'h' => 7,
-            _ => return Err(())
+            _ => return Err(()),
         };
 
         let rank = match rank_char {
@@ -103,7 +103,7 @@ impl Bitboard {
             '6' => 5,
             '7' => 6,
             '8' => 7,
-            _ => return Err(())
+            _ => return Err(()),
         };
 
         Ok((column, rank))
@@ -195,11 +195,12 @@ impl Bitboard {
         Bitboard(knight_mask)
     }
 
-    pub fn get_king_mask (column: i32, rank: i32) -> Bitboard {
-        //A square-shaped mask in hexXx
+    pub fn get_king_mask(column: i32, rank: i32) -> Bitboard {
+        //A square-shaped mask in hexXx, initial offset 9
         let mut king_mask: u64 = 0x70507;
-        let offset_diff = 9 - (rank * 8 + column); 
+        let offset_diff = 9 - (rank * 8 + column);
 
+        //Make a mask in the shape of the edge you're on and cut it out of the mask
         if column == 0 || column == 7 {
             let cover_mask = 0x10101 << column / 3;
             king_mask &= !cover_mask;
