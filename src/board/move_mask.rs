@@ -6,6 +6,14 @@ pub static mut KNIGHT_MASKS: Vec<Bitboard> = Vec::new();
 pub static mut KING_MASKS: Vec<Bitboard> = Vec::new();
 pub static mut QUEEN_MASKS: Vec<Bitboard> = Vec::new();
 
+pub fn generate_masks() {
+    generate_rook_masks();
+    generate_bishop_masks();
+    generate_knight_masks();
+    generate_king_masks();
+    generate_queen_masks();
+}
+
 pub fn generate_rook_masks() {
     for i in 0..8 {
         let rank_mask = Bitboard::get_rank_mask(i);
