@@ -64,7 +64,7 @@ impl Bitboard {
         return (column, rank);
     }
 
-    pub fn coordinates_to_bit_offset(column: u32, rank: u32) -> u32 {
+    pub const fn coordinates_to_bit_offset(column: u32, rank: u32) -> u32 {
         column + rank * 8
     }
 
@@ -120,7 +120,7 @@ impl Bitboard {
     }
 
     // "/"-direction
-    pub fn get_diagonal_mask_asc(column: i32, rank: i32) -> Bitboard {
+    pub const fn get_diagonal_mask_asc(column: i32, rank: i32) -> Bitboard {
         let diff = column - rank;
 
         let initial_mask: u64 = 0x8040201008040201;
@@ -141,7 +141,7 @@ impl Bitboard {
         Bitboard(asc_mask)
     }
 
-    pub fn get_diagonal_mask_des(column: i32, rank: i32) -> Bitboard {
+    pub const fn get_diagonal_mask_des(column: i32, rank: i32) -> Bitboard {
         let sum = column + rank;
 
         let initial_mask: u64 = 0x102040810204080;
