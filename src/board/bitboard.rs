@@ -1,7 +1,5 @@
 use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Shl, Shr};
 
-use raylib::init;
-
 #[derive(Clone, Copy)]
 
 pub struct Bitboard(pub u64);
