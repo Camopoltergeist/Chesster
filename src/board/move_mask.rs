@@ -22,15 +22,15 @@ pub fn generate_masks() {
 pub const fn generate_rook_masks() -> [Bitboard; 64] {
     let mut masks = [Bitboard(0); 64];
 
-    const_for!(i in 0..8 => {
-        let rank_mask = Bitboard::get_rank_mask(i);
+    const_for!(rank in 0..8 => {
+        let rank_mask = Bitboard::get_rank_mask(rank);
 
-        const_for!(j in 0..8 => {
-            let column_mask = Bitboard::get_column_mask(j);
+        const_for!(column in 0..8 => {
+            let column_mask = Bitboard::get_column_mask(column);
 
             let combined = column_mask.0 ^ rank_mask.0;
 
-            let index = j + i * 8;
+            let index = Bitboard::coordinates_to_bit_offset(column as u32, rank as u32);
 
             masks[index as usize] = Bitboard(combined);
         })
