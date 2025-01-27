@@ -1,4 +1,4 @@
-use super::{bitboard::Bitboard, board::Board};
+use super::bitboard::Bitboard;
 
 use const_for::const_for;
 
@@ -6,7 +6,7 @@ pub const ROOK_MASKS: [Bitboard; 64] = generate_rook_masks();
 pub const BISHOP_MASKS: [Bitboard; 64] = generate_bishop_masks();
 pub const KNIGHT_MASKS: [Bitboard; 64] = generate_knight_masks();
 pub const KING_MASKS: [Bitboard; 64] = generate_king_masks();
-pub static mut QUEEN_MASKS: Vec<Bitboard> = Vec::new();
+pub const QUEEN_MASKS: [Bitboard; 64] = generate_queen_masks();
 pub static mut WHITE_PAWN_MASKS: Vec<Bitboard> = Vec::new();
 pub static mut BLACK_PAWN_MASKS: Vec<Bitboard> = Vec::new();
 
@@ -86,16 +86,19 @@ pub const fn generate_king_masks() -> [Bitboard; 64] {
     masks
 }
 
-pub fn generate_queen_masks() {
-    unsafe {
-        for i in 0..ROOK_MASKS.len() {
-            let rook_mask = ROOK_MASKS[i];
-            let bishop_mask = BISHOP_MASKS[i];
+pub const fn generate_queen_masks() -> [Bitboard; 64] {
+    let mut masks = [Bitboard(0); 64];
 
-            let combined = rook_mask | bishop_mask;
-            QUEEN_MASKS.push(combined);
-        }
-    }
+    const_for!(i in 0..ROOK_MASKS.len() => {
+        let rook_mask = ROOK_MASKS[i];
+        let bishop_mask = BISHOP_MASKS[i];
+
+        let combined = rook_mask.0 | bishop_mask.0;
+
+        masks[i] = Bitboard(combined);
+    });
+
+    masks
 }
 
 pub fn generate_pawn_masks() {
