@@ -216,6 +216,34 @@ impl Bitboard {
 
         Bitboard(king_mask)
     }
+
+    pub fn get_white_pawn_mask(column: i32, rank: i32) -> Bitboard {
+        if rank == 7 {
+            return Bitboard(0);
+        }
+
+        let mut pawn_mask: u64 = 1 << ((rank + 1) * 8 + column);
+
+        if rank == 1 {
+            pawn_mask = pawn_mask << 8 | pawn_mask;
+        }
+
+        Bitboard(pawn_mask)
+    }
+
+    pub fn get_black_pawn_mask(column: i32, rank: i32) -> Bitboard {
+        if rank == 0 {
+            return Bitboard(0);
+        }
+
+        let mut pawn_mask: u64 = 1 << ((rank - 1) * 8 + column);
+
+        if rank == 6 {
+            pawn_mask = pawn_mask >> 8 | pawn_mask;
+        }
+
+        Bitboard(pawn_mask)
+    }
 }
 
 impl From<u64> for Bitboard {
