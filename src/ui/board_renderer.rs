@@ -42,6 +42,9 @@ pub struct BoardRenderer {
 
     /// Board state used to draw pieces
     board: Option<Board>,
+
+    /// Tile which is highlighted separately
+    highlighted_tile: Option<(u32, u32)>,
 }
 
 impl BoardRenderer {
@@ -59,7 +62,8 @@ impl BoardRenderer {
             bitboard_on_color: Color { r: 255, g: 0, b: 0, a: 127 },
             bitboard_off_color: Color { r: 0, g: 0, b: 255, a: 127 },
             textures: piece_textures,
-            board: None
+            board: None,
+            highlighted_tile: None
         }
     }
 
@@ -114,9 +118,14 @@ impl BoardRenderer {
         self.player = self.player.opposite();
     }
 
+    pub fn set_highlighted_tile(&mut self, tile: Option<(u32, u32)>) {
+        self.highlighted_tile = tile;
+    }
+
     /// Draws the board on screen
     pub fn draw(&self, draw_handle: &mut RaylibDrawHandle) {
         self.draw_tiles(draw_handle);
+        self.draw_highlighted_tile(draw_handle);
         self.draw_ranks(draw_handle);
         self.draw_columns(draw_handle);
         self.draw_board_pieces(draw_handle);
@@ -155,9 +164,18 @@ impl BoardRenderer {
                 let color = if (i + j) % 2 == 0 { self.dark_color } else { self.light_color };
 
                 let pos = self.get_tile_pixel_pos(i, j);
-
                 draw_handle.draw_rectangle(pos.0, pos.1, tile_size, tile_size, color);
             }
+        }
+    }
+
+    fn draw_highlighted_tile(&self, draw_handle: &mut RaylibDrawHandle) {
+        let tile_size = self.tile_size();
+
+        if let Some(highlight) = self.highlighted_tile {
+            let pos = self.get_tile_pixel_pos(highlight.0, highlight.1);
+
+            draw_handle.draw_rectangle(pos.0, pos.1, tile_size, tile_size, Color::GREEN);
         }
     }
 

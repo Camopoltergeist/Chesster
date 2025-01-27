@@ -26,6 +26,9 @@ pub fn start_ui() {
 
 	br.set_board(Some(&board));
 
+	let selected_tile: Option<(u32, u32)> = Some((0, 0));
+	br.set_highlighted_tile(selected_tile);
+
 	while !rl.window_should_close() {
 		if rl.is_key_pressed(KeyboardKey::KEY_SPACE) {
 			br.swap_player();
