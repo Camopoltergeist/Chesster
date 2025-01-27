@@ -5,8 +5,11 @@ pub static mut BISHOP_MASKS: Vec<Bitboard> = Vec::new();
 pub static mut KNIGHT_MASKS: Vec<Bitboard> = Vec::new();
 pub static mut KING_MASKS: Vec<Bitboard> = Vec::new();
 pub static mut QUEEN_MASKS: Vec<Bitboard> = Vec::new();
+pub static mut WHITE_PAWN_MASKS: Vec<Bitboard> = Vec::new();
+pub static mut BLACK_PAWN_MASKS: Vec<Bitboard> = Vec::new();
 
 pub fn generate_masks() {
+    generate_pawn_masks();
     generate_rook_masks();
     generate_bishop_masks();
     generate_knight_masks();
@@ -71,13 +74,27 @@ pub fn generate_king_masks() {
 
 pub fn generate_queen_masks() {
     unsafe {
-    for i in 0..ROOK_MASKS.len() {
-        let rook_mask = ROOK_MASKS[i];
-        let bishop_mask = BISHOP_MASKS[i];
+        for i in 0..ROOK_MASKS.len() {
+            let rook_mask = ROOK_MASKS[i];
+            let bishop_mask = BISHOP_MASKS[i];
 
-        let combined = rook_mask | bishop_mask;
-        QUEEN_MASKS.push(combined);
+            let combined = rook_mask | bishop_mask;
+            QUEEN_MASKS.push(combined);
         }
     }
 }
 
+pub fn generate_pawn_masks() {
+    for i in 0..8 {
+        for j in 0..8 {
+            let white_pawn = Bitboard::get_white_pawn_mask(j, i);
+            let black_pawn = Bitboard::get_black_pawn_mask(j, i);
+
+            unsafe {
+                WHITE_PAWN_MASKS.push(white_pawn);
+                BLACK_PAWN_MASKS.push(black_pawn);
+            }
+
+        }
+    }
+}
