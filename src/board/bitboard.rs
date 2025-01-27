@@ -1,5 +1,7 @@
 use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Shl, Shr};
 
+use const_for::const_for;
+
 #[derive(Clone, Copy)]
 
 pub struct Bitboard(pub u64);
@@ -162,7 +164,7 @@ impl Bitboard {
         Bitboard(des_mask)
     }
 
-    pub fn get_knight_mask(column: i32, rank: i32) -> Bitboard {
+    pub const fn get_knight_mask(column: u32, rank: u32) -> Bitboard {
         // All possible knight directions from its place
         let moves: [(i32, i32); 8] = [
             (2, 1),
@@ -178,17 +180,23 @@ impl Bitboard {
         let mut knight_mask: u64 = 0;
 
         // Iterate through directions
-        for (x, y) in moves {
-            let new_column = column + x;
-            let new_rank = rank + y;
+        const_for!(i in 0..moves.len() => {
+            let (x, y) = moves[i];
+            let new_column = column as i32 + x;
+            let new_rank = rank as i32 + y;
 
-            // Check if the move is within the board
-            if (0..8).contains(&new_column) && (0..8).contains(&new_rank) {
-                // Calculate the bit index for the new position if it is, and add it to the mask
-                let offset = new_rank * 8 + new_column;
-                knight_mask |= 1 << offset;
+            if new_column < 0 || new_column > 7 {
+                continue;
             }
-        }
+
+            if new_rank < 0 || new_rank > 7 {
+                continue;
+            }
+
+            // Calculate the bit index for the new position if it is, and add it to the mask
+            let offset = new_rank * 8 + new_column;
+            knight_mask |= 1 << offset;
+        });
 
         Bitboard(knight_mask)
     }
