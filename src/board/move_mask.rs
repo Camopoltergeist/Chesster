@@ -7,17 +7,8 @@ pub const BISHOP_MASKS: [Bitboard; 64] = generate_bishop_masks();
 pub const KNIGHT_MASKS: [Bitboard; 64] = generate_knight_masks();
 pub const KING_MASKS: [Bitboard; 64] = generate_king_masks();
 pub const QUEEN_MASKS: [Bitboard; 64] = generate_queen_masks();
-pub static mut WHITE_PAWN_MASKS: Vec<Bitboard> = Vec::new();
-pub static mut BLACK_PAWN_MASKS: Vec<Bitboard> = Vec::new();
-
-pub fn generate_masks() {
-    generate_pawn_masks();
-    generate_rook_masks();
-    generate_bishop_masks();
-    generate_knight_masks();
-    generate_king_masks();
-    generate_queen_masks();
-}
+pub const WHITE_PAWN_MASKS: [Bitboard; 64] = generate_white_pawn_masks();
+pub const BLACK_PAWN_MASKS: [Bitboard; 64] = generate_black_pawn_masks();
 
 pub const fn generate_rook_masks() -> [Bitboard; 64] {
     let mut masks = [Bitboard(0); 64];
@@ -101,17 +92,30 @@ pub const fn generate_queen_masks() -> [Bitboard; 64] {
     masks
 }
 
-pub fn generate_pawn_masks() {
-    for i in 0..8 {
-        for j in 0..8 {
-            let white_pawn = Bitboard::get_white_pawn_mask(j, i);
-            let black_pawn = Bitboard::get_black_pawn_mask(j, i);
+pub const fn generate_white_pawn_masks() -> [Bitboard; 64] {
+    let mut masks = [Bitboard(0); 64];
 
-            unsafe {
-                WHITE_PAWN_MASKS.push(white_pawn);
-                BLACK_PAWN_MASKS.push(black_pawn);
-            }
+    const_for!(rank in 0..8 => {
+        const_for!(column in 0..8 => {
+            let index = Bitboard::coordinates_to_bit_offset(column, rank);
 
-        }
-    }
+            masks[index as usize] = Bitboard::get_white_pawn_mask(column, rank);
+        });
+    });
+
+    masks
+}
+
+pub const fn generate_black_pawn_masks() -> [Bitboard; 64] {
+    let mut masks = [Bitboard(0); 64];
+
+    const_for!(rank in 0..8 => {
+        const_for!(column in 0..8 => {
+            let index = Bitboard::coordinates_to_bit_offset(column, rank);
+
+            masks[index as usize] = Bitboard::get_black_pawn_mask(column, rank);
+        });
+    });
+
+    masks
 }

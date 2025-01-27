@@ -225,7 +225,7 @@ impl Bitboard {
         Bitboard(king_mask)
     }
 
-    pub fn get_white_pawn_mask(column: u32, rank: u32) -> Bitboard {
+    pub const fn get_white_pawn_mask(column: u32, rank: u32) -> Bitboard {
         if rank == 7 {
             return Bitboard(0);
         }
@@ -239,7 +239,7 @@ impl Bitboard {
         Bitboard(pawn_mask)
     }
 
-    pub fn get_black_pawn_mask(column: u32, rank: u32) -> Bitboard {
+    pub const fn get_black_pawn_mask(column: u32, rank: u32) -> Bitboard {
         if rank == 0 {
             return Bitboard(0);
         }
