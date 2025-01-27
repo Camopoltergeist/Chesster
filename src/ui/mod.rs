@@ -5,7 +5,7 @@ use board_renderer::BoardRenderer;
 use raylib::{color::Color, ffi::KeyboardKey, prelude::RaylibDraw};
 use texture::load_piece_textures;
 
-use crate::{board::board::Board, piece::Piece, player::Player};
+use crate::{board::board::Board, player::Player};
 
 const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;
@@ -26,18 +26,9 @@ pub fn start_ui() {
 
 	br.set_board(Some(&board));
 
-	let mut just_pressed = false;
-
 	while !rl.window_should_close() {
-		if rl.is_key_down(KeyboardKey::KEY_SPACE) {
-			if !just_pressed {
-				br.swap_player();
-			}
-
-			just_pressed = true;
-		}
-		else {
-			just_pressed = false;
+		if rl.is_key_pressed(KeyboardKey::KEY_SPACE) {
+			br.swap_player();
 		}
 
 		let min_dimension = i32::min(rl.get_screen_width(), rl.get_screen_height());
