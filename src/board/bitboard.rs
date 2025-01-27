@@ -107,21 +107,21 @@ impl Bitboard {
         Ok((column, rank))
     }
 
-    pub const fn get_rank_mask(rank: i32) -> Bitboard {
+    pub const fn get_rank_mask(rank: u32) -> Bitboard {
         //A bitboard that goes through the first rank, then moved by column
         let rank_mask = 0xff << rank * 8;
         Bitboard(rank_mask)
     }
 
-    pub const fn get_column_mask(column: i32) -> Bitboard {
+    pub const fn get_column_mask(column: u32) -> Bitboard {
         //^The other way around: a bitboard going through the first column, then nudged left
         let column_mask = 0x101010101010101 << column;
         Bitboard(column_mask)
     }
 
     // "/"-direction
-    pub const fn get_diagonal_mask_asc(column: i32, rank: i32) -> Bitboard {
-        let diff = column - rank;
+    pub const fn get_diagonal_mask_asc(column: u32, rank: u32) -> Bitboard {
+        let diff = column as i32 - rank as i32;
 
         let initial_mask: u64 = 0x8040201008040201;
 
@@ -141,8 +141,8 @@ impl Bitboard {
         Bitboard(asc_mask)
     }
 
-    pub const fn get_diagonal_mask_des(column: i32, rank: i32) -> Bitboard {
-        let sum = column + rank;
+    pub const fn get_diagonal_mask_des(column: u32, rank: u32) -> Bitboard {
+        let sum = column as i32 + rank as i32;
 
         let initial_mask: u64 = 0x102040810204080;
 
@@ -193,10 +193,10 @@ impl Bitboard {
         Bitboard(knight_mask)
     }
 
-    pub fn get_king_mask(column: i32, rank: i32) -> Bitboard {
+    pub fn get_king_mask(column: u32, rank: u32) -> Bitboard {
         //A square-shaped mask in hexXx, initial offset 9
         let mut king_mask: u64 = 0x70507;
-        let offset_diff = 9 - (rank * 8 + column);
+        let offset_diff = 9 - (rank as i32 * 8 + column as i32);
 
         //Make a mask in the shape of the edge you're on and cut it out of the mask
         if column == 0 || column == 7 {
@@ -217,7 +217,7 @@ impl Bitboard {
         Bitboard(king_mask)
     }
 
-    pub fn get_white_pawn_mask(column: i32, rank: i32) -> Bitboard {
+    pub fn get_white_pawn_mask(column: u32, rank: u32) -> Bitboard {
         if rank == 7 {
             return Bitboard(0);
         }
@@ -231,7 +231,7 @@ impl Bitboard {
         Bitboard(pawn_mask)
     }
 
-    pub fn get_black_pawn_mask(column: i32, rank: i32) -> Bitboard {
+    pub fn get_black_pawn_mask(column: u32, rank: u32) -> Bitboard {
         if rank == 0 {
             return Bitboard(0);
         }
