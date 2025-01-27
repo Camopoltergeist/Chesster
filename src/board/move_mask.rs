@@ -5,7 +5,7 @@ use const_for::const_for;
 pub const ROOK_MASKS: [Bitboard; 64] = generate_rook_masks();
 pub const BISHOP_MASKS: [Bitboard; 64] = generate_bishop_masks();
 pub const KNIGHT_MASKS: [Bitboard; 64] = generate_knight_masks();
-pub static mut KING_MASKS: Vec<Bitboard> = Vec::new();
+pub const KING_MASKS: [Bitboard; 64] = generate_king_masks();
 pub static mut QUEEN_MASKS: Vec<Bitboard> = Vec::new();
 pub static mut WHITE_PAWN_MASKS: Vec<Bitboard> = Vec::new();
 pub static mut BLACK_PAWN_MASKS: Vec<Bitboard> = Vec::new();
@@ -72,16 +72,18 @@ pub const fn generate_knight_masks() -> [Bitboard; 64] {
     masks
 }
 
-pub fn generate_king_masks() {
-    for i in 0..8 {
-        for j in 0..8 {
-            let king_mask = Bitboard::get_king_mask(j, i);
+pub const fn generate_king_masks() -> [Bitboard; 64] {
+    let mut masks = [Bitboard(0); 64];
 
-            unsafe {
-                KING_MASKS.push(king_mask);
-            }
-        }
-    }
+    const_for!(rank in 0..8 => {
+        const_for!(column in 0..8 => {
+            let index = Bitboard::coordinates_to_bit_offset(column, rank);
+
+            masks[index as usize] = Bitboard::get_king_mask(column, rank);
+        });
+    });
+
+    masks
 }
 
 pub fn generate_queen_masks() {

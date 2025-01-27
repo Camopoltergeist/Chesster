@@ -201,7 +201,7 @@ impl Bitboard {
         Bitboard(knight_mask)
     }
 
-    pub fn get_king_mask(column: u32, rank: u32) -> Bitboard {
+    pub const fn get_king_mask(column: u32, rank: u32) -> Bitboard {
         //A square-shaped mask in hexXx, initial offset 9
         let mut king_mask: u64 = 0x70507;
         let offset_diff = 9 - (rank as i32 * 8 + column as i32);
