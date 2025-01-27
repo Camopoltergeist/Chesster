@@ -1,6 +1,8 @@
 use super::bitboard::Bitboard;
 
-pub static mut ROOK_MASKS: Vec<Bitboard> = Vec::new();
+use const_for::const_for;
+
+pub const ROOK_MASKS: [Bitboard; 64] = generate_rook_masks();
 pub static mut BISHOP_MASKS: Vec<Bitboard> = Vec::new();
 pub static mut KNIGHT_MASKS: Vec<Bitboard> = Vec::new();
 pub static mut KING_MASKS: Vec<Bitboard> = Vec::new();
@@ -17,20 +19,24 @@ pub fn generate_masks() {
     generate_queen_masks();
 }
 
-pub fn generate_rook_masks() {
-    for i in 0..8 {
+pub const fn generate_rook_masks() -> [Bitboard; 64] {
+    let mut masks = [Bitboard(0); 64];
+
+    const_for!(i in 0..8 => {
         let rank_mask = Bitboard::get_rank_mask(i);
 
-        for j in 0..8 {
+        const_for!(j in 0..8 => {
             let column_mask = Bitboard::get_column_mask(j);
 
             let combined = column_mask.0 ^ rank_mask.0;
 
-            unsafe {
-                ROOK_MASKS.push(Bitboard(combined));
-            }
-        }
-    }
+            let index = j + i * 8;
+
+            masks[index as usize] = Bitboard(combined);
+        })
+    });
+
+    masks
 }
 
 pub fn generate_bishop_masks() {
