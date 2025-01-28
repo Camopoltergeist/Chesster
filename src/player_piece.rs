@@ -7,6 +7,13 @@ pub struct PlayerPiece {
 }
 
 impl PlayerPiece {
+    pub fn new(player: Player, piece: Piece) -> Self {
+        Self {
+            player,
+            piece
+        }
+    }
+
     pub fn player(&self) -> Player {
         self.player
     }

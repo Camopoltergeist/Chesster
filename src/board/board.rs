@@ -1,5 +1,5 @@
 use super::{bitboard::Bitboard, tile_position::TilePosition};
-use crate::{piece::Piece, player::Player};
+use crate::{piece::Piece, player::Player, player_piece::PlayerPiece};
 
 #[derive(Clone)]
 pub struct Board {
@@ -78,7 +78,7 @@ impl Board {
         self.get_player_bitboard_mut(player).move_bit(from_offset, to_offset);
     }
 
-    pub fn get_piece_from_offset(&self, bit_offset: u32) -> Option<(Player, Piece)> {
+    pub fn get_piece_from_offset(&self, bit_offset: u32) -> Option<PlayerPiece> {
         let player = if Bitboard::check_bit(&self.white_pieces, bit_offset) {
             Player::White
         } else if Bitboard::check_bit(&self.black_pieces, bit_offset) {
@@ -97,7 +97,7 @@ impl Board {
             _ => return None,
         };
 
-        Some((player, piece))
+        Some(PlayerPiece::new(player, piece))
     }
 
     pub fn get_player_bitboard(&self, player: Player) -> &Bitboard {
@@ -155,7 +155,7 @@ impl Board {
         self.get_piece_bitboard_mut(piece).set_bit(bit_offset);
     }
 
-    pub fn get_piece(&self, tile_pos: TilePosition) -> Option<(Player, Piece)> {
+    pub fn get_piece(&self, tile_pos: TilePosition) -> Option<PlayerPiece> {
         return self.get_piece_from_offset(tile_pos.bit_offset());
     }
 
@@ -167,7 +167,7 @@ impl Board {
         self.set_piece_to_offset(player, piece, tile_pos.bit_offset());
     }
 
-    pub fn get_piece_debug(&self, tile_str: &str) -> Option<(Player, Piece)> {
+    pub fn get_piece_debug(&self, tile_str: &str) -> Option<PlayerPiece> {
         let tile_pos = TilePosition::from_tile_str(tile_str).expect("invalid tile str passed");
 
         self.get_piece(tile_pos)
