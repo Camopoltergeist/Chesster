@@ -124,7 +124,7 @@ impl BoardRenderer {
         self.player = self.player.opposite();
     }
 
-    pub fn set_highlighted_tile(&mut self, tile: Option<(u32, u32)>) {
+    pub fn set_highlighted_tile(&mut self, tile: Option<TilePosition>) {
         self.highlighted_tile = tile;
     }
 
