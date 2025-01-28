@@ -2,8 +2,6 @@ use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, S
 
 use const_for::const_for;
 
-use super::tile_position::TilePosition;
-
 #[derive(Clone, Copy)]
 
 pub struct Bitboard(pub u64);
@@ -59,17 +57,6 @@ impl Bitboard {
             let add_bitmask = 1 << to_offset;
             *self |= add_bitmask;
         }
-    }
-
-    pub fn bit_offset_to_tile_pos(bit_offset: u32) -> TilePosition {
-        let column = bit_offset % 8;
-        let rank = bit_offset / 8;
-
-        return TilePosition::new(column, rank);
-    }
-
-    pub const fn coordinates_to_bit_offset(column: u32, rank: u32) -> u32 {
-        column + rank * 8
     }
 
     /// Converts a tile &str to coordinates. For example b1 => (1, 0)

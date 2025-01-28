@@ -1,4 +1,4 @@
-use super::bitboard::Bitboard;
+use super::{bitboard::Bitboard, tile_position::TilePosition};
 use crate::{piece::Piece, player::Player};
 
 #[derive(Clone)]
@@ -155,7 +155,7 @@ impl Board {
         self.get_piece_bitboard_mut(piece).set_bit(bit_offset);
     }
 
-    pub fn get_piece(&self, column: u32, rank: u32) -> Option<(Player, Piece)> {
+    pub fn get_piece(&self, tile_pos: TilePosition) -> Option<(Player, Piece)> {
         let bit_offset = Bitboard::coordinates_to_bit_offset(column, rank);
         return self.get_piece_from_offset(bit_offset);
     }

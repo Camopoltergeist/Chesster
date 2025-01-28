@@ -98,7 +98,7 @@ impl BoardRenderer {
                 let bit = bitboard.check_bit(bit_offset);
                 let color = if bit { self.bitboard_on_color } else { self.bitboard_off_color };
     
-                let tile_pos = Bitboard::bit_offset_to_tile_pos(bit_offset);
+                let tile_pos = TilePosition::from_bit_offset(bit_offset);
 
                 if let Some(highlight) = self.highlighted_tile {
                     if highlight == tile_pos {
@@ -181,12 +181,12 @@ impl BoardRenderer {
         let board = self.board.as_ref().unwrap();
 
         for bit_offset in 0..64 {
-            let (tile_x, tile_y) = Bitboard::bit_offset_to_tile_pos(bit_offset);
+            let tile_pos = TilePosition::from_bit_offset(bit_offset);
 
-            let piece_opt = board.get_piece(tile_x, tile_y);
+            let piece_opt = board.get_piece(tile_pos);
 
             if let Some((player, piece)) = piece_opt {
-                self.draw_piece(draw_handle, PieceTexture::new(player, piece), tile_x, tile_y);
+                self.draw_piece(draw_handle, PieceTexture::new(player, piece), tile_pos);
             }
         }
     }

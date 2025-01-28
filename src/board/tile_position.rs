@@ -19,5 +19,16 @@ impl TilePosition {
     pub fn rank(&self) -> u32 {
         self.rank
     }
+
+    pub fn bit_offset(&self) -> u32 {
+        self.column + self.rank * 8
+    }
+
+    pub fn from_bit_offset(bit_offset: u32) -> Self {
+        let column = bit_offset % 8;
+        let rank = bit_offset / 8;
+
+        return Self::new(column, rank);
+    }
 }
 
