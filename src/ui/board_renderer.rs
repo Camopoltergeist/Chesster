@@ -122,6 +122,33 @@ impl BoardRenderer {
         self.highlighted_tile = tile;
     }
 
+    fn flipped(&self) -> bool {
+        self.player == Player::Black
+    }
+
+    pub fn get_tile_from_pixel_pos(&self, pos: Vector2) -> Option<(u32, u32)> {
+        let mouse_x = pos.x as i32;
+        let mouse_y = pos.y as i32;
+
+        println!("{}, {}", mouse_x, mouse_y);
+
+        let tile_size = self.tile_size();
+        let total_tile_size = tile_size * 8 - 1;
+
+        if mouse_x < self.x + self.margin ||
+            mouse_x > self.x + self.margin + total_tile_size ||
+            mouse_y < self.y + self.margin ||
+            mouse_y > self.y + self.margin + total_tile_size {
+            
+            return None;
+        };
+
+        let column = if self.flipped() { 7 - (mouse_x - self.margin) / tile_size } else { (mouse_x - self.margin) / tile_size };
+        let rank = if self.flipped() { (mouse_y - self.margin) / tile_size } else { 7 - (mouse_y - self.margin) / tile_size };
+
+        return Some((column as u32, rank as u32));
+    }
+
     /// Draws the board on screen
     pub fn draw(&self, draw_handle: &mut RaylibDrawHandle) {
         self.draw_tiles(draw_handle);
