@@ -99,6 +99,12 @@ impl BoardRenderer {
                 let color = if bit { self.bitboard_on_color } else { self.bitboard_off_color };
     
                 let (column, rank) = Bitboard::bit_offset_to_coordinates(bit_offset);
+
+                if let Some(highlight) = self.highlighted_tile {
+                    if highlight.0 == column && highlight.1 == rank {
+                        continue;
+                    }
+                }
     
                 let pos = self.get_tile_pixel_pos(column, rank);
                 let tile_size = self.tile_size();
