@@ -30,69 +30,76 @@ pub fn get_collision_mask(board: Board, tile_pos: TilePosition) -> Bitboard {
 /// Uses two masks to cut out movement after collision
 pub fn get_rook_collision(board: Board, player: Player, offset: u32) -> Bitboard {
     let mut valid_moves: u64 = ROOK_MASKS[offset as usize].value();
+
     let mut collision_mask: u64 =
         ((board.white_pieces | board.black_pieces) & valid_moves).into();
 
+    if collision_mask == 0 {
+        return Bitboard(valid_moves);
+    };
+
+    let rank_mask: u64 = 0xFE;
+
+    let n_collision = get_column_mask(offset, 8 - offset / 8) & collision_mask;
+
+    if n_collision != 0 {
+        println!("Going to north checker");
+        let n_offset = n_collision.trailing_zeros();
+        if board
+            .get_player_bitboard(player.opposite())
+            .check_bit(n_offset)
+        {
+            valid_moves &= !get_column_mask(n_offset + 8, 7 - (n_offset / 8));
+        } else {
+            valid_moves &= !get_column_mask(n_offset, 8 - (n_offset / 8));
+        }
+        collision_mask &= !n_collision;
+    }
+
+    let w_collision = (rank_mask << offset) & collision_mask;
+
+    if w_collision != 0 {
+        let w_offset = w_collision.trailing_zeros();
+        if board
+            .get_player_bitboard(player.opposite())
+            .check_bit(w_offset)
+        {
+            valid_moves &= !(get_rank_mask(w_offset + 1, 7 - w_offset % 8));
+        } else {
+            valid_moves &= !(get_rank_mask(w_offset, 8 - w_offset % 8));
+        }
+        collision_mask &= !w_collision;
+    }
+
+    let s_collision = get_column_mask(offset % 8, offset / 8) & collision_mask;
+
+    if s_collision != 0 {
+        println!("Going to south checker");
+        let s_offset = 63 - s_collision.leading_zeros();
+        if board
+            .get_player_bitboard(player.opposite())
+            .check_bit(s_offset)
+        {
+            valid_moves &= !(get_column_mask(s_offset % 8, s_offset / 8));
+        } else {
+            valid_moves &= !(get_column_mask(s_offset % 8, s_offset / 8 + 1));
+        }
+        collision_mask &= !s_collision;
+    }
+
     if collision_mask != 0 {
-        let rank_mask: u64 = 0xFE;
-
-        let n_collision = get_column_mask(offset, 8 - offset / 8) & collision_mask;
-        if n_collision != 0 {
-            println!("Going to north checker");
-            let n_offset = n_collision.trailing_zeros();
-            if board
-                .get_player_bitboard(player.opposite())
-                .check_bit(n_offset)
-            {
-                valid_moves &= !get_column_mask(n_offset + 8, 7 - (n_offset / 8));
-            } else {
-                valid_moves &= !get_column_mask(n_offset, 8 - (n_offset / 8));
-            }
-            collision_mask &= !n_collision;
-        }
-
-        let w_collision = (rank_mask << offset) & collision_mask;
-        if w_collision != 0 {
-            let w_offset = w_collision.trailing_zeros();
-            if board
-                .get_player_bitboard(player.opposite())
-                .check_bit(w_offset)
-            {
-                valid_moves &= !(get_rank_mask(w_offset + 1, 7 - w_offset % 8));
-            } else {
-                valid_moves &= !(get_rank_mask(w_offset, 8 - w_offset % 8));
-            }
-            collision_mask &= !w_collision;
-        }
-
-        let s_collision = get_column_mask(offset % 8, offset / 8) & collision_mask;
-        if s_collision != 0 {
-            println!("Going to south checker");
-            let s_offset = 63 - s_collision.leading_zeros();
-            if board
-                .get_player_bitboard(player.opposite())
-                .check_bit(s_offset)
-            {
-                valid_moves &= !(get_column_mask(s_offset % 8, s_offset / 8));
-            } else {
-                valid_moves &= !(get_column_mask(s_offset % 8, s_offset / 8 + 1));
-            }
-            collision_mask &= !s_collision;
-        }
-
-        if collision_mask != 0 {
-            let e_offset = 63 - collision_mask.leading_zeros();
-            println!("{}", collision_mask.leading_zeros());
-            if board
-                .get_player_bitboard(player.opposite())
-                .check_bit(e_offset)
-            {
-                valid_moves &= !(get_rank_mask(e_offset - e_offset % 8, e_offset % 8));
-            } else {
-                valid_moves &= !(get_rank_mask(e_offset - e_offset % 8, e_offset % 8 + 1));
-            }
+        let e_offset = 63 - collision_mask.leading_zeros();
+        println!("{}", collision_mask.leading_zeros());
+        if board
+            .get_player_bitboard(player.opposite())
+            .check_bit(e_offset)
+        {
+            valid_moves &= !(get_rank_mask(e_offset - e_offset % 8, e_offset % 8));
+        } else {
+            valid_moves &= !(get_rank_mask(e_offset - e_offset % 8, e_offset % 8 + 1));
         }
     }
+
     Bitboard(valid_moves)
 }
 
