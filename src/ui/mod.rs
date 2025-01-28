@@ -37,10 +37,10 @@ pub fn start_ui() {
 			br.swap_player();
 		}
 
-		if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-			let mouse_pos = rl.get_mouse_position();
-			let tile_pos_opt = br.get_tile_from_pixel_pos(mouse_pos);
+		let mouse_pos = rl.get_mouse_position();
+		let tile_pos_opt = br.get_tile_from_pixel_pos(mouse_pos);
 
+		if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
 			if let Some(board) = br.board() {
 				if let Some(tile_pos) = tile_pos_opt {
 					if let Some(piece) = board.get_piece(tile_pos) {
@@ -65,6 +65,10 @@ pub fn start_ui() {
 		br.set_size(min_dimension);
 
 		let mut draw_handle = rl.begin_drawing(&thread);
+
+		if let Some(tile_pos) = tile_pos_opt {
+			text_area.draw_line(&mut draw_handle, &format!("{}, {}", tile_pos.column(), tile_pos.rank()));
+		}
 
 		if let Some(tile_pos) = selected_tile {
 			text_area.draw_line(&mut draw_handle, &format!("Selected tile: {}, {}", tile_pos.column(), tile_pos.rank()));
