@@ -156,18 +156,15 @@ impl Board {
     }
 
     pub fn get_piece(&self, tile_pos: TilePosition) -> Option<(Player, Piece)> {
-        let bit_offset = Bitboard::coordinates_to_bit_offset(column, rank);
-        return self.get_piece_from_offset(bit_offset);
+        return self.get_piece_from_offset(tile_pos.bit_offset());
     }
 
-    pub fn remove_piece(&mut self, column: u32, rank: u32) {
-        let bit_offset = Bitboard::coordinates_to_bit_offset(column, rank);
-        self.remove_piece_from_offset(bit_offset);
+    pub fn remove_piece(&mut self, tile_pos: TilePosition) {
+        self.remove_piece_from_offset(tile_pos.bit_offset());
     }
 
-    pub fn set_piece(&mut self, player: Player, piece: Piece, column: u32, rank: u32) {
-        let bit_offset = Bitboard::coordinates_to_bit_offset(column, rank);
-        self.set_piece_to_offset(player, piece, bit_offset);
+    pub fn set_piece(&mut self, player: Player, piece: Piece, tile_pos: TilePosition) {
+        self.set_piece_to_offset(player, piece, tile_pos.bit_offset());
     }
 
     pub fn get_piece_debug(&self, tile: &str) -> Option<(Player, Piece)> {
