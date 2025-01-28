@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use raylib::{color::Color, math::Vector2, prelude::{RaylibDraw, RaylibDrawHandle}, texture::Texture2D};
 
-use crate::{board::{bitboard::Bitboard, board::Board}, player::Player};
+use crate::{board::{bitboard::Bitboard, board::Board, tile_position::TilePosition}, player::Player};
 
 use super::texture::PieceTexture;
 
@@ -72,8 +72,8 @@ impl BoardRenderer {
     }
 
     /// Draws a specified piece on the specified tile
-    fn draw_piece(&self, draw_handle: &mut RaylibDrawHandle, piece_texture: PieceTexture, column: u32, rank: u32) {
-        let pos = self.get_tile_pixel_pos(column, rank);
+    fn draw_piece(&self, draw_handle: &mut RaylibDrawHandle, piece_texture: PieceTexture, tile_pos: TilePosition) {
+        let pos = self.get_tile_pixel_pos(tile_pos);
         let tile_size = self.tile_size();
 
         let x = pos.0;
@@ -272,11 +272,11 @@ impl BoardRenderer {
         available_area / 8
     }
 
-    fn get_tile_pixel_pos(&self, column: u32, rank: u32) -> (i32, i32) {
+    fn get_tile_pixel_pos(&self, tile_pos: TilePosition) -> (i32, i32) {
         let flipped = self.player == Player::Black;
 
-        let tile_x = (if flipped { 7 - column } else { column } as i32);
-        let tile_y = (if flipped { rank } else { 7 - rank } as i32);
+        let tile_x = (if flipped { 7 - tile_pos.column() } else { tile_pos.column() } as i32);
+        let tile_y = (if flipped { tile_pos.rank() } else { 7 - tile_pos.rank() } as i32);
         
         let tile_size = self.tile_size();
 
