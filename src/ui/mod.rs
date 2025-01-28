@@ -5,7 +5,7 @@ use board_renderer::BoardRenderer;
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::RaylibDraw};
 use texture::load_piece_textures;
 
-use crate::{board::board::Board, player::Player};
+use crate::{board::{bitboard::Bitboard, board::Board, move_mask::get_move_mask}, player::Player};
 
 const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;
@@ -37,8 +37,14 @@ pub fn start_ui() {
 
 			if let Some(board) = br.board() {
 				if let Some(tile_pos) = tile {
-					let piece = board.get_piece(tile_pos.0, tile_pos.1);
-					println!("{:?}", piece);
+					if let Some((player, piece)) = board.get_piece(tile_pos.0, tile_pos.1) {
+						let mask = get_move_mask(player, piece)[Bitboard::coordinates_to_bit_offset(tile_pos.0, tile_pos.1) as usize];
+						
+						br.set_bitboard_overlay(Some(mask));
+					}
+					else {
+						br.set_bitboard_overlay(None);
+					}
 				}
 			}
 
