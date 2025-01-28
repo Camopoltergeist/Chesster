@@ -132,7 +132,7 @@ impl BoardRenderer {
         self.player == Player::Black
     }
 
-    pub fn get_tile_from_pixel_pos(&self, pos: Vector2) -> Option<(u32, u32)> {
+    pub fn get_tile_from_pixel_pos(&self, pos: Vector2) -> Option<TilePosition> {
         let mouse_x = pos.x as i32;
         let mouse_y = pos.y as i32;
 
@@ -150,7 +150,7 @@ impl BoardRenderer {
         let column = if self.flipped() { 7 - (mouse_x - self.margin) / tile_size } else { (mouse_x - self.margin) / tile_size };
         let rank = if self.flipped() { (mouse_y - self.margin) / tile_size } else { 7 - (mouse_y - self.margin) / tile_size };
 
-        return Some((column as u32, rank as u32));
+        return Some(TilePosition::new(column as u32, rank as u32));
     }
 
     /// Draws the board on screen
