@@ -7,7 +7,7 @@ use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::RaylibDraw}
 use text_area::TextArea;
 use texture::load_piece_textures;
 
-use crate::{board::{board::Board, move_mask::get_move_mask, tile_position::TilePosition}, player::Player};
+use crate::{board::{board::Board, move_collision::get_collision_mask, move_mask::get_move_mask, tile_position::TilePosition}, piece::Piece, player::Player, player_piece::PlayerPiece};
 
 const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;
@@ -25,6 +25,11 @@ pub fn start_ui() {
 	let mut br = BoardRenderer::new(0, 0, WINDOW_HEIGHT, 32, Player::White, piece_textures);
 
 	let board = Board::default();
+
+	// board.set_piece(PlayerPiece::new(Player::White, Piece::Rook), TilePosition::from_tile_str("a1").unwrap());
+	// board.set_piece(PlayerPiece::new(Player::White, Piece::Rook), TilePosition::from_tile_str("a7").unwrap());
+
+	// let m = get_collision_mask(board.clone(), TilePosition::from_tile_str("a7").unwrap());
 
 	br.set_board(Some(&board));
 
@@ -44,7 +49,7 @@ pub fn start_ui() {
 			if let Some(board) = br.board() {
 				if let Some(tile_pos) = tile_pos_opt {
 					if let Some(piece) = board.get_piece(tile_pos) {
-						let mask = get_move_mask(piece)[tile_pos.bit_offset() as usize];
+						let mask = get_collision_mask(board.clone(), tile_pos);
 						
 						br.set_bitboard_overlay(Some(mask));
 					}
