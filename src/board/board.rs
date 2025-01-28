@@ -148,11 +148,11 @@ impl Board {
         self.kings.unset_bit(bit_offset);
     }
 
-    pub fn set_piece_to_offset(&mut self, player: Player, piece: Piece, bit_offset: u32) {
+    pub fn set_piece_to_offset(&mut self, piece: PlayerPiece, bit_offset: u32) {
         self.remove_piece_from_offset(bit_offset);
 
-        self.get_player_bitboard_mut(player).set_bit(bit_offset);
-        self.get_piece_bitboard_mut(piece).set_bit(bit_offset);
+        self.get_player_bitboard_mut(piece.player()).set_bit(bit_offset);
+        self.get_piece_bitboard_mut(piece.piece()).set_bit(bit_offset);
     }
 
     pub fn get_piece(&self, tile_pos: TilePosition) -> Option<PlayerPiece> {
@@ -163,8 +163,8 @@ impl Board {
         self.remove_piece_from_offset(tile_pos.bit_offset());
     }
 
-    pub fn set_piece(&mut self, player: Player, piece: Piece, tile_pos: TilePosition) {
-        self.set_piece_to_offset(player, piece, tile_pos.bit_offset());
+    pub fn set_piece(&mut self, piece: PlayerPiece, tile_pos: TilePosition) {
+        self.set_piece_to_offset(piece, tile_pos.bit_offset());
     }
 
     pub fn get_piece_debug(&self, tile_str: &str) -> Option<PlayerPiece> {
