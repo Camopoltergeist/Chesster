@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use raylib::{texture::{RaylibTexture2D, Texture2D}, RaylibHandle, RaylibThread};
 
-use crate::{piece::Piece, player::Player};
+use crate::{piece::Piece, player::Player, player_piece::PlayerPiece};
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct PieceTexture {
@@ -11,10 +11,10 @@ pub struct PieceTexture {
 }
 
 impl PieceTexture {
-	pub fn new(player: Player, piece: Piece) -> Self {
+	pub fn new(piece: PlayerPiece) -> Self {
 		Self {
-			player,
-			piece
+			player: piece.player(),
+			piece: piece.piece()
 		}
 	}
 
@@ -36,19 +36,19 @@ impl PieceTexture {
 
 pub fn load_piece_textures(rl: &mut RaylibHandle, thread: &RaylibThread) -> HashMap<PieceTexture, Texture2D> {
 	let piece_textures = vec![
-		PieceTexture::new(Player::White, Piece::Pawn),
-		PieceTexture::new(Player::White, Piece::Rook),
-		PieceTexture::new(Player::White, Piece::Knight),
-		PieceTexture::new(Player::White, Piece::Bishop),
-		PieceTexture::new(Player::White, Piece::Queen),
-		PieceTexture::new(Player::White, Piece::King),
+		PieceTexture::new(PlayerPiece::new(Player::White, Piece::Pawn)),
+		PieceTexture::new(PlayerPiece::new(Player::White, Piece::Rook)),
+		PieceTexture::new(PlayerPiece::new(Player::White, Piece::Knight)),
+		PieceTexture::new(PlayerPiece::new(Player::White, Piece::Bishop)),
+		PieceTexture::new(PlayerPiece::new(Player::White, Piece::Queen)),
+		PieceTexture::new(PlayerPiece::new(Player::White, Piece::King)),
 
-		PieceTexture::new(Player::Black, Piece::Pawn),
-		PieceTexture::new(Player::Black, Piece::Rook),
-		PieceTexture::new(Player::Black, Piece::Knight),
-		PieceTexture::new(Player::Black, Piece::Bishop),
-		PieceTexture::new(Player::Black, Piece::Queen),
-		PieceTexture::new(Player::Black, Piece::King),
+		PieceTexture::new(PlayerPiece::new(Player::Black, Piece::Pawn)),
+		PieceTexture::new(PlayerPiece::new(Player::Black, Piece::Rook)),
+		PieceTexture::new(PlayerPiece::new(Player::Black, Piece::Knight)),
+		PieceTexture::new(PlayerPiece::new(Player::Black, Piece::Bishop)),
+		PieceTexture::new(PlayerPiece::new(Player::Black, Piece::Queen)),
+		PieceTexture::new(PlayerPiece::new(Player::Black, Piece::King)),
 	];
 
 	let texture_dir = "./res/pieces/";

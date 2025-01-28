@@ -1,5 +1,7 @@
 use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Shl, Shr};
 
+use const_for::const_for;
+
 #[derive(Clone, Copy)]
 
 pub struct Bitboard(pub u64);
@@ -57,71 +59,21 @@ impl Bitboard {
         }
     }
 
-    pub fn bit_offset_to_coordinates(bit_offset: u32) -> (u32, u32) {
-        let column = bit_offset % 8;
-        let rank = bit_offset / 8;
-
-        return (column, rank);
-    }
-
-    pub fn coordinates_to_bit_offset(column: u32, rank: u32) -> u32 {
-        column + rank * 8
-    }
-
-    /// Converts a tile &str to coordinates. For example b1 => (1, 0)
-    /// Used for debugging purposes only. This function is kinda slow.
-    pub fn tile_str_to_coordinates(tile: &str) -> Result<(u32, u32), ()> {
-        if tile.len() != 2 {
-            return Err(());
-        };
-
-        let tile = tile.to_ascii_lowercase();
-
-        let column_char = tile.chars().nth(0).unwrap();
-        let rank_char = tile.chars().nth(1).unwrap();
-
-        let column = match column_char {
-            'a' => 0,
-            'b' => 1,
-            'c' => 2,
-            'd' => 3,
-            'e' => 4,
-            'f' => 5,
-            'g' => 6,
-            'h' => 7,
-            _ => return Err(()),
-        };
-
-        let rank = match rank_char {
-            '1' => 0,
-            '2' => 1,
-            '3' => 2,
-            '4' => 3,
-            '5' => 4,
-            '6' => 5,
-            '7' => 6,
-            '8' => 7,
-            _ => return Err(()),
-        };
-
-        Ok((column, rank))
-    }
-
-    pub fn get_rank_mask(rank: i32) -> Bitboard {
+    pub const fn get_rank_mask(rank: u32) -> Bitboard {
         //A bitboard that goes through the first rank, then moved by column
         let rank_mask = 0xff << rank * 8;
         Bitboard(rank_mask)
     }
 
-    pub fn get_column_mask(column: i32) -> Bitboard {
+    pub const fn get_column_mask(column: u32) -> Bitboard {
         //^The other way around: a bitboard going through the first column, then nudged left
         let column_mask = 0x101010101010101 << column;
         Bitboard(column_mask)
     }
 
     // "/"-direction
-    pub fn get_diagonal_mask_asc(column: i32, rank: i32) -> Bitboard {
-        let diff = column - rank;
+    pub const fn get_diagonal_mask_asc(column: u32, rank: u32) -> Bitboard {
+        let diff = column as i32 - rank as i32;
 
         let initial_mask: u64 = 0x8040201008040201;
 
@@ -141,8 +93,8 @@ impl Bitboard {
         Bitboard(asc_mask)
     }
 
-    pub fn get_diagonal_mask_des(column: i32, rank: i32) -> Bitboard {
-        let sum = column + rank;
+    pub const fn get_diagonal_mask_des(column: u32, rank: u32) -> Bitboard {
+        let sum = column as i32 + rank as i32;
 
         let initial_mask: u64 = 0x102040810204080;
 
@@ -162,7 +114,7 @@ impl Bitboard {
         Bitboard(des_mask)
     }
 
-    pub fn get_knight_mask(column: i32, rank: i32) -> Bitboard {
+    pub const fn get_knight_mask(column: u32, rank: u32) -> Bitboard {
         // All possible knight directions from its place
         let moves: [(i32, i32); 8] = [
             (2, 1),
@@ -178,25 +130,31 @@ impl Bitboard {
         let mut knight_mask: u64 = 0;
 
         // Iterate through directions
-        for (x, y) in moves {
-            let new_column = column + x;
-            let new_rank = rank + y;
+        const_for!(i in 0..moves.len() => {
+            let (x, y) = moves[i];
+            let new_column = column as i32 + x;
+            let new_rank = rank as i32 + y;
 
-            // Check if the move is within the board
-            if (0..8).contains(&new_column) && (0..8).contains(&new_rank) {
-                // Calculate the bit index for the new position if it is, and add it to the mask
-                let offset = new_rank * 8 + new_column;
-                knight_mask |= 1 << offset;
+            if new_column < 0 || new_column > 7 {
+                continue;
             }
-        }
+
+            if new_rank < 0 || new_rank > 7 {
+                continue;
+            }
+
+            // Calculate the bit index for the new position if it is, and add it to the mask
+            let offset = new_rank * 8 + new_column;
+            knight_mask |= 1 << offset;
+        });
 
         Bitboard(knight_mask)
     }
 
-    pub fn get_king_mask(column: i32, rank: i32) -> Bitboard {
+    pub const fn get_king_mask(column: u32, rank: u32) -> Bitboard {
         //A square-shaped mask in hexXx, initial offset 9
         let mut king_mask: u64 = 0x70507;
-        let offset_diff = 9 - (rank * 8 + column);
+        let offset_diff = 9 - (rank as i32 * 8 + column as i32);
 
         //Make a mask in the shape of the edge you're on and cut it out of the mask
         if column == 0 || column == 7 {
@@ -217,7 +175,7 @@ impl Bitboard {
         Bitboard(king_mask)
     }
 
-    pub fn get_white_pawn_mask(column: i32, rank: i32) -> Bitboard {
+    pub const fn get_white_pawn_mask(column: u32, rank: u32) -> Bitboard {
         if rank == 7 {
             return Bitboard(0);
         }
@@ -231,7 +189,7 @@ impl Bitboard {
         Bitboard(pawn_mask)
     }
 
-    pub fn get_black_pawn_mask(column: i32, rank: i32) -> Bitboard {
+    pub const fn get_black_pawn_mask(column: u32, rank: u32) -> Bitboard {
         if rank == 0 {
             return Bitboard(0);
         }

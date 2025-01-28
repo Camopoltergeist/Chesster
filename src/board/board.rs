@@ -1,5 +1,5 @@
-use super::bitboard::Bitboard;
-use crate::{piece::Piece, player::Player};
+use super::{bitboard::Bitboard, tile_position::TilePosition};
+use crate::{piece::Piece, player::Player, player_piece::PlayerPiece};
 
 #[derive(Clone)]
 pub struct Board {
@@ -45,6 +45,19 @@ impl Default for Board {
 }
 
 impl Board {
+    pub fn empty() -> Self {
+        Self {
+            white_pieces: Bitboard(0),
+            black_pieces: Bitboard(0),
+            pawns: Bitboard(0),
+            rooks: Bitboard(0),
+            kings: Bitboard(0),
+            knights: Bitboard(0),
+            bishops: Bitboard(0),
+            queens: Bitboard(0)
+        }
+    }
+
     pub fn check_overlaps(a: Bitboard, b: Bitboard) -> bool {
         a & b != 0
     }
@@ -74,7 +87,7 @@ impl Board {
             .move_bit(from_offset, to_offset);
     }
 
-    pub fn get_piece_from_offset(&self, bit_offset: u32) -> Option<(Player, Piece)> {
+    pub fn get_piece_from_offset(&self, bit_offset: u32) -> Option<PlayerPiece> {
         let player = if Bitboard::check_bit(&self.white_pieces, bit_offset) {
             Player::White
         } else if Bitboard::check_bit(&self.black_pieces, bit_offset) {
@@ -93,7 +106,7 @@ impl Board {
             _ => return None,
         };
 
-        Some((player, piece))
+        Some(PlayerPiece::new(player, piece))
     }
 
     pub fn get_player_bitboard(&self, player: Player) -> &Bitboard {
@@ -144,39 +157,35 @@ impl Board {
         self.kings.unset_bit(bit_offset);
     }
 
-    pub fn set_piece_to_offset(&mut self, player: Player, piece: Piece, bit_offset: u32) {
+    pub fn set_piece_to_offset(&mut self, piece: PlayerPiece, bit_offset: u32) {
         self.remove_piece_from_offset(bit_offset);
 
-        self.get_player_bitboard_mut(player).set_bit(bit_offset);
-        self.get_piece_bitboard_mut(piece).set_bit(bit_offset);
+        self.get_player_bitboard_mut(piece.player()).set_bit(bit_offset);
+        self.get_piece_bitboard_mut(piece.piece()).set_bit(bit_offset);
     }
 
-    pub fn get_piece(&self, column: u32, rank: u32) -> Option<(Player, Piece)> {
-        let bit_offset = Bitboard::coordinates_to_bit_offset(column, rank);
-        return self.get_piece_from_offset(bit_offset);
+    pub fn get_piece(&self, tile_pos: TilePosition) -> Option<PlayerPiece> {
+        return self.get_piece_from_offset(tile_pos.bit_offset());
     }
 
-    pub fn remove_piece(&mut self, column: u32, rank: u32) {
-        let bit_offset = Bitboard::coordinates_to_bit_offset(column, rank);
-        self.remove_piece_from_offset(bit_offset);
+    pub fn remove_piece(&mut self, tile_pos: TilePosition) {
+        self.remove_piece_from_offset(tile_pos.bit_offset());
     }
 
-    pub fn set_piece(&mut self, player: Player, piece: Piece, column: u32, rank: u32) {
-        let bit_offset = Bitboard::coordinates_to_bit_offset(column, rank);
-        self.set_piece_to_offset(player, piece, bit_offset);
+    pub fn set_piece(&mut self, piece: PlayerPiece, tile_pos: TilePosition) {
+        self.set_piece_to_offset(piece, tile_pos.bit_offset());
     }
 
-    pub fn get_piece_debug(&self, tile: &str) -> Option<(Player, Piece)> {
-        let (column, rank) =
-            Bitboard::tile_str_to_coordinates(tile).expect("invalid tile str passed");
+    pub fn get_piece_debug(&self, tile_str: &str) -> Option<PlayerPiece> {
+        let tile_pos = TilePosition::from_tile_str(tile_str).expect("invalid tile str passed");
 
-        self.get_piece(column, rank)
+        self.get_piece(tile_pos)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{piece::Piece, player::Player};
+    use crate::{piece::Piece, player::Player, player_piece::PlayerPiece};
 
     use super::Board;
 
@@ -192,74 +201,26 @@ mod tests {
         let board = Board::default();
 
         // Rank 1
-        assert_eq!(
-            board.get_piece_debug("a1"),
-            Some((Player::White, Piece::Rook))
-        );
-        assert_eq!(
-            board.get_piece_debug("b1"),
-            Some((Player::White, Piece::Knight))
-        );
-        assert_eq!(
-            board.get_piece_debug("c1"),
-            Some((Player::White, Piece::Bishop))
-        );
-        assert_eq!(
-            board.get_piece_debug("d1"),
-            Some((Player::White, Piece::Queen))
-        );
+        assert_eq!(board.get_piece_debug("a1"), Some(PlayerPiece::new(Player::White, Piece::Rook)));
+        assert_eq!(board.get_piece_debug("b1"), Some(PlayerPiece::new(Player::White, Piece::Knight)));
+        assert_eq!(board.get_piece_debug("c1"), Some(PlayerPiece::new(Player::White, Piece::Bishop)));
+        assert_eq!(board.get_piece_debug("d1"), Some(PlayerPiece::new(Player::White, Piece::Queen)));
 
-        assert_eq!(
-            board.get_piece_debug("e1"),
-            Some((Player::White, Piece::King))
-        );
-        assert_eq!(
-            board.get_piece_debug("f1"),
-            Some((Player::White, Piece::Bishop))
-        );
-        assert_eq!(
-            board.get_piece_debug("g1"),
-            Some((Player::White, Piece::Knight))
-        );
-        assert_eq!(
-            board.get_piece_debug("h1"),
-            Some((Player::White, Piece::Rook))
-        );
+        assert_eq!(board.get_piece_debug("e1"), Some(PlayerPiece::new(Player::White, Piece::King)));
+        assert_eq!(board.get_piece_debug("f1"), Some(PlayerPiece::new(Player::White, Piece::Bishop)));
+        assert_eq!(board.get_piece_debug("g1"), Some(PlayerPiece::new(Player::White, Piece::Knight)));
+        assert_eq!(board.get_piece_debug("h1"), Some(PlayerPiece::new(Player::White, Piece::Rook)));
 
         // Rank 2
-        assert_eq!(
-            board.get_piece_debug("a2"),
-            Some((Player::White, Piece::Pawn))
-        );
-        assert_eq!(
-            board.get_piece_debug("b2"),
-            Some((Player::White, Piece::Pawn))
-        );
-        assert_eq!(
-            board.get_piece_debug("c2"),
-            Some((Player::White, Piece::Pawn))
-        );
-        assert_eq!(
-            board.get_piece_debug("d2"),
-            Some((Player::White, Piece::Pawn))
-        );
+        assert_eq!(board.get_piece_debug("a2"), Some(PlayerPiece::new(Player::White, Piece::Pawn)));
+        assert_eq!(board.get_piece_debug("b2"), Some(PlayerPiece::new(Player::White, Piece::Pawn)));
+        assert_eq!(board.get_piece_debug("c2"), Some(PlayerPiece::new(Player::White, Piece::Pawn)));
+        assert_eq!(board.get_piece_debug("d2"), Some(PlayerPiece::new(Player::White, Piece::Pawn)));
 
-        assert_eq!(
-            board.get_piece_debug("e2"),
-            Some((Player::White, Piece::Pawn))
-        );
-        assert_eq!(
-            board.get_piece_debug("f2"),
-            Some((Player::White, Piece::Pawn))
-        );
-        assert_eq!(
-            board.get_piece_debug("g2"),
-            Some((Player::White, Piece::Pawn))
-        );
-        assert_eq!(
-            board.get_piece_debug("h2"),
-            Some((Player::White, Piece::Pawn))
-        );
+        assert_eq!(board.get_piece_debug("e2"), Some(PlayerPiece::new(Player::White, Piece::Pawn)));
+        assert_eq!(board.get_piece_debug("f2"), Some(PlayerPiece::new(Player::White, Piece::Pawn)));
+        assert_eq!(board.get_piece_debug("g2"), Some(PlayerPiece::new(Player::White, Piece::Pawn)));
+        assert_eq!(board.get_piece_debug("h2"), Some(PlayerPiece::new(Player::White, Piece::Pawn)));
 
         // Rank 3
         assert_eq!(board.get_piece_debug("a3"), None);
@@ -306,73 +267,25 @@ mod tests {
         assert_eq!(board.get_piece_debug("h6"), None);
 
         // Rank 7
-        assert_eq!(
-            board.get_piece_debug("a7"),
-            Some((Player::Black, Piece::Pawn))
-        );
-        assert_eq!(
-            board.get_piece_debug("b7"),
-            Some((Player::Black, Piece::Pawn))
-        );
-        assert_eq!(
-            board.get_piece_debug("c7"),
-            Some((Player::Black, Piece::Pawn))
-        );
-        assert_eq!(
-            board.get_piece_debug("d7"),
-            Some((Player::Black, Piece::Pawn))
-        );
+        assert_eq!(board.get_piece_debug("a7"), Some(PlayerPiece::new(Player::Black, Piece::Pawn)));
+        assert_eq!(board.get_piece_debug("b7"), Some(PlayerPiece::new(Player::Black, Piece::Pawn)));
+        assert_eq!(board.get_piece_debug("c7"), Some(PlayerPiece::new(Player::Black, Piece::Pawn)));
+        assert_eq!(board.get_piece_debug("d7"), Some(PlayerPiece::new(Player::Black, Piece::Pawn)));
 
-        assert_eq!(
-            board.get_piece_debug("e7"),
-            Some((Player::Black, Piece::Pawn))
-        );
-        assert_eq!(
-            board.get_piece_debug("f7"),
-            Some((Player::Black, Piece::Pawn))
-        );
-        assert_eq!(
-            board.get_piece_debug("g7"),
-            Some((Player::Black, Piece::Pawn))
-        );
-        assert_eq!(
-            board.get_piece_debug("h7"),
-            Some((Player::Black, Piece::Pawn))
-        );
+        assert_eq!(board.get_piece_debug("e7"), Some(PlayerPiece::new(Player::Black, Piece::Pawn)));
+        assert_eq!(board.get_piece_debug("f7"), Some(PlayerPiece::new(Player::Black, Piece::Pawn)));
+        assert_eq!(board.get_piece_debug("g7"), Some(PlayerPiece::new(Player::Black, Piece::Pawn)));
+        assert_eq!(board.get_piece_debug("h7"), Some(PlayerPiece::new(Player::Black, Piece::Pawn)));
 
         // Rank 8
-        assert_eq!(
-            board.get_piece_debug("a8"),
-            Some((Player::Black, Piece::Rook))
-        );
-        assert_eq!(
-            board.get_piece_debug("b8"),
-            Some((Player::Black, Piece::Knight))
-        );
-        assert_eq!(
-            board.get_piece_debug("c8"),
-            Some((Player::Black, Piece::Bishop))
-        );
-        assert_eq!(
-            board.get_piece_debug("d8"),
-            Some((Player::Black, Piece::Queen))
-        );
+        assert_eq!(board.get_piece_debug("a8"), Some(PlayerPiece::new(Player::Black, Piece::Rook)));
+        assert_eq!(board.get_piece_debug("b8"), Some(PlayerPiece::new(Player::Black, Piece::Knight)));
+        assert_eq!(board.get_piece_debug("c8"), Some(PlayerPiece::new(Player::Black, Piece::Bishop)));
+        assert_eq!(board.get_piece_debug("d8"), Some(PlayerPiece::new(Player::Black, Piece::Queen)));
 
-        assert_eq!(
-            board.get_piece_debug("e8"),
-            Some((Player::Black, Piece::King))
-        );
-        assert_eq!(
-            board.get_piece_debug("f8"),
-            Some((Player::Black, Piece::Bishop))
-        );
-        assert_eq!(
-            board.get_piece_debug("g8"),
-            Some((Player::Black, Piece::Knight))
-        );
-        assert_eq!(
-            board.get_piece_debug("h8"),
-            Some((Player::Black, Piece::Rook))
-        );
+        assert_eq!(board.get_piece_debug("e8"), Some(PlayerPiece::new(Player::Black, Piece::King)));
+        assert_eq!(board.get_piece_debug("f8"), Some(PlayerPiece::new(Player::Black, Piece::Bishop)));
+        assert_eq!(board.get_piece_debug("g8"), Some(PlayerPiece::new(Player::Black, Piece::Knight)));
+        assert_eq!(board.get_piece_debug("h8"), Some(PlayerPiece::new(Player::Black, Piece::Rook)));
     }
 }
