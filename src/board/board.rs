@@ -80,15 +80,11 @@ impl Board {
             || Board::check_overlaps(self.queens, self.kings))
     }
 
-    pub fn move_piece(
-        &mut self,
-        player: Player,
-        piece: Piece,
-        from_offset: u32,
-        to_offset: u32,
-    ) {
-        self.get_piece_bitboard_mut(piece).move_bit(from_offset, to_offset);
-        self.get_player_bitboard_mut(player).move_bit(from_offset, to_offset);
+    pub fn move_piece(&mut self, player: Player, piece: Piece, from_offset: u32, to_offset: u32) {
+        self.get_piece_bitboard_mut(piece)
+            .move_bit(from_offset, to_offset);
+        self.get_player_bitboard_mut(player)
+            .move_bit(from_offset, to_offset);
     }
 
     pub fn get_piece_from_offset(&self, bit_offset: u32) -> Option<PlayerPiece> {
@@ -116,14 +112,14 @@ impl Board {
     pub fn get_player_bitboard(&self, player: Player) -> &Bitboard {
         match player {
             Player::White => &self.white_pieces,
-            Player::Black => &self.black_pieces
+            Player::Black => &self.black_pieces,
         }
     }
 
     pub fn get_player_bitboard_mut(&mut self, player: Player) -> &mut Bitboard {
         match player {
             Player::White => &mut self.white_pieces,
-            Player::Black => &mut self.black_pieces
+            Player::Black => &mut self.black_pieces,
         }
     }
 
@@ -134,7 +130,7 @@ impl Board {
             Piece::Knight => &self.knights,
             Piece::Bishop => &self.bishops,
             Piece::Queen => &self.kings,
-            Piece::King => &self.kings
+            Piece::King => &self.kings,
         }
     }
 
@@ -145,7 +141,7 @@ impl Board {
             Piece::Knight => &mut self.knights,
             Piece::Bishop => &mut self.bishops,
             Piece::Queen => &mut self.queens,
-            Piece::King => &mut self.kings
+            Piece::King => &mut self.kings,
         }
     }
 
