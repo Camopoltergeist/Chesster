@@ -37,8 +37,8 @@ pub fn start_ui() {
 
 			if let Some(board) = br.board() {
 				if let Some(tile_pos) = tile_pos_opt {
-					if let Some((player, piece)) = board.get_piece(tile_pos) {
-						let mask = get_move_mask(player, piece)[tile_pos.bit_offset() as usize];
+					if let Some(piece) = board.get_piece(tile_pos) {
+						let mask = get_move_mask(piece)[tile_pos.bit_offset() as usize];
 						
 						br.set_bitboard_overlay(Some(mask));
 					}
