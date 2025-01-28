@@ -194,11 +194,11 @@ impl BoardRenderer {
     fn draw_tiles(&self, draw_handle: &mut RaylibDrawHandle) {
         let tile_size = self.tile_size();
 
-        for i in 0..8 {
-            for j in 0..8 {
-                let color = if (i + j) % 2 == 0 { self.dark_color } else { self.light_color };
+        for rank in 0..8 {
+            for column in 0..8 {
+                let color = if (rank + column) % 2 == 0 { self.dark_color } else { self.light_color };
 
-                let pos = self.get_tile_pixel_pos(i, j);
+                let pos = self.get_tile_pixel_pos(TilePosition::new(column, rank));
                 draw_handle.draw_rectangle(pos.0, pos.1, tile_size, tile_size, color);
             }
         }
