@@ -43,7 +43,6 @@ pub fn get_rook_collision(board: Board, player: Player, offset: u32) -> Bitboard
     let n_collision = get_column_mask(offset, 8 - offset / 8) & collision_mask;
 
     if n_collision != 0 {
-        println!("Going to north checker");
         let n_offset = n_collision.trailing_zeros();
         if board
             .get_player_bitboard(player.opposite())
@@ -74,7 +73,6 @@ pub fn get_rook_collision(board: Board, player: Player, offset: u32) -> Bitboard
     let s_collision = get_column_mask(offset % 8, offset / 8) & collision_mask;
 
     if s_collision != 0 {
-        println!("Going to south checker");
         let s_offset = 63 - s_collision.leading_zeros();
         if board
             .get_player_bitboard(player.opposite())
@@ -89,7 +87,6 @@ pub fn get_rook_collision(board: Board, player: Player, offset: u32) -> Bitboard
 
     if collision_mask != 0 {
         let e_offset = 63 - collision_mask.leading_zeros();
-        println!("{}", collision_mask.leading_zeros());
         if board
             .get_player_bitboard(player.opposite())
             .check_bit(e_offset)
@@ -104,7 +101,6 @@ pub fn get_rook_collision(board: Board, player: Player, offset: u32) -> Bitboard
 }
 
 pub fn get_rank_mask(offset: u32, length: u32) -> u64 {
-    println!("{}", offset);
     let tile_pos = TilePosition::from_bit_offset(offset);
 
     let mask_length = if length == 0 {
@@ -114,18 +110,15 @@ pub fn get_rank_mask(offset: u32, length: u32) -> u64 {
     };
 
     let rank_mask = mask_length << tile_pos.column();
-    println!("{} {}", tile_pos.column(), tile_pos.rank());
     rank_mask << (tile_pos.rank() * 8)
 }
 
 pub fn get_column_mask(offset: u32, length: u32) -> u64 {
     let mut column_mask = 0u64;
-    println!("{}", length);
 
     for i in 0..length {
         column_mask |= 1u64 << (offset + i * 8);
     }
-    println!("Returning {}", column_mask);
 
     column_mask
 }
