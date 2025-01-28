@@ -67,11 +67,11 @@ pub fn start_ui() {
 		let mut draw_handle = rl.begin_drawing(&thread);
 
 		if let Some(tile_pos) = tile_pos_opt {
-			text_area.draw_line(&mut draw_handle, &format!("{}, {}", tile_pos.column(), tile_pos.rank()));
+			text_area.draw_line(&mut draw_handle, &format!("{}", tile_pos.notation_string()));
 		}
 
 		if let Some(tile_pos) = selected_tile {
-			text_area.draw_line(&mut draw_handle, &format!("Selected tile: {}, {}", tile_pos.column(), tile_pos.rank()));
+			text_area.draw_line(&mut draw_handle, &format!("Selected tile: {}", tile_pos.notation_string()));
 		}
 
 		draw_handle.clear_background(Color { r: 0, g: 65, b: 119, a: 255 });
