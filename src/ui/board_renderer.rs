@@ -44,7 +44,7 @@ pub struct BoardRenderer {
     board: Option<Board>,
 
     /// Tile which is highlighted separately
-    highlighted_tile: Option<(u32, u32)>,
+    highlighted_tile: Option<TilePosition>,
 }
 
 impl BoardRenderer {
@@ -98,15 +98,15 @@ impl BoardRenderer {
                 let bit = bitboard.check_bit(bit_offset);
                 let color = if bit { self.bitboard_on_color } else { self.bitboard_off_color };
     
-                let (column, rank) = Bitboard::bit_offset_to_coordinates(bit_offset);
+                let tile_pos = Bitboard::bit_offset_to_tile_pos(bit_offset);
 
                 if let Some(highlight) = self.highlighted_tile {
-                    if highlight.0 == column && highlight.1 == rank {
+                    if highlight == tile_pos {
                         continue;
                     }
                 }
     
-                let pos = self.get_tile_pixel_pos(column, rank);
+                let pos = self.get_tile_pixel_pos(tile_pos);
                 let tile_size = self.tile_size();
     
                 draw_handle.draw_rectangle(pos.0, pos.1, tile_size, tile_size, color);
@@ -181,7 +181,7 @@ impl BoardRenderer {
         let board = self.board.as_ref().unwrap();
 
         for bit_offset in 0..64 {
-            let (tile_x, tile_y) = Bitboard::bit_offset_to_coordinates(bit_offset);
+            let (tile_x, tile_y) = Bitboard::bit_offset_to_tile_pos(bit_offset);
 
             let piece_opt = board.get_piece(tile_x, tile_y);
 
