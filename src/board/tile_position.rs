@@ -5,7 +5,7 @@ pub struct TilePosition {
 }
 
 impl TilePosition {
-    pub fn new(column: u32, rank: u32) -> Self {
+    pub const fn new(column: u32, rank: u32) -> Self {
         Self {
             column,
             rank
@@ -20,7 +20,7 @@ impl TilePosition {
         self.rank
     }
 
-    pub fn bit_offset(&self) -> u32 {
+    pub const fn bit_offset(&self) -> u32 {
         self.column + self.rank * 8
     }
 
