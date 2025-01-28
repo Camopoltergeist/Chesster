@@ -4,6 +4,7 @@ pub mod board;
 pub mod player;
 mod ui;
 pub mod piece;
+pub mod player_piece;
 
 fn main() {
     start_ui();
