@@ -1,4 +1,4 @@
-use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Shl, Shr};
+use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not, Shl, Shr};
 
 use const_for::const_for;
 
@@ -213,6 +213,14 @@ impl From<u64> for Bitboard {
 impl From<Bitboard> for u64 {
     fn from(value: Bitboard) -> Self {
         value.0
+    }
+}
+
+impl Not for Bitboard {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        Self(!self.0)    
     }
 }
 
