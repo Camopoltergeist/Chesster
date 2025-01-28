@@ -2,7 +2,7 @@ pub mod board_renderer;
 pub mod texture;
 
 use board_renderer::BoardRenderer;
-use raylib::{color::Color, ffi::KeyboardKey, prelude::RaylibDraw};
+use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::RaylibDraw};
 use texture::load_piece_textures;
 
 use crate::{board::board::Board, player::Player};
@@ -26,12 +26,23 @@ pub fn start_ui() {
 
 	br.set_board(Some(&board));
 
-	let selected_tile: Option<(u32, u32)> = Some((0, 0));
-	br.set_highlighted_tile(selected_tile);
-
 	while !rl.window_should_close() {
 		if rl.is_key_pressed(KeyboardKey::KEY_SPACE) {
 			br.swap_player();
+		}
+
+		if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+			let mouse_pos = rl.get_mouse_position();
+			let tile = br.get_tile_from_pixel_pos(mouse_pos);
+
+			if let Some(board) = br.board() {
+				if let Some(tile_pos) = tile {
+					let piece = board.get_piece(tile_pos.0, tile_pos.1);
+					println!("{:?}", piece);
+				}
+			}
+
+			br.set_highlighted_tile(tile);
 		}
 
 		let min_dimension = i32::min(rl.get_screen_width(), rl.get_screen_height());

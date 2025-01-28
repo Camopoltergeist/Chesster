@@ -130,8 +130,6 @@ impl BoardRenderer {
         let mouse_x = pos.x as i32;
         let mouse_y = pos.y as i32;
 
-        println!("{}, {}", mouse_x, mouse_y);
-
         let tile_size = self.tile_size();
         let total_tile_size = tile_size * 8 - 1;
 
@@ -163,6 +161,10 @@ impl BoardRenderer {
     /// Sets the current board to be drawn. Set to None to disable pieces.
     pub fn set_board(&mut self, board: Option<&Board>) {
         self.board = board.cloned();
+    }
+
+    pub fn board(&self) -> Option<&Board> {
+        self.board.as_ref()
     }
 
     fn draw_board_pieces(&self, draw_handle: &mut RaylibDrawHandle) {
