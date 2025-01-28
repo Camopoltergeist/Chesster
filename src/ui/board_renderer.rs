@@ -119,6 +119,14 @@ impl BoardRenderer {
         self.player = player;
     }
 
+    pub fn size(&self) -> i32 {
+        self.size
+    }
+
+    pub fn margin(&self) -> i32 {
+        self.margin
+    }
+
     /// Flips the perspective to the other player
     pub fn swap_player(&mut self) {
         self.player = self.player.opposite();

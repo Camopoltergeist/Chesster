@@ -12,6 +12,34 @@ impl TilePosition {
         }
     }
 
+    pub fn notation_string(&self) -> String {
+        let column_char = match self.column {
+            0 => 'A',
+            1 => 'B',
+            2 => 'C',
+            3 => 'D',
+            4 => 'E',
+            5 => 'F',
+            6 => 'G',
+            7 => 'H',
+            _ => panic!("invalid column")
+        };
+
+        let rank_char = match self.rank {
+            0 => '1',
+            1 => '2',
+            2 => '3',
+            3 => '4',
+            4 => '5',
+            5 => '6',
+            6 => '7',
+            7 => '8',
+            _ => panic!("invalid rank")
+        };
+
+        format!("{}{}", column_char, rank_char)
+    }
+
     pub fn column(&self) -> u32 {
         self.column
     }
