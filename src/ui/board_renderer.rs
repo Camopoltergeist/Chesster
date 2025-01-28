@@ -42,6 +42,9 @@ pub struct BoardRenderer {
 
     /// Board state used to draw pieces
     board: Option<Board>,
+
+    /// Tile which is highlighted separately
+    highlighted_tile: Option<(u32, u32)>,
 }
 
 impl BoardRenderer {
@@ -59,7 +62,8 @@ impl BoardRenderer {
             bitboard_on_color: Color { r: 255, g: 0, b: 0, a: 127 },
             bitboard_off_color: Color { r: 0, g: 0, b: 255, a: 127 },
             textures: piece_textures,
-            board: None
+            board: None,
+            highlighted_tile: None
         }
     }
 
@@ -95,6 +99,12 @@ impl BoardRenderer {
                 let color = if bit { self.bitboard_on_color } else { self.bitboard_off_color };
     
                 let (column, rank) = Bitboard::bit_offset_to_coordinates(bit_offset);
+
+                if let Some(highlight) = self.highlighted_tile {
+                    if highlight.0 == column && highlight.1 == rank {
+                        continue;
+                    }
+                }
     
                 let pos = self.get_tile_pixel_pos(column, rank);
                 let tile_size = self.tile_size();
@@ -114,9 +124,39 @@ impl BoardRenderer {
         self.player = self.player.opposite();
     }
 
+    pub fn set_highlighted_tile(&mut self, tile: Option<(u32, u32)>) {
+        self.highlighted_tile = tile;
+    }
+
+    fn flipped(&self) -> bool {
+        self.player == Player::Black
+    }
+
+    pub fn get_tile_from_pixel_pos(&self, pos: Vector2) -> Option<(u32, u32)> {
+        let mouse_x = pos.x as i32;
+        let mouse_y = pos.y as i32;
+
+        let tile_size = self.tile_size();
+        let total_tile_size = tile_size * 8 - 1;
+
+        if mouse_x < self.x + self.margin ||
+            mouse_x > self.x + self.margin + total_tile_size ||
+            mouse_y < self.y + self.margin ||
+            mouse_y > self.y + self.margin + total_tile_size {
+            
+            return None;
+        };
+
+        let column = if self.flipped() { 7 - (mouse_x - self.margin) / tile_size } else { (mouse_x - self.margin) / tile_size };
+        let rank = if self.flipped() { (mouse_y - self.margin) / tile_size } else { 7 - (mouse_y - self.margin) / tile_size };
+
+        return Some((column as u32, rank as u32));
+    }
+
     /// Draws the board on screen
     pub fn draw(&self, draw_handle: &mut RaylibDrawHandle) {
         self.draw_tiles(draw_handle);
+        self.draw_highlighted_tile(draw_handle);
         self.draw_ranks(draw_handle);
         self.draw_columns(draw_handle);
         self.draw_board_pieces(draw_handle);
@@ -127,6 +167,10 @@ impl BoardRenderer {
     /// Sets the current board to be drawn. Set to None to disable pieces.
     pub fn set_board(&mut self, board: Option<&Board>) {
         self.board = board.cloned();
+    }
+
+    pub fn board(&self) -> Option<&Board> {
+        self.board.as_ref()
     }
 
     fn draw_board_pieces(&self, draw_handle: &mut RaylibDrawHandle) {
@@ -155,9 +199,18 @@ impl BoardRenderer {
                 let color = if (i + j) % 2 == 0 { self.dark_color } else { self.light_color };
 
                 let pos = self.get_tile_pixel_pos(i, j);
-
                 draw_handle.draw_rectangle(pos.0, pos.1, tile_size, tile_size, color);
             }
+        }
+    }
+
+    fn draw_highlighted_tile(&self, draw_handle: &mut RaylibDrawHandle) {
+        let tile_size = self.tile_size();
+
+        if let Some(highlight) = self.highlighted_tile {
+            let pos = self.get_tile_pixel_pos(highlight.0, highlight.1);
+
+            draw_handle.draw_rectangle(pos.0, pos.1, tile_size, tile_size, Color::GREEN);
         }
     }
 

@@ -1,3 +1,5 @@
+use crate::{piece::Piece, player::Player};
+
 use super::bitboard::Bitboard;
 
 use const_for::const_for;
@@ -9,6 +11,22 @@ pub const KING_MASKS: [Bitboard; 64] = generate_king_masks();
 pub const QUEEN_MASKS: [Bitboard; 64] = generate_queen_masks();
 pub const WHITE_PAWN_MASKS: [Bitboard; 64] = generate_white_pawn_masks();
 pub const BLACK_PAWN_MASKS: [Bitboard; 64] = generate_black_pawn_masks();
+
+pub fn get_move_mask(player: Player, piece: Piece) -> &'static [Bitboard] {
+    match piece {
+        Piece::Rook => &ROOK_MASKS,
+        Piece::Bishop => &BISHOP_MASKS,
+        Piece::Knight => &KNIGHT_MASKS,
+        Piece::King => &KING_MASKS,
+        Piece::Queen => &QUEEN_MASKS,
+        Piece::Pawn => {
+            match player {
+                Player::White => &WHITE_PAWN_MASKS,
+                Player::Black => &BLACK_PAWN_MASKS
+            }
+        }
+    }
+}
 
 pub const fn generate_rook_masks() -> [Bitboard; 64] {
     let mut masks = [Bitboard(0); 64];

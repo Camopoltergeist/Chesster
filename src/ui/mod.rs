@@ -2,10 +2,10 @@ pub mod board_renderer;
 pub mod texture;
 
 use board_renderer::BoardRenderer;
-use raylib::{color::Color, ffi::KeyboardKey, prelude::RaylibDraw};
+use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::RaylibDraw};
 use texture::load_piece_textures;
 
-use crate::{board::board::Board, piece::Piece, player::Player};
+use crate::{board::{bitboard::Bitboard, board::Board, move_mask::get_move_mask}, player::Player};
 
 const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;
@@ -26,18 +26,29 @@ pub fn start_ui() {
 
 	br.set_board(Some(&board));
 
-	let mut just_pressed = false;
-
 	while !rl.window_should_close() {
-		if rl.is_key_down(KeyboardKey::KEY_SPACE) {
-			if !just_pressed {
-				br.swap_player();
+		if rl.is_key_pressed(KeyboardKey::KEY_SPACE) {
+			br.swap_player();
+		}
+
+		if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+			let mouse_pos = rl.get_mouse_position();
+			let tile = br.get_tile_from_pixel_pos(mouse_pos);
+
+			if let Some(board) = br.board() {
+				if let Some(tile_pos) = tile {
+					if let Some((player, piece)) = board.get_piece(tile_pos.0, tile_pos.1) {
+						let mask = get_move_mask(player, piece)[Bitboard::coordinates_to_bit_offset(tile_pos.0, tile_pos.1) as usize];
+						
+						br.set_bitboard_overlay(Some(mask));
+					}
+				}
+				else {
+					br.set_bitboard_overlay(None);
+				}
 			}
 
-			just_pressed = true;
-		}
-		else {
-			just_pressed = false;
+			br.set_highlighted_tile(tile);
 		}
 
 		let min_dimension = i32::min(rl.get_screen_width(), rl.get_screen_height());
