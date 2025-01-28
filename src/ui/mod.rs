@@ -42,6 +42,9 @@ pub fn start_ui() {
 						
 						br.set_bitboard_overlay(Some(mask));
 					}
+					else {
+						br.set_bitboard_overlay(None);
+					}
 				}
 				else {
 					br.set_bitboard_overlay(None);
