@@ -1,4 +1,4 @@
-use crate::{piece::Piece, player::Player};
+use crate::{board::tile_position::TilePosition, piece::Piece, player::Player};
 
 use super::bitboard::Bitboard;
 
@@ -39,7 +39,7 @@ pub const fn generate_rook_masks() -> [Bitboard; 64] {
 
             let combined = column_mask.0 ^ rank_mask.0;
 
-            let index = Bitboard::coordinates_to_bit_offset(column as u32, rank as u32);
+            let index = TilePosition::new(column, rank).bit_offset();
 
             masks[index as usize] = Bitboard(combined);
         })
@@ -58,7 +58,7 @@ pub const fn generate_bishop_masks() -> [Bitboard; 64] {
 
             let combined = rank_mask.0 ^ column_mask.0;
 
-            let index = Bitboard::coordinates_to_bit_offset(column as u32, rank as u32);
+            let index = TilePosition::new(column, rank).bit_offset();
 
             masks[index as usize] = Bitboard(combined);
         })
@@ -72,7 +72,7 @@ pub const fn generate_knight_masks() -> [Bitboard; 64] {
 
     const_for!(rank in 0..8 => {
         const_for!(column in 0..8 => {
-            let index = Bitboard::coordinates_to_bit_offset(column, rank);
+            let index = TilePosition::new(column, rank).bit_offset();
 
             masks[index as usize] = Bitboard::get_knight_mask(column, rank);
         });
@@ -86,7 +86,7 @@ pub const fn generate_king_masks() -> [Bitboard; 64] {
 
     const_for!(rank in 0..8 => {
         const_for!(column in 0..8 => {
-            let index = Bitboard::coordinates_to_bit_offset(column, rank);
+            let index = TilePosition::new(column, rank).bit_offset();
 
             masks[index as usize] = Bitboard::get_king_mask(column, rank);
         });
@@ -115,7 +115,7 @@ pub const fn generate_white_pawn_masks() -> [Bitboard; 64] {
 
     const_for!(rank in 0..8 => {
         const_for!(column in 0..8 => {
-            let index = Bitboard::coordinates_to_bit_offset(column, rank);
+            let index = TilePosition::new(column, rank).bit_offset();
 
             masks[index as usize] = Bitboard::get_white_pawn_mask(column, rank);
         });
@@ -129,7 +129,7 @@ pub const fn generate_black_pawn_masks() -> [Bitboard; 64] {
 
     const_for!(rank in 0..8 => {
         const_for!(column in 0..8 => {
-            let index = Bitboard::coordinates_to_bit_offset(column, rank);
+            let index = TilePosition::new(column, rank).bit_offset();
 
             masks[index as usize] = Bitboard::get_black_pawn_mask(column, rank);
         });

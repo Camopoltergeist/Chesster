@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use raylib::{color::Color, math::Vector2, prelude::{RaylibDraw, RaylibDrawHandle}, texture::Texture2D};
 
-use crate::{board::{bitboard::Bitboard, board::Board}, player::Player};
+use crate::{board::{bitboard::Bitboard, board::Board, tile_position::TilePosition}, player::Player};
 
 use super::texture::PieceTexture;
 
@@ -44,7 +44,7 @@ pub struct BoardRenderer {
     board: Option<Board>,
 
     /// Tile which is highlighted separately
-    highlighted_tile: Option<(u32, u32)>,
+    highlighted_tile: Option<TilePosition>,
 }
 
 impl BoardRenderer {
@@ -72,8 +72,8 @@ impl BoardRenderer {
     }
 
     /// Draws a specified piece on the specified tile
-    fn draw_piece(&self, draw_handle: &mut RaylibDrawHandle, piece_texture: PieceTexture, column: u32, rank: u32) {
-        let pos = self.get_tile_pixel_pos(column, rank);
+    fn draw_piece(&self, draw_handle: &mut RaylibDrawHandle, piece_texture: PieceTexture, tile_pos: TilePosition) {
+        let pos = self.get_tile_pixel_pos(tile_pos);
         let tile_size = self.tile_size();
 
         let x = pos.0;
@@ -98,15 +98,15 @@ impl BoardRenderer {
                 let bit = bitboard.check_bit(bit_offset);
                 let color = if bit { self.bitboard_on_color } else { self.bitboard_off_color };
     
-                let (column, rank) = Bitboard::bit_offset_to_coordinates(bit_offset);
+                let tile_pos = TilePosition::from_bit_offset(bit_offset);
 
                 if let Some(highlight) = self.highlighted_tile {
-                    if highlight.0 == column && highlight.1 == rank {
+                    if highlight == tile_pos {
                         continue;
                     }
                 }
     
-                let pos = self.get_tile_pixel_pos(column, rank);
+                let pos = self.get_tile_pixel_pos(tile_pos);
                 let tile_size = self.tile_size();
     
                 draw_handle.draw_rectangle(pos.0, pos.1, tile_size, tile_size, color);
@@ -124,7 +124,7 @@ impl BoardRenderer {
         self.player = self.player.opposite();
     }
 
-    pub fn set_highlighted_tile(&mut self, tile: Option<(u32, u32)>) {
+    pub fn set_highlighted_tile(&mut self, tile: Option<TilePosition>) {
         self.highlighted_tile = tile;
     }
 
@@ -132,7 +132,7 @@ impl BoardRenderer {
         self.player == Player::Black
     }
 
-    pub fn get_tile_from_pixel_pos(&self, pos: Vector2) -> Option<(u32, u32)> {
+    pub fn get_tile_from_pixel_pos(&self, pos: Vector2) -> Option<TilePosition> {
         let mouse_x = pos.x as i32;
         let mouse_y = pos.y as i32;
 
@@ -150,7 +150,7 @@ impl BoardRenderer {
         let column = if self.flipped() { 7 - (mouse_x - self.margin) / tile_size } else { (mouse_x - self.margin) / tile_size };
         let rank = if self.flipped() { (mouse_y - self.margin) / tile_size } else { 7 - (mouse_y - self.margin) / tile_size };
 
-        return Some((column as u32, rank as u32));
+        return Some(TilePosition::new(column as u32, rank as u32));
     }
 
     /// Draws the board on screen
@@ -181,12 +181,12 @@ impl BoardRenderer {
         let board = self.board.as_ref().unwrap();
 
         for bit_offset in 0..64 {
-            let (tile_x, tile_y) = Bitboard::bit_offset_to_coordinates(bit_offset);
+            let tile_pos = TilePosition::from_bit_offset(bit_offset);
 
-            let piece_opt = board.get_piece(tile_x, tile_y);
+            let piece_opt = board.get_piece(tile_pos);
 
             if let Some((player, piece)) = piece_opt {
-                self.draw_piece(draw_handle, PieceTexture::new(player, piece), tile_x, tile_y);
+                self.draw_piece(draw_handle, PieceTexture::new(player, piece), tile_pos);
             }
         }
     }
@@ -194,11 +194,11 @@ impl BoardRenderer {
     fn draw_tiles(&self, draw_handle: &mut RaylibDrawHandle) {
         let tile_size = self.tile_size();
 
-        for i in 0..8 {
-            for j in 0..8 {
-                let color = if (i + j) % 2 == 0 { self.dark_color } else { self.light_color };
+        for rank in 0..8 {
+            for column in 0..8 {
+                let color = if (rank + column) % 2 == 0 { self.dark_color } else { self.light_color };
 
-                let pos = self.get_tile_pixel_pos(i, j);
+                let pos = self.get_tile_pixel_pos(TilePosition::new(column, rank));
                 draw_handle.draw_rectangle(pos.0, pos.1, tile_size, tile_size, color);
             }
         }
@@ -208,7 +208,7 @@ impl BoardRenderer {
         let tile_size = self.tile_size();
 
         if let Some(highlight) = self.highlighted_tile {
-            let pos = self.get_tile_pixel_pos(highlight.0, highlight.1);
+            let pos = self.get_tile_pixel_pos(highlight);
 
             draw_handle.draw_rectangle(pos.0, pos.1, tile_size, tile_size, Color::GREEN);
         }
@@ -272,11 +272,11 @@ impl BoardRenderer {
         available_area / 8
     }
 
-    fn get_tile_pixel_pos(&self, column: u32, rank: u32) -> (i32, i32) {
+    fn get_tile_pixel_pos(&self, tile_pos: TilePosition) -> (i32, i32) {
         let flipped = self.player == Player::Black;
 
-        let tile_x = (if flipped { 7 - column } else { column } as i32);
-        let tile_y = (if flipped { rank } else { 7 - rank } as i32);
+        let tile_x = (if flipped { 7 - tile_pos.column() } else { tile_pos.column() } as i32);
+        let tile_y = (if flipped { tile_pos.rank() } else { 7 - tile_pos.rank() } as i32);
         
         let tile_size = self.tile_size();
 

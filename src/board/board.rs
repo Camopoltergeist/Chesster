@@ -1,4 +1,4 @@
-use super::bitboard::Bitboard;
+use super::{bitboard::Bitboard, tile_position::TilePosition};
 use crate::{piece::Piece, player::Player};
 
 #[derive(Clone)]
@@ -155,25 +155,22 @@ impl Board {
         self.get_piece_bitboard_mut(piece).set_bit(bit_offset);
     }
 
-    pub fn get_piece(&self, column: u32, rank: u32) -> Option<(Player, Piece)> {
-        let bit_offset = Bitboard::coordinates_to_bit_offset(column, rank);
-        return self.get_piece_from_offset(bit_offset);
+    pub fn get_piece(&self, tile_pos: TilePosition) -> Option<(Player, Piece)> {
+        return self.get_piece_from_offset(tile_pos.bit_offset());
     }
 
-    pub fn remove_piece(&mut self, column: u32, rank: u32) {
-        let bit_offset = Bitboard::coordinates_to_bit_offset(column, rank);
-        self.remove_piece_from_offset(bit_offset);
+    pub fn remove_piece(&mut self, tile_pos: TilePosition) {
+        self.remove_piece_from_offset(tile_pos.bit_offset());
     }
 
-    pub fn set_piece(&mut self, player: Player, piece: Piece, column: u32, rank: u32) {
-        let bit_offset = Bitboard::coordinates_to_bit_offset(column, rank);
-        self.set_piece_to_offset(player, piece, bit_offset);
+    pub fn set_piece(&mut self, player: Player, piece: Piece, tile_pos: TilePosition) {
+        self.set_piece_to_offset(player, piece, tile_pos.bit_offset());
     }
 
-    pub fn get_piece_debug(&self, tile: &str) -> Option<(Player, Piece)> {
-        let (column, rank) = Bitboard::tile_str_to_coordinates(tile).expect("invalid tile str passed");
+    pub fn get_piece_debug(&self, tile_str: &str) -> Option<(Player, Piece)> {
+        let tile_pos = TilePosition::from_tile_str(tile_str).expect("invalid tile str passed");
 
-        self.get_piece(column, rank)
+        self.get_piece(tile_pos)
     }
 }
 
