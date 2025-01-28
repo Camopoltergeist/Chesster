@@ -45,6 +45,19 @@ impl Default for Board {
 }
 
 impl Board {
+    pub fn empty() -> Self {
+        Self {
+            white_pieces: Bitboard(0),
+            black_pieces: Bitboard(0),
+            pawns: Bitboard(0),
+            rooks: Bitboard(0),
+            kings: Bitboard(0),
+            knights: Bitboard(0),
+            bishops: Bitboard(0),
+            queens: Bitboard(0)
+        }
+    }
+
     pub fn check_overlaps(a: Bitboard, b: Bitboard) -> bool {
         a & b != 0
     }
