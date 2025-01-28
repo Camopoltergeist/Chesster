@@ -175,6 +175,25 @@ impl Board {
 
         self.get_piece(column, rank)
     }
+
+    pub fn get_debug_board() -> Board {
+        Board {
+            white_pieces: Bitboard(
+                0b_00000000_00000000_00000000_00010000_00000000_00010001_00000000_00000001, // White pieces (north)
+            ),
+            black_pieces: Bitboard(
+                0b_00000100_00010000_00000000_01000100_00000000_00000000_00000000_00010000, // Black pieces (south)
+            ),
+            pawns: Bitboard(0),
+            rooks: Bitboard(
+                0b_00000100_00010000_00000000_01010100_00000000_00010001_00000000_00010001, // Rook at e5
+            ),
+            knights: Bitboard(0),
+            bishops: Bitboard(0),
+            queens: Bitboard(0),
+            kings: Bitboard(0),
+        }
+    } 
 }
 
 #[cfg(test)]
