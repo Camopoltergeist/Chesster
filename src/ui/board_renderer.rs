@@ -208,7 +208,7 @@ impl BoardRenderer {
         let tile_size = self.tile_size();
 
         if let Some(highlight) = self.highlighted_tile {
-            let pos = self.get_tile_pixel_pos(highlight.0, highlight.1);
+            let pos = self.get_tile_pixel_pos(highlight);
 
             draw_handle.draw_rectangle(pos.0, pos.1, tile_size, tile_size, Color::GREEN);
         }
