@@ -1,6 +1,6 @@
 use crate::{piece::Piece, player::Player};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PlayerPiece {
     player: Player,
     piece: Piece

@@ -183,10 +183,10 @@ impl BoardRenderer {
         for bit_offset in 0..64 {
             let tile_pos = TilePosition::from_bit_offset(bit_offset);
 
-            let piece_opt = board.get_piece(tile_pos);
+            let player_piece_opt = board.get_piece(tile_pos);
 
-            if let Some((player, piece)) = piece_opt {
-                self.draw_piece(draw_handle, PieceTexture::new(player, piece), tile_pos);
+            if let Some(piece) = player_piece_opt {
+                self.draw_piece(draw_handle, PieceTexture::new(piece), tile_pos);
             }
         }
     }
