@@ -150,23 +150,31 @@ pub fn get_king_collision(board: Board, player: Player, tile_pos: TilePosition) 
 }
 
 pub fn get_pawn_collision(board: Board, player: Player, tile_pos: TilePosition) -> Bitboard {
-    let pawn_moves: u64 = match player {
-        Player::White => WHITE_PAWN_MASKS[tile_pos.bit_offset() as usize].value(),
-        Player::Black => BLACK_PAWN_MASKS[tile_pos.bit_offset() as usize].value(),
-    };
+    let collision_mask = (board.white_pieces | board.black_pieces).value();
 
-    let valid_moves = if (pawn_moves & (board.white_pieces | board.black_pieces).value()) != 0 {
-        0
-    } else {
-        pawn_moves
+    let valid_moves = match player {
+        Player::White => {
+            if (1 << tile_pos.bit_offset() + 8) & collision_mask != 0 {
+                0
+            } else {
+                WHITE_PAWN_MASKS[tile_pos.bit_offset() as usize].value() & !collision_mask
+            }
+        }
+        Player::Black => {
+            if (1 << tile_pos.bit_offset() - 8) & collision_mask != 0 {
+                0
+            } else {
+                BLACK_PAWN_MASKS[tile_pos.bit_offset() as usize].value() & !collision_mask
+            }
+        }
     };
 
     let capture_moves =
-        get_pawn_attack(player, tile_pos) & board.get_player_bitboard(player.opposite()).value();
+        get_pawn_capture(player, tile_pos) & board.get_player_bitboard(player.opposite()).value();
     Bitboard(valid_moves | capture_moves)
 }
 
-pub fn get_pawn_attack(player: Player, tile_pos: TilePosition) -> u64 {
+pub fn get_pawn_capture(player: Player, tile_pos: TilePosition) -> u64 {
     let mut attack_tiles = 0;
     let attack_mask = 1u64 << tile_pos.bit_offset();
 
