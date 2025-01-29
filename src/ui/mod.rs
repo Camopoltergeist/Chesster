@@ -7,7 +7,7 @@ use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::RaylibDraw}
 use text_area::TextArea;
 use texture::load_piece_textures;
 
-use crate::{board::{board::Board, move_collision::get_collision_mask, move_mask::get_move_mask, tile_position::TilePosition}, piece::Piece, player::Player, player_piece::PlayerPiece};
+use crate::{board::{board::Board, move_collision::get_collision_mask, move_mask::get_move_mask, tile_position::TilePosition}, debug_board::create_debug_board, piece::Piece, player::Player, player_piece::PlayerPiece};
 
 const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;
@@ -25,11 +25,9 @@ pub fn start_ui() {
 	let mut br = BoardRenderer::new(0, 0, WINDOW_HEIGHT, 32, Player::White, piece_textures);
 
 	let board = Board::default();
+	let debug_board = create_debug_board();
 
-	// board.set_piece(PlayerPiece::new(Player::White, Piece::Rook), TilePosition::from_tile_str("a1").unwrap());
-	// board.set_piece(PlayerPiece::new(Player::White, Piece::Rook), TilePosition::from_tile_str("a7").unwrap());
-
-	// let m = get_collision_mask(board.clone(), TilePosition::from_tile_str("a7").unwrap());
+	let mut is_debug = false;
 
 	br.set_board(Some(&board));
 
@@ -40,6 +38,14 @@ pub fn start_ui() {
 	while !rl.window_should_close() {
 		if rl.is_key_pressed(KeyboardKey::KEY_SPACE) {
 			br.swap_player();
+		}
+
+		if rl.is_key_pressed(KeyboardKey::KEY_BACKSPACE) {
+			if is_debug { br.set_board(Some(&board)); } else { br.set_board(Some(&debug_board)); };
+			br.set_bitboard_overlay(None);
+			br.set_highlighted_tile(None);
+			selected_tile = None;
+			is_debug = !is_debug;
 		}
 
 		let mouse_pos = rl.get_mouse_position();
@@ -77,6 +83,10 @@ pub fn start_ui() {
 
 		if let Some(tile_pos) = selected_tile {
 			text_area.draw_line(&mut draw_handle, &format!("Selected tile: {}", tile_pos.notation_string()));
+		}
+
+		if is_debug {
+			text_area.draw_line(&mut draw_handle, "Debug board");
 		}
 
 		draw_handle.clear_background(Color { r: 0, g: 65, b: 119, a: 255 });
