@@ -142,11 +142,16 @@ pub fn get_king_collision(board: Board, player: Player, tile_pos: TilePosition) 
 }
 
 pub fn get_pawn_collision(board: Board, player: Player, tile_pos: TilePosition) -> Bitboard {
-    let valid_moves: u64 = match player {
-        Player::White => WHITE_PAWN_MASKS[tile_pos.bit_offset() as usize].value() & !(board.white_pieces | board.black_pieces).value(),
-        Player::Black => BLACK_PAWN_MASKS[tile_pos.bit_offset() as usize].value() & !(board.white_pieces | board.black_pieces).value(),
+    let pawn_moves: u64 = match player {
+        Player::White => WHITE_PAWN_MASKS[tile_pos.bit_offset() as usize].value(),
+        Player::Black => BLACK_PAWN_MASKS[tile_pos.bit_offset() as usize].value(),
     };
-    Bitboard(valid_moves | get_pawn_attack(player, tile_pos))
+
+    let valid_moves = if (pawn_moves & (board.white_pieces | board.black_pieces).value()) != 0 { 0 } else { pawn_moves };
+
+
+    let capture_moves = get_pawn_attack(player, tile_pos) & board.get_player_bitboard(player.opposite()).value();
+    Bitboard(valid_moves | capture_moves)
 }
 
 pub fn get_pawn_attack(player: Player, tile_pos: TilePosition) -> u64 {
