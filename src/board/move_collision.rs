@@ -1,6 +1,6 @@
 use crate::{piece::Piece, player::Player};
 
-use super::{bitboard::Bitboard, board::Board, move_mask::{KING_MASKS, KNIGHT_MASKS, ROOK_MASKS}, tile_position::TilePosition};
+use super::{bitboard::Bitboard, board::Board, move_mask::{BLACK_PAWN_MASKS, KING_MASKS, KNIGHT_MASKS, ROOK_MASKS, WHITE_PAWN_MASKS}, tile_position::TilePosition};
 
 pub fn get_collision_mask(board: Board, tile_pos: TilePosition) -> Bitboard {
     let square_cont = board.get_piece(tile_pos);
@@ -12,7 +12,7 @@ pub fn get_collision_mask(board: Board, tile_pos: TilePosition) -> Bitboard {
     let piece = square_cont.unwrap();
 
     match piece.piece() {
-        Piece::Pawn => return get_pawn_collision(piece.player(), tile_pos.column(), tile_pos.rank()),
+        Piece::Pawn => return get_pawn_collision(board, piece.player(), tile_pos),
         Piece::Rook => {
             return get_rook_collision(
                 board,
@@ -141,7 +141,28 @@ pub fn get_king_collision(board: Board, player: Player, tile_pos: TilePosition) 
     Bitboard(KING_MASKS[tile_pos.bit_offset() as usize].value() & !board.get_player_bitboard(player).value())
 }
 
-pub fn get_pawn_collision(player: Player, column: u32, rank: u32) -> Bitboard {
-    let pawn_mask = 0;
-    Bitboard(pawn_mask)
+pub fn get_pawn_collision(board: Board, player: Player, tile_pos: TilePosition) -> Bitboard {
+    let valid_moves: u64 = match player {
+        Player::White => WHITE_PAWN_MASKS[tile_pos.bit_offset() as usize].value() & !(board.white_pieces | board.black_pieces).value(),
+        Player::Black => BLACK_PAWN_MASKS[tile_pos.bit_offset() as usize].value() & !(board.white_pieces | board.black_pieces).value(),
+    };
+    Bitboard(valid_moves | get_pawn_attack(player, tile_pos))
+}
+
+pub fn get_pawn_attack(player: Player, tile_pos: TilePosition) -> u64 {
+    let mut attack_tiles = 0;
+    let attack_mask = 1u64 << tile_pos.bit_offset();
+
+    match player {
+        Player::White => {
+            if tile_pos.column() != 0 {attack_tiles |= attack_mask << 7;}
+            if tile_pos.column() != 7 {attack_tiles |= attack_mask << 9;}
+        }
+        Player::Black => {
+            if tile_pos.column() != 0 { attack_tiles |= attack_mask >> 9; }
+            if tile_pos.column() != 7 { attack_tiles |= attack_mask >> 7; }
+        }
+    }
+
+    attack_tiles
 }
