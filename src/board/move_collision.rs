@@ -1,6 +1,6 @@
 use crate::{piece::Piece, player::Player};
 
-use super::{bitboard::Bitboard, board::Board, move_mask::{KNIGHT_MASKS, ROOK_MASKS}, tile_position::TilePosition};
+use super::{bitboard::Bitboard, board::Board, move_mask::{KING_MASKS, KNIGHT_MASKS, ROOK_MASKS}, tile_position::TilePosition};
 
 pub fn get_collision_mask(board: Board, tile_pos: TilePosition) -> Bitboard {
     let square_cont = board.get_piece(tile_pos);
@@ -21,9 +21,9 @@ pub fn get_collision_mask(board: Board, tile_pos: TilePosition) -> Bitboard {
             )
         }
         Piece::Bishop => return get_bishop_collision(piece.player(), tile_pos.column(), tile_pos.rank()),
-        Piece::Knight => return get_knight_collision(board, piece.player(), tile_pos.bit_offset()),
+        Piece::Knight => return get_knight_collision(board, piece.player(), tile_pos),
         Piece::Queen => return get_queen_collision(piece.player(), tile_pos.column(), tile_pos.rank()),
-        Piece::King => return get_king_collision(piece.player(), tile_pos.column(), tile_pos.rank()),
+        Piece::King => return get_king_collision(board, piece.player(), tile_pos),
     }
 }
 
@@ -128,8 +128,8 @@ pub fn get_bishop_collision(player: Player, column: u32, rank: u32) -> Bitboard 
     Bitboard(bishop_mask)
 }
 
-pub fn get_knight_collision(board: Board, player: Player, offset: u32) -> Bitboard {
-    Bitboard(KNIGHT_MASKS[offset as usize].value() & !board.get_player_bitboard(player).value())
+pub fn get_knight_collision(board: Board, player: Player, tile_pos: TilePosition) -> Bitboard {
+    Bitboard(KNIGHT_MASKS[tile_pos.bit_offset() as usize].value() & !board.get_player_bitboard(player).value())
 }
 
 pub fn get_queen_collision(player: Player, column: u32, rank: u32) -> Bitboard {
@@ -137,9 +137,8 @@ pub fn get_queen_collision(player: Player, column: u32, rank: u32) -> Bitboard {
     Bitboard(queen_mask)
 }
 
-pub fn get_king_collision(player: Player, column: u32, rank: u32) -> Bitboard {
-    let king_mask = 0;
-    Bitboard(king_mask)
+pub fn get_king_collision(board: Board, player: Player, tile_pos: TilePosition) -> Bitboard {
+    Bitboard(KING_MASKS[tile_pos.bit_offset() as usize].value() & !board.get_player_bitboard(player).value())
 }
 
 pub fn get_pawn_collision(player: Player, column: u32, rank: u32) -> Bitboard {
