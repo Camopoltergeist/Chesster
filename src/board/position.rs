@@ -51,6 +51,10 @@ impl Position {
 
         return legal_moves;
     }
+
+    pub fn board(&self) -> &Board {
+        &self.board
+    }
 }
 
 impl Default for Position {
