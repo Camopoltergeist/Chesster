@@ -26,10 +26,20 @@ impl Position {
 
             let tile_pos = TilePosition::from_bit_offset(bit_offset);
 
+            legal_moves.append(&mut self.get_legal_moves(tile_pos));
+        };
+
+        return legal_moves;
+    }
+
+    pub fn get_legal_moves(&self, tile_pos: TilePosition) -> Vec<Move> {
+        let mut legal_moves = Vec::new();
+
+        if let Some(_) = self.board.get_piece(tile_pos) {
             let moves_bitboard = get_collision_mask(self.board.clone(), tile_pos);
 
             if moves_bitboard.is_empty() {
-                continue;
+                return legal_moves;
             }
 
             for bit_offset in 0..64 {
@@ -37,7 +47,7 @@ impl Position {
                     legal_moves.push(Move::new(tile_pos, TilePosition::from_bit_offset(bit_offset)));
                 }
             }
-        };
+        }
 
         return legal_moves;
     }
