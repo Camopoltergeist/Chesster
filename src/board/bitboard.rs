@@ -47,6 +47,10 @@ impl Bitboard {
         self.0 &= mask;
     }
 
+    pub const fn is_empty(&self) -> bool {
+        self.0 == 0
+    }
+
     pub fn move_bit(&mut self, from_offset: u32, to_offset: u32) {
         //The basis of moving a bit: checks if there is a 1 there, makes it a 0, and makes another field a 1.
         if self.check_bit(from_offset) {
