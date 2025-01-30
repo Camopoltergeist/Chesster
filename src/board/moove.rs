@@ -1,5 +1,6 @@
 use super::tile_position::TilePosition;
 
+#[derive(Debug)]
 pub struct Move {
     from: TilePosition,
     to: TilePosition
