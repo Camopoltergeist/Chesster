@@ -29,6 +29,7 @@ pub fn start_ui() {
 	// let mut text_area = TextArea::new(br.size(), br.margin(), 20);
 
 	while !rl.window_should_close() {
+		ui.handle_input(&rl);
 		ui.draw(&mut rl, &thread);
 
 		// if rl.is_key_pressed(KeyboardKey::KEY_SPACE) {

@@ -1,5 +1,5 @@
 
-use raylib::{color::Color, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
+use raylib::{color::Color, ffi::KeyboardKey, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
 use crate::{board::{board::Board, position::Position, tile_position::TilePosition}, player::Player};
 
@@ -51,6 +51,12 @@ impl UI {
 		self.board_renderer.draw(draw_handle);
 	}
 
+	pub fn handle_input(&mut self, rl: &RaylibHandle) {
+		if rl.is_key_pressed(KeyboardKey::KEY_BACKSPACE) {
+			self.toggle_debug_position();
+		}
+	}
+
 	pub fn position(&self) -> Option<&Position> {
 		self.position.as_ref()
 	}
@@ -73,7 +79,7 @@ impl UI {
 			self.set_rendered_position(self.position.clone());
 		}
 		else {
-			self.set_rendered_position(self.position.clone());
+			self.set_rendered_position(self.debug_position.clone());
 		}
 
 		self.is_debug = !self.is_debug;
