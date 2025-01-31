@@ -7,6 +7,7 @@ use board_renderer::BoardRenderer;
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::RaylibDraw};
 use text_area::TextArea;
 use texture::load_piece_textures;
+use ui::UI;
 
 use crate::{board::{board::Board, move_collision::get_collision_mask, move_mask::get_move_mask, tile_position::TilePosition}, debug_board::create_debug_board, piece::Piece, player::Player, player_piece::PlayerPiece};
 
@@ -14,6 +15,11 @@ const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;
 
 pub fn start_ui() {
+	let mut ui = UI::new();
+	ui.start_loop();
+
+	return;
+
 	let (mut rl, thread) = raylib::init()
 		.vsync()
 		.size(WINDOW_WIDTH, WINDOW_HEIGHT)
