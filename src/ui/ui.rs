@@ -1,5 +1,5 @@
 
-use raylib::{color::Color, prelude::RaylibDrawHandle, RaylibHandle, RaylibThread};
+use raylib::{color::Color, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
 use crate::{board::{position::Position, tile_position::TilePosition}, player::Player};
 
@@ -17,18 +17,23 @@ pub struct UI {
 impl UI {
 	pub fn new(rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
 		let piece_textures = load_piece_textures(rl, thread);
-		let board_renderer = BoardRenderer::new(0, 0, rl.get_screen_height(), 32, Player::White, piece_textures);
+		let mut board_renderer = BoardRenderer::new(0, 0, rl.get_screen_height(), 32, Player::White, piece_textures);
+
+		let position = Position::default();
+		board_renderer.set_board(Some(position.board()));
 
 		Self {
 			board_renderer,
-			position: None,
+			position: Some(position),
 			selected_tile: None,
 			background_color: Color { r: 0, g: 65, b: 119, a: 255 },
 		}
 	}
 
-	fn draw(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread) {
+	pub fn draw(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread) {
 		let mut draw_handle = rl.begin_drawing(thread);
+
+		draw_handle.clear_background(self.background_color);
 
 		self.draw_board(&mut draw_handle);
 		
@@ -39,5 +44,13 @@ impl UI {
 		self.board_renderer.set_size(min_dimension);
 
 		self.board_renderer.draw(draw_handle);
+	}
+
+	pub fn position(&self) -> Option<&Position> {
+		self.position.as_ref()
+	}
+
+	pub fn set_position(&mut self, position: Option<Position>) {
+		self.position = position;
 	}
 }
