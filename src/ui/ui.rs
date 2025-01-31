@@ -1,14 +1,11 @@
 
-use raylib::{color::Color, prelude::RaylibDraw, RaylibHandle, RaylibThread};
+use raylib::{color::Color, prelude::RaylibDrawHandle, RaylibHandle, RaylibThread};
 
 use crate::{board::{position::Position, tile_position::TilePosition}, player::Player};
 
 use super::{board_renderer::BoardRenderer, texture::load_piece_textures};
 
 pub struct UI {
-	rl: RaylibHandle,
-	thread: RaylibThread,
-
 	board_renderer: BoardRenderer,
 	position: Option<Position>,
 
@@ -18,20 +15,11 @@ pub struct UI {
 }
 
 impl UI {
-	pub fn new() -> Self {
-		let (mut rl, thread) = raylib::init()
-			.vsync()
-			.size(1280, 720)
-			.resizable()
-			.title("Chesster")
-			.build();
-
-		let piece_textures = load_piece_textures(&mut rl, &thread);
+	pub fn new(rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
+		let piece_textures = load_piece_textures(rl, thread);
 		let board_renderer = BoardRenderer::new(0, 0, rl.get_screen_height(), 32, Player::White, piece_textures);
 
 		Self {
-			rl,
-			thread,
 			board_renderer,
 			position: None,
 			selected_tile: None,
@@ -39,12 +27,17 @@ impl UI {
 		}
 	}
 
-	pub fn start_loop(&mut self) {
-		while !self.rl.window_should_close() {
-			let mut draw_handle = self.rl.begin_drawing(&self.thread);
-			draw_handle.clear_background(self.background_color);
+	fn draw(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread) {
+		let mut draw_handle = rl.begin_drawing(thread);
 
-			self.board_renderer.draw(&mut draw_handle);
-		}
+		self.draw_board(&mut draw_handle);
+		
+	}
+
+	fn draw_board(&mut self, draw_handle: &mut RaylibDrawHandle) {
+		let min_dimension = i32::min(draw_handle.get_screen_width(), draw_handle.get_screen_height());
+		self.board_renderer.set_size(min_dimension);
+
+		self.board_renderer.draw(draw_handle);
 	}
 }

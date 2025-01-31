@@ -15,11 +15,6 @@ const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;
 
 pub fn start_ui() {
-	let mut ui = UI::new();
-	ui.start_loop();
-
-	return;
-
 	let (mut rl, thread) = raylib::init()
 		.vsync()
 		.size(WINDOW_WIDTH, WINDOW_HEIGHT)
@@ -27,9 +22,10 @@ pub fn start_ui() {
 		.title("Chesster")
 		.build();
 
-	let piece_textures = load_piece_textures(&mut rl, &thread);
 
-	let mut br = BoardRenderer::new(0, 0, WINDOW_HEIGHT, 32, Player::White, piece_textures);
+	let mut ui = UI::new(&mut rl, &thread);
+
+	return;
 
 	let board = Board::default();
 	let debug_board = create_debug_board();
