@@ -55,6 +55,10 @@ impl UI {
 		if rl.is_key_pressed(KeyboardKey::KEY_BACKSPACE) {
 			self.toggle_debug_position();
 		}
+
+		if rl.is_key_pressed(KeyboardKey::KEY_SPACE) {
+			self.toggle_board_perspective();
+		}
 	}
 
 	pub fn position(&self) -> Option<&Position> {
@@ -72,6 +76,10 @@ impl UI {
 		else {
 			self.board_renderer.set_board(None);
 		}
+	}
+
+	fn toggle_board_perspective(&mut self) {
+		self.board_renderer.swap_player();
 	}
 
 	fn toggle_debug_position(&mut self) {
