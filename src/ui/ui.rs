@@ -75,13 +75,14 @@ impl UI {
 	}
 
 	fn toggle_debug_position(&mut self) {
-		if self.is_debug {
-			self.set_rendered_position(self.position.clone());
+		let not_current_position = if self.is_debug {
+			self.position.clone()
 		}
 		else {
-			self.set_rendered_position(self.debug_position.clone());
-		}
+			self.debug_position.clone()
+		};
 
+		self.set_rendered_position(not_current_position);
 		self.is_debug = !self.is_debug;
 	}
 }

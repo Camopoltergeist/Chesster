@@ -36,14 +36,6 @@ pub fn start_ui() {
 		// 	br.swap_player();
 		// }
 
-		// if rl.is_key_pressed(KeyboardKey::KEY_BACKSPACE) {
-		// 	if is_debug { br.set_board(Some(&board)); } else { br.set_board(Some(&debug_board)); };
-		// 	br.set_bitboard_overlay(None);
-		// 	br.set_highlighted_tile(None);
-		// 	selected_tile = None;
-		// 	is_debug = !is_debug;
-		// }
-
 		// let mouse_pos = rl.get_mouse_position();
 		// let tile_pos_opt = br.get_tile_from_pixel_pos(mouse_pos);
 
