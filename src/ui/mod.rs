@@ -1,6 +1,7 @@
 pub mod board_renderer;
 pub mod texture;
 pub mod text_area;
+pub mod ui;
 
 use board_renderer::BoardRenderer;
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::RaylibDraw};
