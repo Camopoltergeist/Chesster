@@ -26,10 +26,6 @@ pub fn start_ui() {
 
 	ui.set_position(Some(position));
 
-	let debug_board = create_debug_board();
-
-	let mut is_debug = false;
-
 	// let mut text_area = TextArea::new(br.size(), br.margin(), 20);
 
 	while !rl.window_should_close() {

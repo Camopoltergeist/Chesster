@@ -2,6 +2,7 @@ use crate::player::Player;
 
 use super::{board::Board, moove::Move, move_collision::get_collision_mask, tile_position::TilePosition};
 
+#[derive(Clone)]
 pub struct Position {
     board: Board,
     current_player: Player,
