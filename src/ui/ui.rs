@@ -1,7 +1,7 @@
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{move_collision::get_collision_mask, position::Position, tile_position::TilePosition}, debug_position::create_debug_position, player::Player};
+use crate::{board::{moove::Move, move_collision::get_collision_mask, position::{self, Position}, tile_position::TilePosition}, debug_position::create_debug_position, player::Player};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::load_piece_textures};
 
@@ -97,7 +97,24 @@ impl UI {
 		let tile_pos_opt = self.board_renderer.get_tile_from_pixel_pos(mouse_pos);
 		self.hovered_tile = tile_pos_opt;
 
+		// TODO: Holy fuck, this is a mess
 		if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+			if let Some(selected_tile) = self.selected_tile {
+				if let Some(clicked_tile) = tile_pos_opt {
+					if let Some(position) = &mut self.position {
+						let moove = Move::new(selected_tile, clicked_tile);
+
+						let move_result = position.make_move(moove);
+
+						if move_result.is_ok() {
+							self.board_renderer.set_board(Some(position.board()));
+							self.select_tile(None);
+							return;
+						}
+					}
+				}
+			}
+
 			self.select_tile(tile_pos_opt);
 		}
 	}
