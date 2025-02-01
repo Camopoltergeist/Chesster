@@ -1,7 +1,7 @@
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{board::Board, position::Position, tile_position::TilePosition}, player::Player};
+use crate::{board::{board::Board, move_collision::get_collision_mask, position::Position, tile_position::TilePosition}, player::Player};
 
 use super::{board_renderer::BoardRenderer, texture::load_piece_textures};
 
@@ -74,7 +74,32 @@ impl UI {
 	}
 
 	fn select_tile(&mut self, tile_pos: Option<TilePosition>) {
+		self.selected_tile = tile_pos;
 		self.board_renderer.set_highlighted_tile(tile_pos);
+		self.board_renderer.set_bitboard_overlay(None);
+
+		let shown_position = self.shown_position();
+
+		if shown_position.is_none() {
+			return;
+		}
+
+		let position = shown_position.unwrap();
+
+		if tile_pos.is_none() {
+			return;
+		}
+
+		let tile_pos = tile_pos.unwrap();
+
+		if let Some(_) = position.get_piece(tile_pos) {
+			let mask = get_collision_mask(position.board().clone(), tile_pos);
+			self.board_renderer.set_bitboard_overlay(Some(mask));
+		}
+	}
+
+	pub fn shown_position(&self) -> Option<&Position> {
+		if self.is_debug { self.debug_position.as_ref() } else { self.position.as_ref() } 
 	}
 
 	pub fn position(&self) -> Option<&Position> {

@@ -1,4 +1,4 @@
-use crate::player::Player;
+use crate::{piece::Piece, player::Player, player_piece::PlayerPiece};
 
 use super::{board::Board, moove::Move, move_collision::get_collision_mask, tile_position::TilePosition};
 
@@ -52,6 +52,10 @@ impl Position {
 
         return legal_moves;
     }
+
+    pub fn get_piece(&self, tile_pos: TilePosition) -> Option<PlayerPiece> {
+        self.board.get_piece(tile_pos)
+    } 
 
     pub fn board(&self) -> &Board {
         &self.board
