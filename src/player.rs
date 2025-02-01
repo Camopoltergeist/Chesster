@@ -13,4 +13,11 @@ impl Player {
             return Self::White;
         }
     }
+
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::White => "White",
+            Self::Black => "Black"
+        }
+    }
 }

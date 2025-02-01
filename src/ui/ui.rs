@@ -62,6 +62,12 @@ impl UI {
 			self.text_area.draw_line(draw_handle, "Debug Board");
 		}
 
+		if let Some(position) = &mut self.position {
+			let player_str = position.current_player().as_str();
+
+			self.text_area.draw_line(draw_handle, format!("Current player: {}", &player_str).as_str());
+		}
+
 		if let Some(hovered_tile) = self.hovered_tile {
 			self.text_area.draw_line(draw_handle, &hovered_tile.notation_string());
 		}

@@ -87,6 +87,10 @@ impl Position {
 
         Ok(())
     }
+
+    pub fn current_player(&self) -> Player {
+        self.current_player
+    }
 }
 
 impl Position {
