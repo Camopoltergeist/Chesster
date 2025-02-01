@@ -1,17 +1,19 @@
 
-use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
+use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, math::Rectangle, prelude::{RaylibDraw, RaylibDrawHandle}, rgui::RaylibDrawGui, RaylibHandle, RaylibThread};
 
 use crate::{board::{move_collision::get_collision_mask, position::Position, tile_position::TilePosition}, player::Player};
 
-use super::{board_renderer::BoardRenderer, texture::load_piece_textures};
+use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::load_piece_textures};
 
 pub struct UI {
 	board_renderer: BoardRenderer,
+	text_area: TextArea,
 	position: Option<Position>,
 
 	debug_position: Option<Position>,
 	is_debug: bool,
 
+	hovered_tile: Option<TilePosition>,
 	selected_tile: Option<TilePosition>,
 
 	background_color: Color,
@@ -25,11 +27,15 @@ impl UI {
 		let position = Position::default();
 		board_renderer.set_board(Some(position.board()));
 
+		rl.gui_load_style_default();
+
 		Self {
+			text_area: TextArea::new(board_renderer.size(), board_renderer.margin(), 20),
 			board_renderer,
 			position: Some(position),
 			debug_position: None,
 			is_debug: false,
+			hovered_tile: None,
 			selected_tile: None,
 			background_color: Color { r: 0, g: 65, b: 119, a: 255 },
 		}
@@ -41,7 +47,7 @@ impl UI {
 		draw_handle.clear_background(self.background_color);
 
 		self.draw_board(&mut draw_handle);
-		
+		self.draw_text(&mut draw_handle);
 	}
 
 	fn draw_board(&mut self, draw_handle: &mut RaylibDrawHandle) {
@@ -49,6 +55,17 @@ impl UI {
 		self.board_renderer.set_size(min_dimension);
 
 		self.board_renderer.draw(draw_handle);
+	}
+
+	fn draw_text(&mut self, draw_handle: &mut RaylibDrawHandle) {
+		if let Some(hovered_tile) = self.hovered_tile {
+			self.text_area.draw_line(draw_handle, &hovered_tile.notation_string());
+		}
+		else {
+			self.text_area.skip_line();
+		}
+
+		self.text_area.reset();
 	}
 
 	pub fn handle_input(&mut self, rl: &RaylibHandle) {
@@ -67,6 +84,7 @@ impl UI {
 		let mouse_pos = rl.get_mouse_position();
 
 		let tile_pos_opt = self.board_renderer.get_tile_from_pixel_pos(mouse_pos);
+		self.hovered_tile = tile_pos_opt;
 
 		if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
 			self.select_tile(tile_pos_opt);
