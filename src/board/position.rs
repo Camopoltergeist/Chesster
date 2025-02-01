@@ -80,6 +80,8 @@ impl Position {
 
         self.board.move_piece(self.current_player, piece.piece(), moove.from().bit_offset(), moove.to().bit_offset());
 
+        self.current_player = self.current_player.opposite();
+
         Ok(())
     }
 }
