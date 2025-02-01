@@ -1,4 +1,4 @@
-use crate::{piece::Piece, player::Player, player_piece::PlayerPiece};
+use crate::{player::Player, player_piece::PlayerPiece};
 
 use super::{board::Board, moove::Move, move_collision::get_collision_mask, tile_position::TilePosition};
 
