@@ -60,6 +60,28 @@ impl Position {
     pub fn board(&self) -> &Board {
         &self.board
     }
+
+    pub fn is_legal_move(&self, moove: &Move) -> bool {
+        let collision_mask = get_collision_mask(self.board.clone(), moove.from());
+
+        collision_mask.check_bit(moove.to().bit_offset())
+    }
+
+    pub fn make_move(&mut self, moove: Move) -> Result<(), ()> {
+        if !self.is_legal_move(&moove) {
+            return Err(());
+        };
+
+        let piece = self.board.get_piece(moove.from()).unwrap();
+
+        if piece.player() != self.current_player {
+            return Err(());
+        };
+
+        self.board.move_piece(self.current_player, piece.piece(), moove.from().bit_offset(), moove.to().bit_offset());
+
+        Ok(())
+    }
 }
 
 impl Position {
