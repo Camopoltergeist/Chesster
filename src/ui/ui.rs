@@ -139,6 +139,10 @@ impl UI {
 		self.position = position;
 	}
 
+	pub fn set_debug_position(&mut self, debug_position: Option<Position>) {
+		self.debug_position = debug_position;
+	}
+
 	fn set_rendered_position(&mut self, position: Option<Position>) {
 		if let Some(position) = position {
 			self.board_renderer.set_board(Some(position.board()));

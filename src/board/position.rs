@@ -62,6 +62,23 @@ impl Position {
     }
 }
 
+impl Position {
+    pub fn new(board: Board, current_player: Player) -> Self {
+        Self {
+            board,
+            current_player,
+            ..Default::default()
+        }
+    }
+
+    pub fn empty() -> Self {
+        Self {
+            board: Board::empty(),
+            ..Default::default()
+        }
+    }
+}
+
 impl Default for Position {
     fn default() -> Self {
         Self {
