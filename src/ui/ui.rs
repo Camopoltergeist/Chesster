@@ -1,7 +1,7 @@
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{move_collision::get_collision_mask, position::Position, tile_position::TilePosition}, player::Player};
+use crate::{board::{move_collision::get_collision_mask, position::Position, tile_position::TilePosition}, debug_position::create_debug_position, player::Player};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::load_piece_textures};
 
@@ -33,7 +33,7 @@ impl UI {
 			text_area: TextArea::new(board_renderer.size(), board_renderer.margin(), 20),
 			board_renderer,
 			position: Some(position),
-			debug_position: None,
+			debug_position: Some(create_debug_position()),
 			is_debug: false,
 			hovered_tile: None,
 			selected_tile: None,
