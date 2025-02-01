@@ -162,5 +162,7 @@ impl UI {
 
 		self.set_rendered_position(not_current_position);
 		self.is_debug = !self.is_debug;
+		
+		self.select_tile(None);
 	}
 }
