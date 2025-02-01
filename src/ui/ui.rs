@@ -1,5 +1,5 @@
 
-use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, math::Rectangle, prelude::{RaylibDraw, RaylibDrawHandle}, rgui::RaylibDrawGui, RaylibHandle, RaylibThread};
+use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
 use crate::{board::{move_collision::get_collision_mask, position::Position, tile_position::TilePosition}, player::Player};
 
