@@ -58,8 +58,19 @@ impl UI {
 	}
 
 	fn draw_text(&mut self, draw_handle: &mut RaylibDrawHandle) {
+		if self.is_debug {
+			self.text_area.draw_line(draw_handle, "Debug Board");
+		}
+
 		if let Some(hovered_tile) = self.hovered_tile {
 			self.text_area.draw_line(draw_handle, &hovered_tile.notation_string());
+		}
+		else {
+			self.text_area.skip_line();
+		}
+
+		if let Some(selected_tile) = self.selected_tile {
+			self.text_area.draw_line(draw_handle, format!("Selected tile: {}", &selected_tile.notation_string()).as_str());
 		}
 		else {
 			self.text_area.skip_line();
