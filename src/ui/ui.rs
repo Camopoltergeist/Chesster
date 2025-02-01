@@ -1,5 +1,5 @@
 
-use raylib::{color::Color, ffi::KeyboardKey, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
+use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
 use crate::{board::{board::Board, position::Position, tile_position::TilePosition}, player::Player};
 
@@ -59,6 +59,22 @@ impl UI {
 		if rl.is_key_pressed(KeyboardKey::KEY_SPACE) {
 			self.toggle_board_perspective();
 		}
+
+		self.handle_mouse_input(rl);
+	}
+	
+	fn handle_mouse_input(&mut self, rl: &RaylibHandle) {
+		let mouse_pos = rl.get_mouse_position();
+
+		let tile_pos_opt = self.board_renderer.get_tile_from_pixel_pos(mouse_pos);
+
+		if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+			self.select_tile(tile_pos_opt);
+		}
+	}
+
+	fn select_tile(&mut self, tile_pos: Option<TilePosition>) {
+		self.board_renderer.set_highlighted_tile(tile_pos);
 	}
 
 	pub fn position(&self) -> Option<&Position> {

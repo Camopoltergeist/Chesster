@@ -32,10 +32,6 @@ pub fn start_ui() {
 		ui.handle_input(&rl);
 		ui.draw(&mut rl, &thread);
 
-		// if rl.is_key_pressed(KeyboardKey::KEY_SPACE) {
-		// 	br.swap_player();
-		// }
-
 		// let mouse_pos = rl.get_mouse_position();
 		// let tile_pos_opt = br.get_tile_from_pixel_pos(mouse_pos);
 
