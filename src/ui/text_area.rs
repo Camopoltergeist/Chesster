@@ -26,6 +26,10 @@ impl TextArea {
         self.text_line += 1;
     }
 
+    pub fn skip_line(&mut self) {
+        self.text_line += 1;
+    }
+
     pub fn reset(&mut self) {
         self.text_line = 0;
     }

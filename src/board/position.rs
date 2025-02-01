@@ -1,7 +1,8 @@
-use crate::player::Player;
+use crate::{player::Player, player_piece::PlayerPiece};
 
 use super::{board::Board, moove::Move, move_collision::get_collision_mask, tile_position::TilePosition};
 
+#[derive(Clone)]
 pub struct Position {
     board: Board,
     current_player: Player,
@@ -52,8 +53,29 @@ impl Position {
         return legal_moves;
     }
 
+    pub fn get_piece(&self, tile_pos: TilePosition) -> Option<PlayerPiece> {
+        self.board.get_piece(tile_pos)
+    } 
+
     pub fn board(&self) -> &Board {
         &self.board
+    }
+}
+
+impl Position {
+    pub fn new(board: Board, current_player: Player) -> Self {
+        Self {
+            board,
+            current_player,
+            ..Default::default()
+        }
+    }
+
+    pub fn empty() -> Self {
+        Self {
+            board: Board::empty(),
+            ..Default::default()
+        }
     }
 }
 
