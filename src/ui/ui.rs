@@ -1,7 +1,7 @@
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{moove::Move, move_collision::get_collision_mask, position::Position, tile_position::TilePosition}, debug_position::create_debug_position, player::Player};
+use crate::{board::{moove::Move, move_collision::get_collision_mask, position::Position, tile_position::TilePosition}, player::Player};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::load_piece_textures};
 
@@ -10,7 +10,6 @@ pub struct UI {
 	text_area: TextArea,
 	position: Position,
 
-	debug_position: Position,
 	is_debug: bool,
 
 	hovered_tile: Option<TilePosition>,
@@ -33,7 +32,6 @@ impl UI {
 			text_area: TextArea::new(board_renderer.size(), board_renderer.margin(), 20),
 			board_renderer,
 			position,
-			debug_position: create_debug_position(),
 			is_debug: false,
 			hovered_tile: None,
 			selected_tile: None,
@@ -85,10 +83,6 @@ impl UI {
 	}
 
 	pub fn handle_input(&mut self, rl: &RaylibHandle) {
-		if rl.is_key_pressed(KeyboardKey::KEY_BACKSPACE) {
-			self.toggle_debug_position();
-		}
-
 		if rl.is_key_pressed(KeyboardKey::KEY_SPACE) {
 			self.toggle_board_perspective();
 		}
@@ -127,22 +121,16 @@ impl UI {
 		self.board_renderer.set_highlighted_tile(tile_pos);
 		self.board_renderer.set_bitboard_overlay(None);
 
-		let shown_position = self.shown_position();
-
 		if tile_pos.is_none() {
 			return;
 		}
 
 		let tile_pos = tile_pos.unwrap();
 
-		if let Some(_) = shown_position.get_piece(tile_pos) {
-			let mask = get_collision_mask(shown_position.board().clone(), tile_pos);
+		if let Some(_) = self.position.get_piece(tile_pos) {
+			let mask = get_collision_mask(self.position.board().clone(), tile_pos);
 			self.board_renderer.set_bitboard_overlay(Some(mask));
 		}
-	}
-
-	pub fn shown_position(&self) -> &Position {
-		if self.is_debug { &self.debug_position } else { &self.position } 
 	}
 
 	pub fn position(&self) -> &Position {
@@ -153,29 +141,7 @@ impl UI {
 		self.position = position;
 	}
 
-	pub fn set_debug_position(&mut self, debug_position: Position) {
-		self.debug_position = debug_position;
-	}
-
-	fn set_rendered_position(&mut self, position: Position) {
-		self.board_renderer.set_board(Some(position.board()));
-	}
-
 	fn toggle_board_perspective(&mut self) {
 		self.board_renderer.swap_player();
-	}
-
-	fn toggle_debug_position(&mut self) {
-		let not_current_position = if self.is_debug {
-			self.position.clone()
-		}
-		else {
-			self.debug_position.clone()
-		};
-
-		self.set_rendered_position(not_current_position);
-		self.is_debug = !self.is_debug;
-		
-		self.select_tile(None);
 	}
 }
