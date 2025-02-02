@@ -139,7 +139,6 @@ pub fn get_bishop_collision(board: Board, player: Player, tile_pos: TilePosition
     let ne_collision: u64 = get_cut_mask_asc(offset, min(8 - column, 8 - rank)) & collision_mask;
 
     if ne_collision != 0 {
-        println!("Went to ne_collision with {}", ne_collision);
         let ne_offset = TilePosition::from_bit_offset(ne_collision.trailing_zeros());
         if board
         .get_player_bitboard(player.opposite())
@@ -154,7 +153,6 @@ pub fn get_bishop_collision(board: Board, player: Player, tile_pos: TilePosition
 
     let nw_collision: u64 = get_cut_mask_des(offset, min(column + 1, 8 - rank)) & collision_mask;
     if nw_collision != 0 {
-        println!("Went to nw_collision with {}", nw_collision);
         let nw_offset = TilePosition::from_bit_offset(nw_collision.trailing_zeros());
         if board.get_player_bitboard(player.opposite()).check_bit(nw_offset.bit_offset())
         {
@@ -169,7 +167,6 @@ pub fn get_bishop_collision(board: Board, player: Player, tile_pos: TilePosition
 
     let sw_collision = (Bitboard::get_diagonal_mask_asc(column, rank).value()) & collision_mask;
     if sw_collision != 0 {
-        println!("Went to sw_collision with {}", sw_collision);
         let sw_offset = TilePosition::from_bit_offset(63 - sw_collision.leading_zeros());
         if board.get_player_bitboard(player.opposite()).check_bit(sw_offset.bit_offset())
         {
@@ -183,7 +180,6 @@ pub fn get_bishop_collision(board: Board, player: Player, tile_pos: TilePosition
     }
 
     if collision_mask != 0 {
-        println!("Went to se_collision with {}", collision_mask);
         let se_offset = TilePosition::from_bit_offset(63 - collision_mask.leading_zeros());
         if board.get_player_bitboard(player.opposite()).check_bit(se_offset.bit_offset())
         {
