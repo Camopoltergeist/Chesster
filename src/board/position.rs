@@ -19,7 +19,7 @@ impl Position {
         let mut board = Board::empty();
 
         let mut column = 0;
-        let mut rank = 0;
+        let mut rank = 7;
 
         let split: Vec<&str> = fen.split(' ').collect();
 
@@ -29,16 +29,16 @@ impl Position {
 
         let pieces_str = split[0];
         let player_str = split[1];
-        let castling = split[2];
+        let castling_str = split[2];
         let en_passant_target = split[3];
         let _half_move_clock = split[4];
         let _full_move_clock = split[5];
 
         for fen_char in pieces_str.chars() {
             if fen_char.is_numeric() {
-                rank += fen_char.to_digit(10).unwrap();
+                column += fen_char.to_digit(10).unwrap();
 
-                if rank > 8 {
+                if column > 8 {
                     return Err(FenParseError::OutOfBoard);
                 };
 
@@ -46,11 +46,8 @@ impl Position {
             }
 
             if fen_char == '/' {
-                if rank != 8 {
-                    return Err(FenParseError::RankNotAtEnd);
-                }
-
-                column += 1;
+                column = 0;
+                rank -= 1;
                 continue;
             }
 
@@ -68,10 +65,7 @@ impl Position {
             let piece = piece_result.unwrap();
 
             board.set_piece(PlayerPiece::new(player, piece), TilePosition::new(column, rank));
-        };
-
-        if column < 7 || rank < 8 {
-            return Err(FenParseError::UnexpectedEnd);
+            column += 1;
         };
 
         if player_str.len() > 1 {
@@ -80,9 +74,30 @@ impl Position {
 
         let current_player = Player::from_fen_char(player_str.chars().nth(0).unwrap());
 
+        let mut white_short_castling = false;
+        let mut white_long_castling = false;
+        let mut black_short_castling = false;
+        let mut black_long_castling = false;
+
+        if !castling_str.starts_with("-") {
+            for char in castling_str.chars() {
+                match char {
+                    'K' => white_short_castling = true,
+                    'Q' => white_long_castling = true,
+                    'k' => black_short_castling = true,
+                    'q' => black_long_castling = true,
+                    _ => return Err(FenParseError::InvalidCastlingChar)
+                }
+            }
+        }
+
         Ok(Self{
             board,
             current_player,
+            white_short_castling,
+            white_long_castling,
+            black_short_castling,
+            black_long_castling,
             ..Default::default()
         })
     }
@@ -197,10 +212,11 @@ impl Default for Position {
     }
 }
 
-enum FenParseError {
-    RankNotAtEnd,
+#[derive(Debug)]
+pub enum FenParseError {
     InvalidPiece,
     InvalidPlayer,
+    InvalidCastlingChar,
     OutOfBoard,
     UnexpectedEnd,
 }

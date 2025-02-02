@@ -139,6 +139,7 @@ impl UI {
 
 	pub fn set_position(&mut self, position: Position) {
 		self.position = position;
+		self.board_renderer.set_board(Some(self.position.board()));
 	}
 
 	fn toggle_board_perspective(&mut self) {
