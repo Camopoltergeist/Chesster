@@ -1,4 +1,4 @@
-use crate::{player::Player, player_piece::PlayerPiece};
+use crate::{piece::Piece, player::Player, player_piece::PlayerPiece};
 
 use super::{board::Board, moove::Move, move_collision::get_collision_mask, tile_position::TilePosition};
 
@@ -15,6 +15,78 @@ pub struct Position {
 }
 
 impl Position {
+    pub fn from_fen_str(fen: &str) -> Result<Self, FenParseError> {
+        let mut board = Board::empty();
+
+        let mut column = 0;
+        let mut rank = 0;
+
+        let split: Vec<&str> = fen.split(' ').collect();
+
+        if split.len() < 6 {
+            return Err(FenParseError::UnexpectedEnd);
+        }
+
+        let pieces_str = split[0];
+        let player_str = split[1];
+        let castling = split[2];
+        let en_passant_target = split[3];
+        let _half_move_clock = split[4];
+        let _full_move_clock = split[5];
+
+        for fen_char in pieces_str.chars() {
+            if fen_char.is_numeric() {
+                rank += fen_char.to_digit(10).unwrap();
+
+                if rank > 8 {
+                    return Err(FenParseError::OutOfBoard);
+                };
+
+                continue;
+            }
+
+            if fen_char == '/' {
+                if rank != 8 {
+                    return Err(FenParseError::RankNotAtEnd);
+                }
+
+                column += 1;
+                continue;
+            }
+
+            if rank > 7 || column > 7 {
+                return Err(FenParseError::OutOfBoard);
+            }
+
+            let player = Player::from_fen_piece_char(fen_char);
+            let piece_result = Piece::from_fen_char(fen_char);
+
+            if piece_result.is_err() {
+                return Err(FenParseError::InvalidPiece);
+            }
+
+            let piece = piece_result.unwrap();
+
+            board.set_piece(PlayerPiece::new(player, piece), TilePosition::new(column, rank));
+        };
+
+        if column < 7 || rank < 8 {
+            return Err(FenParseError::UnexpectedEnd);
+        };
+
+        if player_str.len() > 1 {
+            return Err(FenParseError::InvalidPlayer);
+        }
+
+        let current_player = Player::from_fen_char(player_str.chars().nth(0).unwrap());
+
+        Ok(Self{
+            board,
+            current_player,
+            ..Default::default()
+        })
+    }
+
     pub fn get_all_legal_moves(&self) -> Vec<Move> {
         let piece_mask = self.board.get_player_bitboard(self.current_player);
 
@@ -123,4 +195,12 @@ impl Default for Position {
             black_long_castling: true,
         }
     }
+}
+
+enum FenParseError {
+    RankNotAtEnd,
+    InvalidPiece,
+    InvalidPlayer,
+    OutOfBoard,
+    UnexpectedEnd,
 }
