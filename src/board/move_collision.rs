@@ -1,10 +1,9 @@
+use std::cmp::min;
+
 use crate::{piece::Piece, player::Player};
 
 use super::{
-    bitboard::Bitboard,
-    board::Board,
-    move_mask::{BLACK_PAWN_MASKS, KING_MASKS, KNIGHT_MASKS, ROOK_MASKS, WHITE_PAWN_MASKS},
-    tile_position::TilePosition,
+    bitboard::Bitboard, board::Board, move_mask::{BISHOP_MASKS, BLACK_PAWN_MASKS, KING_MASKS, KNIGHT_MASKS, ROOK_MASKS, WHITE_PAWN_MASKS}, position, tile_position::TilePosition
 };
 
 pub fn get_collision_mask(board: Board, tile_pos: TilePosition) -> Bitboard {
@@ -20,7 +19,7 @@ pub fn get_collision_mask(board: Board, tile_pos: TilePosition) -> Bitboard {
         Piece::Pawn => return get_pawn_collision(board, piece.player(), tile_pos),
         Piece::Rook => return get_rook_collision(board, piece.player(), tile_pos.bit_offset()),
         Piece::Bishop => {
-            return get_bishop_collision(piece.player(), tile_pos.column(), tile_pos.rank())
+            return get_bishop_collision(board, piece.player(), tile_pos)
         }
         Piece::Knight => return get_knight_collision(board, piece.player(), tile_pos),
         Piece::Queen => {
@@ -125,10 +124,97 @@ pub fn get_cut_mask_vertical(offset: u32, length: u32) -> u64 {
     column_mask
 }
 
-pub fn get_bishop_collision(player: Player, column: u32, rank: u32) -> Bitboard {
-    let bishop_mask = 0;
-    Bitboard(bishop_mask)
+pub fn get_bishop_collision(board: Board, player: Player, tile_pos: TilePosition) -> Bitboard {
+    let mut valid_moves: u64 = BISHOP_MASKS[tile_pos.bit_offset() as usize].value();
+    let column = tile_pos.column();
+    let rank = tile_pos.rank();
+    let offset = tile_pos.bit_offset();
+
+    let mut collision_mask: u64 = ((board.white_pieces | board.black_pieces) & valid_moves).value();
+
+    if collision_mask == 0 {
+        return Bitboard(valid_moves);
+    }
+
+    let ne_collision: u64 = get_cut_mask_asc(offset, min(8 - column, 8 - rank)) & collision_mask;
+
+    if ne_collision != 0 {
+        println!("Went to ne_collision with {}", ne_collision);
+        let ne_offset = TilePosition::from_bit_offset(ne_collision.trailing_zeros());
+        if board
+        .get_player_bitboard(player.opposite())
+        .check_bit(ne_offset.bit_offset())
+    {
+        valid_moves &= !(get_cut_mask_asc(ne_offset.bit_offset(), min(7 - column, 7 - rank)) << 9);
+    } else {
+        valid_moves &= !get_cut_mask_asc(ne_offset.bit_offset(), min(8 - column, 8 - rank));
+    }
+        collision_mask &= !ne_collision;
 }
+
+    let nw_collision: u64 = get_cut_mask_des(offset, min(column + 1, 8 - rank)) & collision_mask;
+    if nw_collision != 0 {
+        println!("Went to nw_collision with {}", nw_collision);
+        let nw_offset = TilePosition::from_bit_offset(nw_collision.trailing_zeros());
+        if board.get_player_bitboard(player.opposite()).check_bit(nw_offset.bit_offset())
+        {
+            let distance = min(nw_offset.column(), 8 - nw_offset.rank());
+            valid_moves &= !get_cut_mask_des(nw_offset.bit_offset() + 7, distance);
+        } else {
+            let distance = min(nw_offset.column(), 8 - nw_offset.rank());
+            valid_moves &= !get_cut_mask_des(nw_offset.bit_offset(), distance + 1);
+        }
+        collision_mask &= !nw_collision;
+    }
+
+    let sw_collision = (Bitboard::get_diagonal_mask_asc(column, rank).value()) & collision_mask;
+    if sw_collision != 0 {
+        println!("Went to sw_collision with {}", sw_collision);
+        let sw_offset = TilePosition::from_bit_offset(63 - sw_collision.leading_zeros());
+        if board.get_player_bitboard(player.opposite()).check_bit(sw_offset.bit_offset())
+        {
+            let distance = min(sw_offset.column(), sw_offset.rank());
+            valid_moves &= !get_cut_mask_asc(sw_offset.bit_offset() - distance * 9, distance);
+        } else {
+            let distance = min(sw_offset.column(), sw_offset.rank());
+            valid_moves &= !get_cut_mask_asc(sw_offset.bit_offset() - distance * 9, distance + 1);
+        }
+        collision_mask &= !sw_collision;
+    }
+
+    if collision_mask != 0 {
+        println!("Went to se_collision with {}", collision_mask);
+        let se_offset = TilePosition::from_bit_offset(63 - collision_mask.leading_zeros());
+        if board.get_player_bitboard(player.opposite()).check_bit(se_offset.bit_offset())
+        {
+            let distance = min(8 - se_offset.column(), se_offset.rank());
+            valid_moves &= !(get_cut_mask_des(se_offset.bit_offset(), distance) >> distance * 7);
+        } else {
+            let distance = min(7 - se_offset.column(), se_offset.rank());
+            valid_moves &= !(get_cut_mask_des(se_offset.bit_offset(), distance + 1) >> distance * 7);
+        }
+    }
+
+Bitboard(valid_moves)
+
+    }
+    
+    pub fn get_cut_mask_asc(offset: u32, length: u32) -> u64 {
+        let mut asc_mask = 0u64;
+        for i in 0..length {
+            asc_mask |= 1u64 << (i * 9);
+        }
+        asc_mask << offset
+    }
+
+    pub fn get_cut_mask_des(offset: u32, length: u32) -> u64 {
+        let mut des_mask = 0u64;
+        for i in 0..length {
+            des_mask |= 128u64 << (i * 7)
+        }
+        des_mask >> 7 << offset
+    }
+
 
 pub fn get_knight_collision(board: Board, player: Player, tile_pos: TilePosition) -> Bitboard {
     Bitboard(
