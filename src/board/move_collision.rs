@@ -1,13 +1,10 @@
 use std::cmp::min;
 
-use crate::{piece::PieceType, pieces::{bishop::Bishop, king::King, knight::Knight, rook::Rook}, player::Player};
+use crate::{piece::PieceType, pieces::{bishop::Bishop, king::King, knight::Knight, pawn::Pawn, rook::Rook}, player::Player};
 
 use super::{
     bitboard::Bitboard,
     board::Board,
-    move_mask::{
-        BLACK_PAWN_MASKS, WHITE_PAWN_MASKS,
-    },
     tile_position::TilePosition,
 };
 
@@ -258,14 +255,14 @@ pub fn get_pawn_collision(board: Board, player: Player, tile_pos: TilePosition) 
             if (1 << tile_pos.bit_offset() + 8) & collision_mask != 0 {
                 0
             } else {
-                WHITE_PAWN_MASKS[tile_pos.bit_offset() as usize].value() & !collision_mask
+                Pawn::WHITE_MOVEMENT_MASKS[tile_pos.bit_offset() as usize].value() & !collision_mask
             }
         }
         Player::Black => {
             if (1 << tile_pos.bit_offset() - 8) & collision_mask != 0 {
                 0
             } else {
-                BLACK_PAWN_MASKS[tile_pos.bit_offset() as usize].value() & !collision_mask
+                Pawn::BLACK_MOVEMENT_MASKS[tile_pos.bit_offset() as usize].value() & !collision_mask
             }
         }
     };

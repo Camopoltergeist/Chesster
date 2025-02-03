@@ -1,4 +1,4 @@
-use crate::{board::{bitboard::Bitboard, move_mask::{BLACK_PAWN_MASKS, WHITE_PAWN_MASKS}, tile_position::TilePosition}, piece::{Piece, PieceType}, player::Player};
+use crate::{board::{bitboard::Bitboard, tile_position::TilePosition}, piece::{Piece, PieceType}, player::Player};
 
 use const_for::const_for;
 
@@ -8,6 +8,9 @@ pub struct Pawn {
 }
 
 impl Pawn {
+    pub const WHITE_MOVEMENT_MASKS: [Bitboard; 64] = Self::generate_all_movement_masks(Player::White);
+    pub const BLACK_MOVEMENT_MASKS: [Bitboard; 64] = Self::generate_all_movement_masks(Player::Black);
+
     pub fn new(player: Player, tile_position: TilePosition) -> Self {
         Self {
             player,
@@ -17,8 +20,8 @@ impl Pawn {
 
     pub const fn get_movement_mask(tile_position: TilePosition, player: Player) -> Bitboard {
         match player {
-            Player::White => WHITE_PAWN_MASKS[tile_position.bit_offset() as usize],
-            Player::Black => BLACK_PAWN_MASKS[tile_position.bit_offset() as usize]
+            Player::White => Self::WHITE_MOVEMENT_MASKS[tile_position.bit_offset() as usize],
+            Player::Black => Self::BLACK_MOVEMENT_MASKS[tile_position.bit_offset() as usize]
         }
     }
 
