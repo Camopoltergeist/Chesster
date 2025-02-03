@@ -1,4 +1,4 @@
-use crate::{board::tile_position::TilePosition, piece::Piece, player::Player, player_piece::PlayerPiece};
+use crate::{board::tile_position::TilePosition, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 use super::bitboard::Bitboard;
 
@@ -14,12 +14,12 @@ pub const BLACK_PAWN_MASKS: [Bitboard; 64] = generate_black_pawn_masks();
 
 pub fn get_move_mask(piece: PlayerPiece) -> &'static [Bitboard] {
     match piece.piece() {
-        Piece::Rook => &ROOK_MASKS,
-        Piece::Bishop => &BISHOP_MASKS,
-        Piece::Knight => &KNIGHT_MASKS,
-        Piece::King => &KING_MASKS,
-        Piece::Queen => &QUEEN_MASKS,
-        Piece::Pawn => {
+        PieceType::Rook => &ROOK_MASKS,
+        PieceType::Bishop => &BISHOP_MASKS,
+        PieceType::Knight => &KNIGHT_MASKS,
+        PieceType::King => &KING_MASKS,
+        PieceType::Queen => &QUEEN_MASKS,
+        PieceType::Pawn => {
             match piece.player() {
                 Player::White => &WHITE_PAWN_MASKS,
                 Player::Black => &BLACK_PAWN_MASKS
