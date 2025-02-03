@@ -26,7 +26,7 @@ pub fn get_collision_mask(board: Board, tile_pos: TilePosition) -> Bitboard {
         Piece::Bishop => return get_bishop_collision(board, piece.player(), tile_pos),
         Piece::Knight => return get_knight_collision(board, piece.player(), tile_pos),
         Piece::Queen => {
-            return get_queen_collision(piece.player(), tile_pos.column(), tile_pos.rank())
+            return get_queen_collision(board, piece.player(), tile_pos);
         }
         Piece::King => return get_king_collision(board, piece.player(), tile_pos),
     }
@@ -239,9 +239,8 @@ pub fn get_knight_collision(board: Board, player: Player, tile_pos: TilePosition
     )
 }
 
-pub fn get_queen_collision(player: Player, column: u32, rank: u32) -> Bitboard {
-    let queen_mask = 0;
-    Bitboard(queen_mask)
+pub fn get_queen_collision(board: Board, player: Player, tile_pos: TilePosition) -> Bitboard {
+    get_rook_collision(board.clone(), player, tile_pos.bit_offset()) | get_bishop_collision(board.clone(), player, tile_pos)
 }
 
 pub fn get_king_collision(board: Board, player: Player, tile_pos: TilePosition) -> Bitboard {
