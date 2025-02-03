@@ -8,7 +8,6 @@ use super::{
     move_mask::{
         BISHOP_MASKS, BLACK_PAWN_MASKS, KING_MASKS, KNIGHT_MASKS, ROOK_MASKS, WHITE_PAWN_MASKS,
     },
-    position,
     tile_position::TilePosition,
 };
 
