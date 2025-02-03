@@ -23,7 +23,7 @@ impl Rook {
 
     pub const fn generate_movement_mask(tile_pos: TilePosition) -> Bitboard {
         let rank_mask = Bitboard::generate_rank_mask(tile_pos.rank());
-        let column_mask = Bitboard::get_column_mask(tile_pos.column());
+        let column_mask = Bitboard::generate_column_mask(tile_pos.column());
 
         return Bitboard(rank_mask.0 ^ column_mask.0);
     }

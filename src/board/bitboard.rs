@@ -69,7 +69,7 @@ impl Bitboard {
         Bitboard(rank_mask)
     }
 
-    pub const fn get_column_mask(column: u32) -> Bitboard {
+    pub const fn generate_column_mask(column: u32) -> Bitboard {
         //^The other way around: a bitboard going through the first column, then nudged left
         let column_mask = 0x101010101010101 << column;
         Bitboard(column_mask)
@@ -118,7 +118,7 @@ impl Bitboard {
         Bitboard(des_mask)
     }
 
-    pub const fn get_knight_mask(column: u32, rank: u32) -> Bitboard {
+    pub const fn generate_knight_mask(column: u32, rank: u32) -> Bitboard {
         // All possible knight directions from its place
         let moves: [(i32, i32); 8] = [
             (2, 1),
