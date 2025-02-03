@@ -1,5 +1,7 @@
 use crate::{board::{bitboard::Bitboard, move_mask::BISHOP_MASKS, tile_position::TilePosition}, piece::{Piece, PieceType}, player::Player};
 
+use const_for::const_for;
+
 pub struct Bishop {
     player: Player,
     tile_position: TilePosition,
@@ -22,6 +24,22 @@ impl Bishop {
         let column_mask = Bitboard::get_diagonal_mask_des(tile_position.column(), tile_position.rank());
 
         Bitboard(rank_mask.0 ^ column_mask.0)
+    }
+
+    pub const fn generate_all_movement_masks() -> [Bitboard; 64] {
+        let mut masks = [Bitboard(0); 64];
+
+        const_for!(rank in 0..8 => {
+            const_for!(column in 0..8 => {
+                let tile_pos = TilePosition::new(column, rank);
+
+                let mask = Bishop::generate_movement_mask(tile_pos);
+
+                masks[tile_pos.bit_offset() as usize] = mask;
+            })
+        });
+
+        masks
     }
 }
 
