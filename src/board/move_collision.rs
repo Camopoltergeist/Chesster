@@ -1,12 +1,12 @@
 use std::cmp::min;
 
-use crate::{piece::PieceType, pieces::rook::Rook, player::Player};
+use crate::{piece::PieceType, pieces::{knight::Knight, rook::Rook}, player::Player};
 
 use super::{
     bitboard::Bitboard,
     board::Board,
     move_mask::{
-        BISHOP_MASKS, BLACK_PAWN_MASKS, KING_MASKS, KNIGHT_MASKS, WHITE_PAWN_MASKS,
+        BISHOP_MASKS, BLACK_PAWN_MASKS, KING_MASKS, WHITE_PAWN_MASKS,
     },
     tile_position::TilePosition,
 };
@@ -234,7 +234,7 @@ pub fn get_cut_mask_des(offset: u32, length: u32) -> u64 {
 
 pub fn get_knight_collision(board: Board, player: Player, tile_pos: TilePosition) -> Bitboard {
     Bitboard(
-        KNIGHT_MASKS[tile_pos.bit_offset() as usize].value()
+        Knight::MOVEMENT_MASKS[tile_pos.bit_offset() as usize].value()
             & !board.get_player_bitboard(player).value(),
     )
 }

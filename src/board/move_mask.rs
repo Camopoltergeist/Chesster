@@ -1,11 +1,10 @@
-use crate::{board::tile_position::TilePosition, pieces::{knight::Knight, rook::Rook}};
+use crate::{board::tile_position::TilePosition, pieces::rook::Rook};
 
 use super::bitboard::Bitboard;
 
 use const_for::const_for;
 
 pub const BISHOP_MASKS: [Bitboard; 64] = generate_bishop_masks();
-pub const KNIGHT_MASKS: [Bitboard; 64] = Knight::generate_all_movement_masks();
 pub const KING_MASKS: [Bitboard; 64] = generate_king_masks();
 pub const QUEEN_MASKS: [Bitboard; 64] = generate_queen_masks();
 pub const WHITE_PAWN_MASKS: [Bitboard; 64] = generate_white_pawn_masks();
