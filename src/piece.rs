@@ -1,4 +1,4 @@
-use crate::player::Player;
+use crate::{board::{bitboard::Bitboard, move_mask::{get_move_mask, ROOK_MASKS}, tile_position::TilePosition}, player::Player};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum PieceType {
@@ -29,4 +29,6 @@ impl PieceType {
 pub trait Piece {
 	fn piece_type(&self) -> PieceType;
 	fn player(&self) -> Player;
+	
+	fn get_movement_mask(&self, tile_pos: TilePosition) -> Bitboard;
 }
