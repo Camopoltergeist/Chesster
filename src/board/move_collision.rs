@@ -204,16 +204,10 @@ pub fn get_bishop_collision(board: Board, player: Player, tile_pos: TilePosition
             for i in 0..distance {
                 valid_moves &= !(1 << attack_offset - 7 * i);
             }
-            // valid_moves &= !(get_cut_mask_des(se_offset.bit_offset(), distance) >> distance * 7);
-            // println!("SE Cut mask on diff color: {}", (get_cut_mask_des(se_offset.bit_offset(), distance) >> distance * 7));
         } else {
             let distance = min(8 - se_offset.column(), se_offset.rank() + 1);
             for i in 0..distance {
                 valid_moves &= !(1 << se_offset.bit_offset() - 7 * i);
-                // println!("Distance: {}", distance);
-                // valid_moves &=
-                //     !(get_cut_mask_des(se_offset.bit_offset(), distance + 1) >> distance * 7);
-                //     println!("SE Cut mask on same color: {}", get_cut_mask_des(se_offset.bit_offset(), distance + 1) >> distance * 7);
             }
         }
     }
@@ -234,7 +228,7 @@ pub fn get_cut_mask_des(offset: u32, length: u32) -> u64 {
     for i in 0..length {
         des_mask |= 128u64 << (i * 7)
     }
-    
+
     des_mask >>= 7;
     des_mask << offset
 }
