@@ -1,4 +1,4 @@
-use crate::{board::{bitboard::Bitboard, move_mask::BISHOP_MASKS, tile_position::TilePosition}, piece::{Piece, PieceType}, player::Player};
+use crate::{board::{bitboard::Bitboard, tile_position::TilePosition}, piece::{Piece, PieceType}, player::Player};
 
 use const_for::const_for;
 
@@ -8,6 +8,8 @@ pub struct Bishop {
 }
 
 impl Bishop {
+    pub const MOVEMENT_MASKS: [Bitboard; 64] = Self::generate_all_movement_masks();
+
     pub fn new(player: Player, tile_position: TilePosition) -> Self {
         Self {
             player,
@@ -16,7 +18,7 @@ impl Bishop {
     }
 
     pub const fn get_movement_mask(tile_position: TilePosition) -> Bitboard {
-        BISHOP_MASKS[tile_position.bit_offset() as usize]
+        Self::MOVEMENT_MASKS[tile_position.bit_offset() as usize]
     }
 
     pub const fn generate_movement_mask(tile_position: TilePosition) -> Bitboard {
