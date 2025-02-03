@@ -1,4 +1,4 @@
-use crate::{board::tile_position::TilePosition, pieces::rook::Rook};
+use crate::{board::tile_position::TilePosition, pieces::{bishop::Bishop, rook::Rook}};
 
 use super::bitboard::Bitboard;
 
@@ -15,14 +15,11 @@ pub const fn generate_bishop_masks() -> [Bitboard; 64] {
 
     const_for!(rank in 0..8 => {
         const_for!(column in 0..8 => {
-            let rank_mask = Bitboard::get_diagonal_mask_asc(column, rank);
-            let column_mask = Bitboard::get_diagonal_mask_des(column, rank);
+            let tile_pos = TilePosition::new(column, rank);
 
-            let combined = rank_mask.0 ^ column_mask.0;
+            let mask = Bishop::generate_movement_mask(tile_pos);
 
-            let index = TilePosition::new(column, rank).bit_offset();
-
-            masks[index as usize] = Bitboard(combined);
+            masks[tile_pos.bit_offset() as usize] = mask;
         })
     });
 
