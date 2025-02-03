@@ -1,5 +1,9 @@
 use crate::{board::{bitboard::Bitboard, move_mask::QUEEN_MASKS, tile_position::TilePosition}, piece::{Piece, PieceType}, player::Player};
 
+use super::{bishop::Bishop, rook::Rook};
+
+use const_for::const_for;
+
 pub struct Queen {
     player: Player,
     tile_position: TilePosition
@@ -15,6 +19,27 @@ impl Queen {
 
     pub const fn get_movement_mask(tile_position: TilePosition) -> Bitboard {
         QUEEN_MASKS[tile_position.bit_offset() as usize]
+    }
+
+    pub const fn generate_movement_mask(tile_position: TilePosition) -> Bitboard {
+        let index = tile_position.bit_offset() as usize;
+
+        let rook_mask = Rook::MOVEMENT_MASKS[index];
+        let bishop_mask = Bishop::MOVEMENT_MASKS[index];
+
+        let combined = rook_mask.0 | bishop_mask.0;
+
+        Bitboard(combined)
+    }
+
+    pub const fn generate_all_movement_masks() -> [Bitboard; 64] {
+        let mut masks = [Bitboard(0); 64];
+
+        const_for!(bit_offset in 0..masks.len() => {
+            masks[bit_offset] = Self::generate_movement_mask(TilePosition::from_bit_offset(bit_offset as u32));
+        });
+
+        masks
     }
 }
 
