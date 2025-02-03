@@ -1,5 +1,7 @@
 use crate::{board::{bitboard::Bitboard, move_mask::KING_MASKS, tile_position::TilePosition}, piece::{Piece, PieceType}, player::Player};
 
+use const_for::const_for;
+
 pub struct King {
     player: Player,
     tile_position: TilePosition
@@ -19,6 +21,20 @@ impl King {
 
     pub const fn generate_movement_mask(tile_position: TilePosition) -> Bitboard {
         Bitboard::get_king_mask(tile_position.column(), tile_position.rank())
+    }
+
+    pub const fn generate_all_movement_masks() -> [Bitboard; 64] {
+        let mut masks = [Bitboard(0); 64];
+
+        const_for!(rank in 0..8 => {
+            const_for!(column in 0..8 => {
+                let tile_pos = TilePosition::new(column, rank);
+
+                masks[tile_pos.bit_offset() as usize] = Self::generate_movement_mask(tile_pos);
+            });
+        });
+
+        masks
     }
 }
 
