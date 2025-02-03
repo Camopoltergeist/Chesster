@@ -1,4 +1,4 @@
-use crate::{board::tile_position::TilePosition, piece::PieceType, player::Player, player_piece::PlayerPiece};
+use crate::{board::tile_position::TilePosition, piece::{Piece, PieceType}, pieces::rook::Rook, player::Player, player_piece::PlayerPiece};
 
 use super::bitboard::Bitboard;
 
@@ -32,16 +32,11 @@ pub const fn generate_rook_masks() -> [Bitboard; 64] {
     let mut masks = [Bitboard(0); 64];
 
     const_for!(rank in 0..8 => {
-        let rank_mask = Bitboard::get_rank_mask(rank);
-
         const_for!(column in 0..8 => {
-            let column_mask = Bitboard::get_column_mask(column);
+            let tile_pos = TilePosition::new(column, rank);
+            let mask = Rook::generate_movement_mask(tile_pos);
 
-            let combined = column_mask.0 ^ rank_mask.0;
-
-            let index = TilePosition::new(column, rank).bit_offset();
-
-            masks[index as usize] = Bitboard(combined);
+            masks[tile_pos.bit_offset() as usize] = mask;
         })
     });
 

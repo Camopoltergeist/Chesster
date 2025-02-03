@@ -29,6 +29,6 @@ impl PieceType {
 pub trait Piece {
 	fn piece_type(&self) -> PieceType;
 	fn player(&self) -> Player;
-	
-	fn get_movement_mask(&self, tile_pos: TilePosition) -> Bitboard;
+
+	fn movement_mask(&self) -> Bitboard;
 }

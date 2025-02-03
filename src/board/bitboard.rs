@@ -63,7 +63,7 @@ impl Bitboard {
         }
     }
 
-    pub const fn get_rank_mask(rank: u32) -> Bitboard {
+    pub const fn generate_rank_mask(rank: u32) -> Bitboard {
         //A bitboard that goes through the first rank, then moved by column
         let rank_mask = 0xff << rank * 8;
         Bitboard(rank_mask)

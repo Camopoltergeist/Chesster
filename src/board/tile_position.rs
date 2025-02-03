@@ -40,11 +40,11 @@ impl TilePosition {
         format!("{}{}", column_char, rank_char)
     }
 
-    pub fn column(&self) -> u32 {
+    pub const fn column(&self) -> u32 {
         self.column
     }
 
-    pub fn rank(&self) -> u32 {
+    pub const fn rank(&self) -> u32 {
         self.rank
     }
 
