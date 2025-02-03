@@ -1,5 +1,7 @@
 use crate::{board::{bitboard::Bitboard, move_mask::{BLACK_PAWN_MASKS, WHITE_PAWN_MASKS}, tile_position::TilePosition}, piece::{Piece, PieceType}, player::Player};
 
+use const_for::const_for;
+
 pub struct Pawn {
     player: Player,
     tile_position: TilePosition
@@ -25,6 +27,20 @@ impl Pawn {
             Player::White => Bitboard::get_white_pawn_mask(tile_position.column(), tile_position.rank()),
             Player::Black => Bitboard::get_black_pawn_mask(tile_position.column(), tile_position.rank())
         }
+    }
+
+    pub const fn generate_all_movement_masks(player: Player) -> [Bitboard; 64] {
+        let mut masks = [Bitboard(0); 64];
+
+        const_for!(rank in 0..8 => {
+            const_for!(column in 0..8 => {
+                let tile_pos = TilePosition::new(column, rank);
+
+                masks[tile_pos.bit_offset() as usize] = Pawn::generate_movement_mask(tile_pos, player);
+            });
+        });
+
+        masks
     }
 }
 
