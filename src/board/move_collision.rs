@@ -159,13 +159,12 @@ pub fn get_bishop_collision(board: Board, player: Player, tile_pos: TilePosition
     let nw_collision: u64 = get_cut_mask_des(offset, min(column + 1, 8 - rank)) & collision_mask;
     if nw_collision != 0 {
         let nw_offset = TilePosition::from_bit_offset(nw_collision.trailing_zeros());
-        println!("NW collision offset {}", nw_offset.bit_offset());
         if board
             .get_player_bitboard(player.opposite())
             .check_bit(nw_offset.bit_offset())
         {
             let distance = min(nw_offset.column(), 8 - nw_offset.rank());
-            valid_moves &= !(get_cut_mask_des(nw_offset.bit_offset(), distance) << 7 );
+            valid_moves &= !(get_cut_mask_des(nw_offset.bit_offset(), distance) << 7);
         } else {
             let distance = min(nw_offset.column(), 8 - nw_offset.rank());
             valid_moves &= !get_cut_mask_des(nw_offset.bit_offset(), distance + 1);
@@ -185,29 +184,37 @@ pub fn get_bishop_collision(board: Board, player: Player, tile_pos: TilePosition
         } else {
             let distance = min(sw_offset.column(), sw_offset.rank());
             valid_moves &= !get_cut_mask_asc(sw_offset.bit_offset() - distance * 9, distance + 1);
-            println!("SE Cut mask: {}", get_cut_mask_asc(sw_offset.bit_offset() - distance * 9, distance + 1));
-
         }
         collision_mask &= !sw_collision;
     }
 
     if collision_mask != 0 {
         let se_offset = TilePosition::from_bit_offset(63 - collision_mask.leading_zeros());
-        println!("SE collision offset: {}", se_offset.bit_offset());
         if board
             .get_player_bitboard(player.opposite())
             .check_bit(se_offset.bit_offset())
         {
             let distance = min(8 - se_offset.column(), se_offset.rank());
-            valid_moves &= !(get_cut_mask_des(se_offset.bit_offset(), distance) >> distance * 7);
-            println!("SE Cut mask on diff color: {}", (get_cut_mask_des(se_offset.bit_offset(), distance) >> distance * 7));
-
+            let attack_offset;
+            if se_offset.bit_offset() > 7 {
+                attack_offset = se_offset.bit_offset() - 7;
+            } else {
+                attack_offset = se_offset.bit_offset()
+            };
+            for i in 0..distance {
+                valid_moves &= !(1 << attack_offset - 7 * i);
+            }
+            // valid_moves &= !(get_cut_mask_des(se_offset.bit_offset(), distance) >> distance * 7);
+            // println!("SE Cut mask on diff color: {}", (get_cut_mask_des(se_offset.bit_offset(), distance) >> distance * 7));
         } else {
-            let distance = min(7 - se_offset.column(), se_offset.rank());
-            println!("Distance: {}", distance);
-            valid_moves &=
-                !(get_cut_mask_des(se_offset.bit_offset(), distance + 1) >> distance * 7);
-                println!("SE Cut mask on same color: {}", get_cut_mask_des(se_offset.bit_offset(), distance + 1) >> distance * 7);
+            let distance = min(8 - se_offset.column(), se_offset.rank() + 1);
+            for i in 0..distance {
+                valid_moves &= !(1 << se_offset.bit_offset() - 7 * i);
+                // println!("Distance: {}", distance);
+                // valid_moves &=
+                //     !(get_cut_mask_des(se_offset.bit_offset(), distance + 1) >> distance * 7);
+                //     println!("SE Cut mask on same color: {}", get_cut_mask_des(se_offset.bit_offset(), distance + 1) >> distance * 7);
+            }
         }
     }
 
@@ -227,9 +234,8 @@ pub fn get_cut_mask_des(offset: u32, length: u32) -> u64 {
     for i in 0..length {
         des_mask |= 128u64 << (i * 7)
     }
-    println!("Offset {}, Length {}, DES mask before shifting: {}", offset, length, des_mask);
+    
     des_mask >>= 7;
-    println!("Will return desc mask {}", des_mask << offset);
     des_mask << offset
 }
 
