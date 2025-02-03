@@ -1,12 +1,12 @@
 use std::cmp::min;
 
-use crate::{piece::PieceType, pieces::{bishop::Bishop, knight::Knight, rook::Rook}, player::Player};
+use crate::{piece::PieceType, pieces::{bishop::Bishop, king::King, knight::Knight, rook::Rook}, player::Player};
 
 use super::{
     bitboard::Bitboard,
     board::Board,
     move_mask::{
-        BLACK_PAWN_MASKS, KING_MASKS, WHITE_PAWN_MASKS,
+        BLACK_PAWN_MASKS, WHITE_PAWN_MASKS,
     },
     tile_position::TilePosition,
 };
@@ -245,7 +245,7 @@ pub fn get_queen_collision(board: Board, player: Player, tile_pos: TilePosition)
 
 pub fn get_king_collision(board: Board, player: Player, tile_pos: TilePosition) -> Bitboard {
     Bitboard(
-        KING_MASKS[tile_pos.bit_offset() as usize].value()
+        King::MOVEMENT_MASKS[tile_pos.bit_offset() as usize].value()
             & !board.get_player_bitboard(player).value(),
     )
 }
