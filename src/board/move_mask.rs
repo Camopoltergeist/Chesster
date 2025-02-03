@@ -1,4 +1,4 @@
-use crate::board::tile_position::TilePosition;
+use crate::{board::tile_position::TilePosition, pieces::pawn::Pawn};
 
 use super::bitboard::Bitboard;
 
@@ -12,9 +12,9 @@ pub const fn generate_white_pawn_masks() -> [Bitboard; 64] {
 
     const_for!(rank in 0..8 => {
         const_for!(column in 0..8 => {
-            let index = TilePosition::new(column, rank).bit_offset();
+            let tile_pos = TilePosition::new(column, rank);
 
-            masks[index as usize] = Bitboard::get_white_pawn_mask(column, rank);
+            masks[tile_pos.bit_offset() as usize] = Pawn::generate_movement_mask(tile_pos, crate::player::Player::White);
         });
     });
 
@@ -26,9 +26,9 @@ pub const fn generate_black_pawn_masks() -> [Bitboard; 64] {
 
     const_for!(rank in 0..8 => {
         const_for!(column in 0..8 => {
-            let index = TilePosition::new(column, rank).bit_offset();
+            let tile_pos = TilePosition::new(column, rank);
 
-            masks[index as usize] = Bitboard::get_black_pawn_mask(column, rank);
+            masks[tile_pos.bit_offset() as usize] = Pawn::generate_movement_mask(tile_pos, crate::player::Player::Black);
         });
     });
 

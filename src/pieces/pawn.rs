@@ -19,6 +19,13 @@ impl Pawn {
             Player::Black => BLACK_PAWN_MASKS[tile_position.bit_offset() as usize]
         }
     }
+
+    pub const fn generate_movement_mask(tile_position: TilePosition, player: Player) -> Bitboard {
+        match player {
+            Player::White => Bitboard::get_white_pawn_mask(tile_position.column(), tile_position.rank()),
+            Player::Black => Bitboard::get_black_pawn_mask(tile_position.column(), tile_position.rank())
+        }
+    }
 }
 
 impl Piece for Pawn {
