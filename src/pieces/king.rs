@@ -16,6 +16,10 @@ impl King {
     pub const fn get_movement_mask(tile_position: TilePosition) -> Bitboard {
         KING_MASKS[tile_position.bit_offset() as usize]
     }
+
+    pub const fn generate_movement_mask(tile_position: TilePosition) -> Bitboard {
+        Bitboard::get_king_mask(tile_position.column(), tile_position.rank())
+    }
 }
 
 impl Piece for King {

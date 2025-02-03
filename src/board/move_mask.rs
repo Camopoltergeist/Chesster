@@ -1,4 +1,4 @@
-use crate::board::tile_position::TilePosition;
+use crate::{board::tile_position::TilePosition, pieces::king::King};
 
 use super::bitboard::Bitboard;
 
@@ -13,9 +13,9 @@ pub const fn generate_king_masks() -> [Bitboard; 64] {
 
     const_for!(rank in 0..8 => {
         const_for!(column in 0..8 => {
-            let index = TilePosition::new(column, rank).bit_offset();
+            let tile_pos = TilePosition::new(column, rank);
 
-            masks[index as usize] = Bitboard::get_king_mask(column, rank);
+            masks[tile_pos.bit_offset() as usize] = King::generate_movement_mask(tile_pos);
         });
     });
 
