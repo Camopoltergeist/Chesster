@@ -53,6 +53,10 @@ impl Piece for Rook {
 		self.player
 	}
 
+    fn tile_position(&self) -> TilePosition {
+        self.tile_position
+    }
+
     fn movement_mask(&self) -> Bitboard {
         Self::get_movement_mask(self.tile_position)
     }
