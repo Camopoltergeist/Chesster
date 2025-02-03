@@ -1,4 +1,4 @@
-use super::{bitboard::Bitboard, tile_position::TilePosition};
+use super::{bitboard::Bitboard, moove::Move, tile_position::TilePosition};
 use crate::{piece::Piece, player::Player, player_piece::PlayerPiece};
 
 #[derive(Clone)]
@@ -80,11 +80,13 @@ impl Board {
             || Board::check_overlaps(self.queens, self.kings))
     }
 
-    pub fn move_piece(&mut self, player: Player, piece: Piece, from_offset: u32, to_offset: u32) {
-        self.get_piece_bitboard_mut(piece)
-            .move_bit(from_offset, to_offset);
-        self.get_player_bitboard_mut(player)
-            .move_bit(from_offset, to_offset);
+    /// Moves piece on board, captures if the piece lands on tile with a piece already on it.
+    /// Does not check for a valid move.
+    pub fn move_piece(&mut self, moove: Move) {
+        let piece = self.get_piece(moove.from()).expect("no piece at move's \"from\" tile");
+
+        self.set_piece(piece, moove.to());
+        self.remove_piece(moove.from());
     }
 
     pub fn get_piece_from_offset(&self, bit_offset: u32) -> Option<PlayerPiece> {

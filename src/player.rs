@@ -13,4 +13,27 @@ impl Player {
             return Self::White;
         }
     }
+
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::White => "White",
+            Self::Black => "Black"
+        }
+    }
+
+    pub fn from_fen_piece_char(c: char) -> Self {
+        if c.is_ascii_lowercase() {
+            return Self::Black;
+        }
+        
+        return Self::White;
+    }
+
+    pub fn from_fen_char(c: char) -> Self {
+        if c == 'w' {
+            return Self::White;
+        }
+
+        return Self::Black;
+    }
 }

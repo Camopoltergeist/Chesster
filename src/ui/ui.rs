@@ -1,16 +1,15 @@
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{move_collision::get_collision_mask, position::Position, tile_position::TilePosition}, debug_position::create_debug_position, player::Player};
+use crate::{board::{moove::Move, move_collision::get_collision_mask, position::Position, tile_position::TilePosition}, player::Player};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::load_piece_textures};
 
 pub struct UI {
 	board_renderer: BoardRenderer,
 	text_area: TextArea,
-	position: Option<Position>,
+	position: Position,
 
-	debug_position: Option<Position>,
 	is_debug: bool,
 
 	hovered_tile: Option<TilePosition>,
@@ -32,8 +31,7 @@ impl UI {
 		Self {
 			text_area: TextArea::new(board_renderer.size(), board_renderer.margin(), 20),
 			board_renderer,
-			position: Some(position),
-			debug_position: Some(create_debug_position()),
+			position,
 			is_debug: false,
 			hovered_tile: None,
 			selected_tile: None,
@@ -62,6 +60,11 @@ impl UI {
 			self.text_area.draw_line(draw_handle, "Debug Board");
 		}
 
+		let player_str = self.position.current_player().as_str();
+
+		self.text_area.draw_line(draw_handle, format!("Current player: {}", &player_str).as_str());
+
+
 		if let Some(hovered_tile) = self.hovered_tile {
 			self.text_area.draw_line(draw_handle, &hovered_tile.notation_string());
 		}
@@ -80,10 +83,6 @@ impl UI {
 	}
 
 	pub fn handle_input(&mut self, rl: &RaylibHandle) {
-		if rl.is_key_pressed(KeyboardKey::KEY_BACKSPACE) {
-			self.toggle_debug_position();
-		}
-
 		if rl.is_key_pressed(KeyboardKey::KEY_SPACE) {
 			self.toggle_board_perspective();
 		}
@@ -97,7 +96,22 @@ impl UI {
 		let tile_pos_opt = self.board_renderer.get_tile_from_pixel_pos(mouse_pos);
 		self.hovered_tile = tile_pos_opt;
 
+		// TODO: Holy fuck, this is a mess
 		if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+			if let Some(selected_tile) = self.selected_tile {
+				if let Some(clicked_tile) = tile_pos_opt {
+					let moove = Move::new(selected_tile, clicked_tile);
+
+					let move_result = self.position.make_move(moove);
+
+					if move_result.is_ok() {
+						self.board_renderer.set_board(Some(self.position.board()));
+						self.select_tile(None);
+						return;
+					}
+				}
+			}
+
 			self.select_tile(tile_pos_opt);
 		}
 	}
@@ -107,66 +121,28 @@ impl UI {
 		self.board_renderer.set_highlighted_tile(tile_pos);
 		self.board_renderer.set_bitboard_overlay(None);
 
-		let shown_position = self.shown_position();
-
-		if shown_position.is_none() {
-			return;
-		}
-
-		let position = shown_position.unwrap();
-
 		if tile_pos.is_none() {
 			return;
 		}
 
 		let tile_pos = tile_pos.unwrap();
 
-		if let Some(_) = position.get_piece(tile_pos) {
-			let mask = get_collision_mask(position.board().clone(), tile_pos);
+		if let Some(_) = self.position.get_piece(tile_pos) {
+			let mask = get_collision_mask(self.position.board().clone(), tile_pos);
 			self.board_renderer.set_bitboard_overlay(Some(mask));
 		}
 	}
 
-	pub fn shown_position(&self) -> Option<&Position> {
-		if self.is_debug { self.debug_position.as_ref() } else { self.position.as_ref() } 
+	pub fn position(&self) -> &Position {
+		&self.position
 	}
 
-	pub fn position(&self) -> Option<&Position> {
-		self.position.as_ref()
-	}
-
-	pub fn set_position(&mut self, position: Option<Position>) {
+	pub fn set_position(&mut self, position: Position) {
 		self.position = position;
-	}
-
-	pub fn set_debug_position(&mut self, debug_position: Option<Position>) {
-		self.debug_position = debug_position;
-	}
-
-	fn set_rendered_position(&mut self, position: Option<Position>) {
-		if let Some(position) = position {
-			self.board_renderer.set_board(Some(position.board()));
-		}
-		else {
-			self.board_renderer.set_board(None);
-		}
+		self.board_renderer.set_board(Some(self.position.board()));
 	}
 
 	fn toggle_board_perspective(&mut self) {
 		self.board_renderer.swap_player();
-	}
-
-	fn toggle_debug_position(&mut self) {
-		let not_current_position = if self.is_debug {
-			self.position.clone()
-		}
-		else {
-			self.debug_position.clone()
-		};
-
-		self.set_rendered_position(not_current_position);
-		self.is_debug = !self.is_debug;
-		
-		self.select_tile(None);
 	}
 }

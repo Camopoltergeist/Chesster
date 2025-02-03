@@ -22,7 +22,7 @@ pub fn start_ui() {
 
 	let position = Position::default();
 
-	ui.set_position(Some(position));
+	ui.set_position(position);
 
 	while !rl.window_should_close() {
 		ui.handle_input(&rl);
