@@ -1,12 +1,12 @@
 use std::cmp::min;
 
-use crate::{piece::PieceType, player::Player};
+use crate::{piece::PieceType, pieces::rook::Rook, player::Player};
 
 use super::{
     bitboard::Bitboard,
     board::Board,
     move_mask::{
-        BISHOP_MASKS, BLACK_PAWN_MASKS, KING_MASKS, KNIGHT_MASKS, ROOK_MASKS, WHITE_PAWN_MASKS,
+        BISHOP_MASKS, BLACK_PAWN_MASKS, KING_MASKS, KNIGHT_MASKS, WHITE_PAWN_MASKS,
     },
     tile_position::TilePosition,
 };
@@ -34,7 +34,7 @@ pub fn get_collision_mask(board: Board, tile_pos: TilePosition) -> Bitboard {
 
 /// Uses two masks to cut out movement after collision
 pub fn get_rook_collision(board: Board, player: Player, offset: u32) -> Bitboard {
-    let mut valid_moves: u64 = ROOK_MASKS[offset as usize].value();
+    let mut valid_moves: u64 = Rook::MOVEMENT_MASKS[offset as usize].value();
 
     let mut collision_mask: u64 = ((board.white_pieces | board.black_pieces) & valid_moves).into();
 
