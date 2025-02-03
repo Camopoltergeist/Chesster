@@ -22,7 +22,7 @@ impl Knight {
     }
 
     pub const fn generate_movement_mask(tile_position: TilePosition) -> Bitboard {
-        Bitboard::generate_knight_mask(tile_position.column(), tile_position.rank())
+        Bitboard::generate_knight_mask(tile_position)
     }
 
     pub const fn generate_all_movement_masks() -> [Bitboard; 64] {

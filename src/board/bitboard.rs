@@ -2,6 +2,8 @@ use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, N
 
 use const_for::const_for;
 
+use super::tile_position::TilePosition;
+
 #[derive(Clone, Copy)]
 
 pub struct Bitboard(pub u64);
@@ -118,7 +120,10 @@ impl Bitboard {
         Bitboard(des_mask)
     }
 
-    pub const fn generate_knight_mask(column: u32, rank: u32) -> Bitboard {
+    pub const fn generate_knight_mask(tile_position: TilePosition) -> Bitboard {
+        let column = tile_position.column();
+        let rank = tile_position.rank();
+
         // All possible knight directions from its place
         let moves: [(i32, i32); 8] = [
             (2, 1),
