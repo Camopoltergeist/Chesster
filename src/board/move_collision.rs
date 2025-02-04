@@ -19,7 +19,7 @@ pub fn get_collision_mask(board: Board, tile_pos: TilePosition) -> Bitboard {
     let piece = square_cont.unwrap();
 
     match piece.piece() {
-        PieceType::Pawn => return get_pawn_collision(board, piece.player(), tile_pos),
+        PieceType::Pawn => return Pawn::generate_collision_mask(&board, piece.player(), tile_pos),
         PieceType::Rook => return Rook::generate_collision_mask(&board, piece.player(), tile_pos),
         PieceType::Bishop => return Bishop::generate_collision_mask(&board, piece.player(), tile_pos),
         PieceType::Knight => return Knight::generate_collision_mask(&board, piece.player(), tile_pos),
@@ -73,32 +73,7 @@ pub fn get_cut_mask_des(offset: u32, length: u32) -> u64 {
     des_mask << offset
 }
 
-pub fn get_pawn_collision(board: Board, player: Player, tile_pos: TilePosition) -> Bitboard {
-    let collision_mask = (board.white_pieces | board.black_pieces).value();
-
-    let valid_moves = match player {
-        Player::White => {
-            if (1 << tile_pos.bit_offset() + 8) & collision_mask != 0 {
-                0
-            } else {
-                Pawn::WHITE_MOVEMENT_MASKS[tile_pos.bit_offset() as usize].value() & !collision_mask
-            }
-        }
-        Player::Black => {
-            if (1 << tile_pos.bit_offset() - 8) & collision_mask != 0 {
-                0
-            } else {
-                Pawn::BLACK_MOVEMENT_MASKS[tile_pos.bit_offset() as usize].value() & !collision_mask
-            }
-        }
-    };
-
-    let capture_moves =
-        get_pawn_capture(player, tile_pos) & board.get_player_bitboard(player.opposite()).value();
-    Bitboard(valid_moves | capture_moves)
-}
-
-pub fn get_pawn_capture(player: Player, tile_pos: TilePosition) -> u64 {
+pub const fn get_pawn_capture(player: Player, tile_pos: TilePosition) -> u64 {
     let mut attack_tiles = 0;
     let attack_mask = 1u64 << tile_pos.bit_offset();
 

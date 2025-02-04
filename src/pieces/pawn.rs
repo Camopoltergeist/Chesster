@@ -1,4 +1,4 @@
-use crate::{board::{bitboard::Bitboard, tile_position::TilePosition}, piece::{Piece, PieceType}, player::Player};
+use crate::{board::{bitboard::Bitboard, board::Board, move_collision::get_pawn_capture, tile_position::TilePosition}, piece::{Piece, PieceType}, player::Player};
 
 use const_for::const_for;
 
@@ -16,6 +16,31 @@ impl Pawn {
             player,
             tile_position
         }
+    }
+
+    pub const fn generate_collision_mask(board: &Board, player: Player, tile_pos: TilePosition) -> Bitboard {
+        let collision_mask = board.white_pieces.value() | board.black_pieces.value();
+
+        let valid_moves = match player {
+            Player::White => {
+                if (1 << tile_pos.bit_offset() + 8) & collision_mask != 0 {
+                    0
+                } else {
+                    Pawn::WHITE_MOVEMENT_MASKS[tile_pos.bit_offset() as usize].value() & !collision_mask
+                }
+            }
+            Player::Black => {
+                if (1 << tile_pos.bit_offset() - 8) & collision_mask != 0 {
+                    0
+                } else {
+                    Pawn::BLACK_MOVEMENT_MASKS[tile_pos.bit_offset() as usize].value() & !collision_mask
+                }
+            }
+        };
+
+        let capture_moves =
+            get_pawn_capture(player, tile_pos) & board.get_player_bitboard(player.opposite()).value();
+        Bitboard(valid_moves | capture_moves)
     }
 
     pub const fn get_movement_mask(tile_position: TilePosition, player: Player) -> Bitboard {
