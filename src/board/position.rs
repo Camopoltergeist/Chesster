@@ -1,4 +1,4 @@
-use crate::{piece::PieceType, player::Player, player_piece::PlayerPiece};
+use crate::{board::moove::CastleSide, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 use super::{board::Board, moove::Move, move_collision::get_collision_mask, tile_position::TilePosition};
 
@@ -164,6 +164,11 @@ impl Position {
     }
 
     pub fn make_move(&mut self, moove: Move) -> Result<(), ()> {
+        println!("WK: {}", self.board.is_castling_possible(Player::White, CastleSide::KingSide));
+        println!("WQ: {}", self.board.is_castling_possible(Player::White, CastleSide::QueenSide));
+        println!("BK: {}", self.board.is_castling_possible(Player::Black, CastleSide::KingSide));
+        println!("BQ: {}", self.board.is_castling_possible(Player::Black, CastleSide::QueenSide));
+
         if !self.is_legal_move(&moove) {
             return Err(());
         };

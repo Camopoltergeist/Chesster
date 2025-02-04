@@ -1,4 +1,4 @@
-use super::{bitboard::Bitboard, moove::Move, tile_position::TilePosition};
+use super::{bitboard::Bitboard, moove::{CastleSide, Move}, tile_position::TilePosition};
 use crate::{piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 #[derive(Clone)]
@@ -200,6 +200,10 @@ impl Board {
         let tile_pos = TilePosition::from_tile_str(tile_str).expect("invalid tile str passed");
 
         self.get_piece(tile_pos)
+    }
+
+    pub fn is_castling_possible(&self, player: Player, side: CastleSide) -> bool {
+        self.get_all_pieces_mask() & Bitboard::generate_castling_block_mask(player, side) == 0
     }
 }
 

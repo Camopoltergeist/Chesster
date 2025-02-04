@@ -36,4 +36,11 @@ impl Player {
 
         return Self::Black;
     }
+
+    pub fn castling_target_rank(&self) -> u32 {
+        match self {
+            Player::White => 0,
+            Player::Black => 7
+        }
+    }
 }

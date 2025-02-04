@@ -1,7 +1,7 @@
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{moove::Move, move_collision::get_collision_mask, position::Position, tile_position::TilePosition}, player::Player};
+use crate::{board::{bitboard::Bitboard, moove::Move, move_collision::get_collision_mask, position::Position, tile_position::TilePosition}, player::Player};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::load_piece_textures};
 
