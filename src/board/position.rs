@@ -137,7 +137,49 @@ impl Position {
             }
         }
 
+        let castling_moves = self.get_legal_castling_moves();
+
+        legal_moves.extend(castling_moves);
+
         return legal_moves;
+    }
+
+    pub fn get_legal_castling_moves(&self) -> Vec<Move> {
+        let mut castling_moves = Vec::with_capacity(4);
+        
+        if self.white_short_castling {
+            if let Some(moove) = self.get_castling_move_if_legal(Player::White, CastleSide::KingSide) {
+                castling_moves.push(moove);
+            }
+        }
+
+        if self.white_long_castling {
+            if let Some(moove) = self.get_castling_move_if_legal(Player::White, CastleSide::QueenSide) {
+                castling_moves.push(moove);
+            }
+        }
+
+        if self.black_short_castling {
+            if let Some(moove) = self.get_castling_move_if_legal(Player::Black, CastleSide::KingSide) {
+                castling_moves.push(moove);
+            }
+        }
+
+        if self.black_long_castling {
+            if let Some(moove) = self.get_castling_move_if_legal(Player::Black, CastleSide::QueenSide) {
+                castling_moves.push(moove);
+            }
+        }
+
+        return castling_moves;
+    }
+
+    pub fn get_castling_move_if_legal(&self, player: Player, side: CastleSide) -> Option<Move> {
+        if self.board.is_castling_possible(player, side.clone()) {
+            return Some(Move::with_castling(player, side));
+        };
+
+        return None;
     }
 
     pub fn get_piece(&self, tile_pos: TilePosition) -> Option<PlayerPiece> {

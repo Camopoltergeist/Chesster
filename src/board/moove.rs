@@ -57,7 +57,7 @@ impl Move {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum CastleSide {
     KingSide,
     QueenSide
