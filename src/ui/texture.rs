@@ -2,12 +2,12 @@ use std::collections::HashMap;
 
 use raylib::{texture::{RaylibTexture2D, Texture2D}, RaylibHandle, RaylibThread};
 
-use crate::{piece::Piece, player::Player, player_piece::PlayerPiece};
+use crate::{piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct PieceTexture {
 	player: Player,
-	piece: Piece
+	piece: PieceType
 }
 
 impl PieceTexture {
@@ -22,12 +22,12 @@ impl PieceTexture {
 		let player_str = if matches!(self.player, Player::Black) { "b" } else { "w" };
 
 		let piece_str = match self.piece {
-			Piece::Pawn => "pawn",
-			Piece::Rook => "rook",
-			Piece::Knight => "knight",
-			Piece::Bishop => "bishop",
-			Piece::Queen => "queen",
-			Piece::King => "king"
+			PieceType::Pawn => "pawn",
+			PieceType::Rook => "rook",
+			PieceType::Knight => "knight",
+			PieceType::Bishop => "bishop",
+			PieceType::Queen => "queen",
+			PieceType::King => "king"
 		};
 
 		return format!("{}_{}.png", player_str, piece_str).to_string();
@@ -36,19 +36,19 @@ impl PieceTexture {
 
 pub fn load_piece_textures(rl: &mut RaylibHandle, thread: &RaylibThread) -> HashMap<PieceTexture, Texture2D> {
 	let piece_textures = vec![
-		PieceTexture::new(PlayerPiece::new(Player::White, Piece::Pawn)),
-		PieceTexture::new(PlayerPiece::new(Player::White, Piece::Rook)),
-		PieceTexture::new(PlayerPiece::new(Player::White, Piece::Knight)),
-		PieceTexture::new(PlayerPiece::new(Player::White, Piece::Bishop)),
-		PieceTexture::new(PlayerPiece::new(Player::White, Piece::Queen)),
-		PieceTexture::new(PlayerPiece::new(Player::White, Piece::King)),
+		PieceTexture::new(PlayerPiece::new(Player::White, PieceType::Pawn)),
+		PieceTexture::new(PlayerPiece::new(Player::White, PieceType::Rook)),
+		PieceTexture::new(PlayerPiece::new(Player::White, PieceType::Knight)),
+		PieceTexture::new(PlayerPiece::new(Player::White, PieceType::Bishop)),
+		PieceTexture::new(PlayerPiece::new(Player::White, PieceType::Queen)),
+		PieceTexture::new(PlayerPiece::new(Player::White, PieceType::King)),
 
-		PieceTexture::new(PlayerPiece::new(Player::Black, Piece::Pawn)),
-		PieceTexture::new(PlayerPiece::new(Player::Black, Piece::Rook)),
-		PieceTexture::new(PlayerPiece::new(Player::Black, Piece::Knight)),
-		PieceTexture::new(PlayerPiece::new(Player::Black, Piece::Bishop)),
-		PieceTexture::new(PlayerPiece::new(Player::Black, Piece::Queen)),
-		PieceTexture::new(PlayerPiece::new(Player::Black, Piece::King)),
+		PieceTexture::new(PlayerPiece::new(Player::Black, PieceType::Pawn)),
+		PieceTexture::new(PlayerPiece::new(Player::Black, PieceType::Rook)),
+		PieceTexture::new(PlayerPiece::new(Player::Black, PieceType::Knight)),
+		PieceTexture::new(PlayerPiece::new(Player::Black, PieceType::Bishop)),
+		PieceTexture::new(PlayerPiece::new(Player::Black, PieceType::Queen)),
+		PieceTexture::new(PlayerPiece::new(Player::Black, PieceType::King)),
 	];
 
 	let texture_dir = "./res/pieces/";

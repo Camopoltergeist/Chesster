@@ -40,11 +40,11 @@ impl TilePosition {
         format!("{}{}", column_char, rank_char)
     }
 
-    pub fn column(&self) -> u32 {
+    pub const fn column(&self) -> u32 {
         self.column
     }
 
-    pub fn rank(&self) -> u32 {
+    pub const fn rank(&self) -> u32 {
         self.rank
     }
 
@@ -52,7 +52,7 @@ impl TilePosition {
         self.column + self.rank * 8
     }
 
-    pub fn from_bit_offset(bit_offset: u32) -> Self {
+    pub const fn from_bit_offset(bit_offset: u32) -> Self {
         let column = bit_offset % 8;
         let rank = bit_offset / 8;
 

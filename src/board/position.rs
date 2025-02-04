@@ -1,4 +1,4 @@
-use crate::{piece::Piece, player::Player, player_piece::PlayerPiece};
+use crate::{piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 use super::{board::Board, moove::Move, move_collision::get_collision_mask, tile_position::TilePosition};
 
@@ -56,7 +56,7 @@ impl Position {
             }
 
             let player = Player::from_fen_piece_char(fen_char);
-            let piece_result = Piece::from_fen_char(fen_char);
+            let piece_result = PieceType::from_fen_char(fen_char);
 
             if piece_result.is_err() {
                 return Err(FenParseError::InvalidPiece);

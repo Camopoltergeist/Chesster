@@ -2,6 +2,8 @@ use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, N
 
 use const_for::const_for;
 
+use super::tile_position::TilePosition;
+
 #[derive(Clone, Copy)]
 
 pub struct Bitboard(pub u64);
@@ -9,7 +11,7 @@ pub struct Bitboard(pub u64);
 //Bitwise operation reminder: |= offset -> place a piece, &= !offset -> remove a piece
 
 impl Bitboard {
-    pub fn value(&self) -> u64 {
+    pub const fn value(&self) -> u64 {
         self.0
     }
 
@@ -30,9 +32,9 @@ impl Bitboard {
         println!("{}", out_str);
     }
 
-    pub fn check_bit(&self, bit_offset: u32) -> bool {
+    pub const fn check_bit(&self, bit_offset: u32) -> bool {
         let bitmask: u64 = 1 << bit_offset;
-        (*self & bitmask) != 0
+        (self.0 & bitmask) != 0
     }
 
     pub fn set_bit(&mut self, bit_offset: u32) {
@@ -63,13 +65,13 @@ impl Bitboard {
         }
     }
 
-    pub const fn get_rank_mask(rank: u32) -> Bitboard {
+    pub const fn generate_rank_mask(rank: u32) -> Bitboard {
         //A bitboard that goes through the first rank, then moved by column
         let rank_mask = 0xff << rank * 8;
         Bitboard(rank_mask)
     }
 
-    pub const fn get_column_mask(column: u32) -> Bitboard {
+    pub const fn generate_column_mask(column: u32) -> Bitboard {
         //^The other way around: a bitboard going through the first column, then nudged left
         let column_mask = 0x101010101010101 << column;
         Bitboard(column_mask)
@@ -118,7 +120,10 @@ impl Bitboard {
         Bitboard(des_mask)
     }
 
-    pub const fn get_knight_mask(column: u32, rank: u32) -> Bitboard {
+    pub const fn generate_knight_mask(tile_position: TilePosition) -> Bitboard {
+        let column = tile_position.column();
+        let rank = tile_position.rank();
+
         // All possible knight directions from its place
         let moves: [(i32, i32); 8] = [
             (2, 1),

@@ -1,13 +1,13 @@
-use crate::{piece::Piece, player::Player};
+use crate::{piece::PieceType, player::Player};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PlayerPiece {
     player: Player,
-    piece: Piece
+    piece: PieceType
 }
 
 impl PlayerPiece {
-    pub fn new(player: Player, piece: Piece) -> Self {
+    pub fn new(player: Player, piece: PieceType) -> Self {
         Self {
             player,
             piece
@@ -18,7 +18,7 @@ impl PlayerPiece {
         self.player
     }
 
-    pub fn piece(&self) -> Piece {
+    pub fn piece(&self) -> PieceType {
         self.piece
     }
 }

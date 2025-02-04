@@ -1,5 +1,7 @@
+use crate::{board::{bitboard::Bitboard, tile_position::TilePosition}, player::Player};
+
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
-pub enum Piece {
+pub enum PieceType {
 	Pawn,
 	Rook,
 	Knight,
@@ -8,7 +10,7 @@ pub enum Piece {
 	King
 }
 
-impl Piece {
+impl PieceType {
 	pub fn from_fen_char(c: char) -> Result<Self, ()> {
 		let e = match c.to_ascii_lowercase() {
 			'r' => Self::Rook,
@@ -22,4 +24,12 @@ impl Piece {
 
 		Ok(e)
 	}
+}
+
+pub trait Piece {
+	fn piece_type(&self) -> PieceType;
+	fn player(&self) -> Player;
+	fn tile_position(&self) -> TilePosition;
+
+	fn movement_mask(&self) -> Bitboard;
 }
