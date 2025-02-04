@@ -26,7 +26,7 @@ pub fn get_collision_mask(board: Board, tile_pos: TilePosition) -> Bitboard {
         PieceType::Queen => {
             return Queen::generate_collision_mask(&board, piece.player(), tile_pos)
         }
-        PieceType::King => return get_king_collision(board, piece.player(), tile_pos),
+        PieceType::King => return King::generate_collision_mask(&board, piece.player(), tile_pos),
     }
 }
 
@@ -71,13 +71,6 @@ pub fn get_cut_mask_des(offset: u32, length: u32) -> u64 {
 
     des_mask >>= 7;
     des_mask << offset
-}
-
-pub fn get_king_collision(board: Board, player: Player, tile_pos: TilePosition) -> Bitboard {
-    Bitboard(
-        King::MOVEMENT_MASKS[tile_pos.bit_offset() as usize].value()
-            & !board.get_player_bitboard(player).value(),
-    )
 }
 
 pub fn get_pawn_collision(board: Board, player: Player, tile_pos: TilePosition) -> Bitboard {

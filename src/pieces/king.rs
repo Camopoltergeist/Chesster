@@ -1,4 +1,4 @@
-use crate::{board::{bitboard::Bitboard, tile_position::TilePosition}, piece::{Piece, PieceType}, player::Player};
+use crate::{board::{bitboard::Bitboard, board::Board, tile_position::TilePosition}, piece::{Piece, PieceType}, player::Player};
 
 use const_for::const_for;
 
@@ -15,6 +15,13 @@ impl King {
             player,
             tile_position
         }
+    }
+
+    pub const fn generate_collision_mask(board: &Board, player: Player, tile_pos: TilePosition) -> Bitboard {
+        Bitboard(
+            Self::get_movement_mask(tile_pos).value()
+                & !board.get_player_bitboard(player).value(),
+        )
     }
 
     pub const fn get_movement_mask(tile_position: TilePosition) -> Bitboard {
