@@ -1,4 +1,4 @@
-use crate::{board::{bitboard::Bitboard, tile_position::TilePosition}, piece::{Piece, PieceType}, player::Player};
+use crate::{board::{bitboard::Bitboard, board::Board, tile_position::TilePosition}, piece::{Piece, PieceType}, player::Player};
 
 use super::{bishop::Bishop, rook::Rook};
 
@@ -17,6 +17,10 @@ impl Queen {
             player,
             tile_position
         }
+    }
+
+    pub fn generate_collision_mask(board: &Board, player: Player, tile_pos: TilePosition) -> Bitboard {
+        Rook::generate_collision_mask(&board, player, tile_pos) | Bishop::generate_collision_mask(&board, player, tile_pos)
     }
 
     pub const fn get_movement_mask(tile_position: TilePosition) -> Bitboard {
