@@ -102,6 +102,15 @@ impl Position {
         })
     }
 
+    pub fn print_all_legal_moves(&self) {
+        let mut counter = 1;
+
+		for m in self.get_all_legal_moves() {
+			println!("{}: {:?}", counter, m);
+			counter += 1;
+		}
+    }
+
     pub fn get_all_legal_moves(&self) -> Vec<Move> {
         let piece_mask = self.board.get_player_bitboard(self.current_player);
 
@@ -116,6 +125,10 @@ impl Position {
 
             legal_moves.append(&mut self.get_legal_moves(tile_pos));
         };
+
+        let castling_moves = self.get_legal_castling_moves();
+
+        legal_moves.extend(castling_moves);
 
         return legal_moves;
     }
@@ -136,10 +149,6 @@ impl Position {
                 }
             }
         }
-
-        let castling_moves = self.get_legal_castling_moves();
-
-        legal_moves.extend(castling_moves);
 
         return legal_moves;
     }
@@ -206,11 +215,6 @@ impl Position {
     }
 
     pub fn make_move(&mut self, moove: Move) -> Result<(), ()> {
-        println!("WK: {}", self.board.is_castling_possible(Player::White, CastleSide::KingSide));
-        println!("WQ: {}", self.board.is_castling_possible(Player::White, CastleSide::QueenSide));
-        println!("BK: {}", self.board.is_castling_possible(Player::Black, CastleSide::KingSide));
-        println!("BQ: {}", self.board.is_castling_possible(Player::Black, CastleSide::QueenSide));
-
         if !self.is_legal_move(&moove) {
             return Err(());
         };

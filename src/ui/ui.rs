@@ -26,6 +26,8 @@ impl UI {
 		let position = Position::default();
 		board_renderer.set_board(Some(position.board()));
 
+		position.print_all_legal_moves();
+
 		rl.gui_load_style_default();
 
 		Self {
@@ -107,6 +109,7 @@ impl UI {
 					if move_result.is_ok() {
 						self.board_renderer.set_board(Some(self.position.board()));
 						self.select_tile(None);
+						self.position.print_all_legal_moves();
 						return;
 					}
 				}
