@@ -111,21 +111,21 @@ impl Board {
         Some(PlayerPiece::new(player, piece))
     }
 
-    pub fn get_player_bitboard(&self, player: Player) -> &Bitboard {
+    pub const fn get_player_bitboard(&self, player: Player) -> &Bitboard {
         match player {
             Player::White => &self.white_pieces,
             Player::Black => &self.black_pieces,
         }
     }
 
-    pub fn get_player_bitboard_mut(&mut self, player: Player) -> &mut Bitboard {
+    pub const fn get_player_bitboard_mut(&mut self, player: Player) -> &mut Bitboard {
         match player {
             Player::White => &mut self.white_pieces,
             Player::Black => &mut self.black_pieces,
         }
     }
 
-    pub fn get_piece_bitboard(&self, piece: PieceType) -> &Bitboard {
+    pub const fn get_piece_bitboard(&self, piece: PieceType) -> &Bitboard {
         match piece {
             PieceType::Pawn => &self.pawns,
             PieceType::Rook => &self.rooks,
@@ -136,7 +136,7 @@ impl Board {
         }
     }
 
-    pub fn get_piece_bitboard_mut(&mut self, piece: PieceType) -> &mut Bitboard {
+    pub const fn get_piece_bitboard_mut(&mut self, piece: PieceType) -> &mut Bitboard {
         match piece {
             PieceType::Pawn => &mut self.pawns,
             PieceType::Rook => &mut self.rooks,
@@ -164,6 +164,24 @@ impl Board {
 
         self.get_player_bitboard_mut(piece.player()).set_bit(bit_offset);
         self.get_piece_bitboard_mut(piece.piece()).set_bit(bit_offset);
+    }
+
+    pub const fn get_all_pieces_mask(&self) -> Bitboard {
+        Bitboard(self.black_pieces.value() | self.white_pieces.value())
+    }
+
+    pub fn get_player_at(&self, tile_pos: TilePosition) -> Option<Player> {
+        let bit_offset = tile_pos.bit_offset();
+
+        if self.white_pieces.check_bit(bit_offset) {
+            return Some(Player::White);
+        }
+
+        if self.black_pieces.check_bit(bit_offset) {
+            return Some(Player::Black);
+        }
+
+        return None;
     }
 
     pub fn get_piece(&self, tile_pos: TilePosition) -> Option<PlayerPiece> {

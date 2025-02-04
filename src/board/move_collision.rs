@@ -2,6 +2,8 @@ use std::cmp::min;
 
 use crate::{piece::PieceType, pieces::{bishop::Bishop, king::King, knight::Knight, pawn::Pawn, rook::Rook}, player::Player};
 
+use const_for::const_for;
+
 use super::{
     bitboard::Bitboard,
     board::Board,
@@ -19,7 +21,7 @@ pub fn get_collision_mask(board: Board, tile_pos: TilePosition) -> Bitboard {
 
     match piece.piece() {
         PieceType::Pawn => return get_pawn_collision(board, piece.player(), tile_pos),
-        PieceType::Rook => return get_rook_collision(board, piece.player(), tile_pos.bit_offset()),
+        PieceType::Rook => return Rook::generate_collision_mask(&board, piece.player(), tile_pos),
         PieceType::Bishop => return get_bishop_collision(board, piece.player(), tile_pos),
         PieceType::Knight => return get_knight_collision(board, piece.player(), tile_pos),
         PieceType::Queen => {
@@ -29,79 +31,7 @@ pub fn get_collision_mask(board: Board, tile_pos: TilePosition) -> Bitboard {
     }
 }
 
-/// Uses two masks to cut out movement after collision
-pub fn get_rook_collision(board: Board, player: Player, offset: u32) -> Bitboard {
-    let mut valid_moves: u64 = Rook::MOVEMENT_MASKS[offset as usize].value();
-
-    let mut collision_mask: u64 = ((board.white_pieces | board.black_pieces) & valid_moves).into();
-
-    if collision_mask == 0 {
-        return Bitboard(valid_moves);
-    };
-
-    let rank_mask: u64 = 0xFE;
-
-    let n_collision = get_cut_mask_vertical(offset, 8 - offset / 8) & collision_mask;
-
-    if n_collision != 0 {
-        let n_offset = n_collision.trailing_zeros();
-        if board
-            .get_player_bitboard(player.opposite())
-            .check_bit(n_offset)
-        {
-            valid_moves &= !get_cut_mask_vertical(n_offset + 8, 7 - (n_offset / 8));
-        } else {
-            valid_moves &= !get_cut_mask_vertical(n_offset, 8 - (n_offset / 8));
-        }
-        collision_mask &= !n_collision;
-    }
-
-    let w_collision = (rank_mask << offset) & collision_mask;
-
-    if w_collision != 0 {
-        let w_offset = w_collision.trailing_zeros();
-        if board
-            .get_player_bitboard(player.opposite())
-            .check_bit(w_offset)
-        {
-            valid_moves &= !(get_cut_mask_horizontal(w_offset + 1, 7 - w_offset % 8));
-        } else {
-            valid_moves &= !(get_cut_mask_horizontal(w_offset, 8 - w_offset % 8));
-        }
-        collision_mask &= !w_collision;
-    }
-
-    let s_collision = get_cut_mask_vertical(offset % 8, offset / 8) & collision_mask;
-
-    if s_collision != 0 {
-        let s_offset = 63 - s_collision.leading_zeros();
-        if board
-            .get_player_bitboard(player.opposite())
-            .check_bit(s_offset)
-        {
-            valid_moves &= !(get_cut_mask_vertical(s_offset % 8, s_offset / 8));
-        } else {
-            valid_moves &= !(get_cut_mask_vertical(s_offset % 8, s_offset / 8 + 1));
-        }
-        collision_mask &= !s_collision;
-    }
-
-    if collision_mask != 0 {
-        let e_offset = 63 - collision_mask.leading_zeros();
-        if board
-            .get_player_bitboard(player.opposite())
-            .check_bit(e_offset)
-        {
-            valid_moves &= !(get_cut_mask_horizontal(e_offset - e_offset % 8, e_offset % 8));
-        } else {
-            valid_moves &= !(get_cut_mask_horizontal(e_offset - e_offset % 8, e_offset % 8 + 1));
-        }
-    }
-
-    Bitboard(valid_moves)
-}
-
-pub fn get_cut_mask_horizontal(offset: u32, length: u32) -> u64 {
+pub const fn get_cut_mask_horizontal(offset: u32, length: u32) -> u64 {
     let tile_pos = TilePosition::from_bit_offset(offset);
 
     let mask_length = if length == 0 {
@@ -114,12 +44,12 @@ pub fn get_cut_mask_horizontal(offset: u32, length: u32) -> u64 {
     rank_mask << (tile_pos.rank() * 8)
 }
 
-pub fn get_cut_mask_vertical(offset: u32, length: u32) -> u64 {
+pub const fn get_cut_mask_vertical(offset: u32, length: u32) -> u64 {
     let mut column_mask = 0u64;
 
-    for i in 0..length {
+    const_for!(i in 0..length => {
         column_mask |= 1u64 << (offset + i * 8);
-    }
+    });
 
     column_mask
 }
@@ -237,7 +167,7 @@ pub fn get_knight_collision(board: Board, player: Player, tile_pos: TilePosition
 }
 
 pub fn get_queen_collision(board: Board, player: Player, tile_pos: TilePosition) -> Bitboard {
-    get_rook_collision(board.clone(), player, tile_pos.bit_offset()) | get_bishop_collision(board.clone(), player, tile_pos)
+    Rook::generate_collision_mask(&board, player, tile_pos) | get_bishop_collision(board.clone(), player, tile_pos)
 }
 
 pub fn get_king_collision(board: Board, player: Player, tile_pos: TilePosition) -> Bitboard {

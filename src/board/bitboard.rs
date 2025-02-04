@@ -11,7 +11,7 @@ pub struct Bitboard(pub u64);
 //Bitwise operation reminder: |= offset -> place a piece, &= !offset -> remove a piece
 
 impl Bitboard {
-    pub fn value(&self) -> u64 {
+    pub const fn value(&self) -> u64 {
         self.0
     }
 
@@ -32,9 +32,9 @@ impl Bitboard {
         println!("{}", out_str);
     }
 
-    pub fn check_bit(&self, bit_offset: u32) -> bool {
+    pub const fn check_bit(&self, bit_offset: u32) -> bool {
         let bitmask: u64 = 1 << bit_offset;
-        (*self & bitmask) != 0
+        (self.0 & bitmask) != 0
     }
 
     pub fn set_bit(&mut self, bit_offset: u32) {
