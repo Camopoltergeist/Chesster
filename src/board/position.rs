@@ -156,29 +156,34 @@ impl Position {
     pub fn get_legal_castling_moves(&self) -> Vec<Move> {
         let mut castling_moves = Vec::with_capacity(4);
         
-        if self.white_short_castling {
-            if let Some(moove) = self.get_castling_move_if_legal(Player::White, CastleSide::KingSide) {
-                castling_moves.push(moove);
+        match self.current_player {
+            Player::White => {
+                if self.white_short_castling {
+                    if let Some(moove) = self.get_castling_move_if_legal(Player::White, CastleSide::KingSide) {
+                        castling_moves.push(moove);
+                    }
+                }
+        
+                if self.white_long_castling {
+                    if let Some(moove) = self.get_castling_move_if_legal(Player::White, CastleSide::QueenSide) {
+                        castling_moves.push(moove);
+                    }
+                }
+            },
+            Player::Black => {
+                if self.black_short_castling {
+                    if let Some(moove) = self.get_castling_move_if_legal(Player::Black, CastleSide::KingSide) {
+                        castling_moves.push(moove);
+                    }
+                }
+        
+                if self.black_long_castling {
+                    if let Some(moove) = self.get_castling_move_if_legal(Player::Black, CastleSide::QueenSide) {
+                        castling_moves.push(moove);
+                    }
+                }
             }
-        }
-
-        if self.white_long_castling {
-            if let Some(moove) = self.get_castling_move_if_legal(Player::White, CastleSide::QueenSide) {
-                castling_moves.push(moove);
-            }
-        }
-
-        if self.black_short_castling {
-            if let Some(moove) = self.get_castling_move_if_legal(Player::Black, CastleSide::KingSide) {
-                castling_moves.push(moove);
-            }
-        }
-
-        if self.black_long_castling {
-            if let Some(moove) = self.get_castling_move_if_legal(Player::Black, CastleSide::QueenSide) {
-                castling_moves.push(moove);
-            }
-        }
+        };
 
         return castling_moves;
     }
