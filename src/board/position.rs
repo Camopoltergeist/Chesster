@@ -127,6 +127,13 @@ impl Position {
         println!("Black Queen side: {}", self.black_long_castling);
     }
 
+    pub fn is_in_check(&self, player: Player) -> bool {
+        let king_mask = *self.board.get_piece_bitboard(PieceType::King) & *self.board.get_player_bitboard(player);
+        let attack_mask = self.board.get_attack_mask(player.opposite());
+
+        return !(king_mask & attack_mask).is_empty();
+    }
+
     pub fn get_all_legal_moves(&self) -> Vec<Move> {
         let piece_mask = self.board.get_player_bitboard(self.current_player);
 
@@ -146,24 +153,35 @@ impl Position {
     }
 
     pub fn get_legal_moves_for_tile_position(&self, tile_pos: TilePosition) -> Vec<Move> {
-        let mut legal_moves = Vec::new();
+        let mut moves = Vec::new();
 
         if let Some(piece) = self.board.get_piece(tile_pos) {
             let moves_bitboard = get_collision_mask(self.board.clone(), tile_pos);
 
             if moves_bitboard.is_empty() {
-                return legal_moves;
+                return moves;
             }
 
             for bit_offset in 0..64 {
                 if moves_bitboard.check_bit(bit_offset) {
-                    legal_moves.push(BasicMove::new(tile_pos, TilePosition::from_bit_offset(bit_offset)).into());
+                    moves.push(BasicMove::new(tile_pos, TilePosition::from_bit_offset(bit_offset)).into());
                 }
             }
 
             if piece.piece() == PieceType::King {
                 let castling_moves = self.get_legal_castling_moves();
-                legal_moves.extend(castling_moves);
+                moves.extend(castling_moves);
+            }
+        }
+
+        let mut legal_moves = Vec::new();
+
+        for m in moves {
+            let mut moved_position = self.clone();
+            moved_position.make_move(m.clone()).expect("unexpected illegal move while culling moves");
+            
+            if !moved_position.is_in_check(self.current_player) {
+                legal_moves.push(m);
             }
         }
 
