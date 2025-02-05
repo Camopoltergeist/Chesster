@@ -1,4 +1,4 @@
-use super::{bitboard::Bitboard, moove::{BasicMove, CastleSide, Move}, tile_position::TilePosition};
+use super::{bitboard::Bitboard, moove::{BasicMove, CastleSide, CastlingMove, Move}, tile_position::TilePosition};
 use crate::{piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 #[derive(Clone)]
@@ -80,20 +80,16 @@ impl Board {
             || Board::check_overlaps(self.queens, self.kings))
     }
 
-    /// Moves piece on board, captures if the piece lands on tile with a piece already on it.
-    /// Does not check for a valid move.
-    pub fn move_piece(&mut self, moove: Move) {
-        match moove {
-            Move::Basic(basic_move) => self.move_piece_basic(basic_move),
-            _ => unimplemented!()
-        }
-    }
-
-    fn move_piece_basic(&mut self, basic_move: BasicMove) {
+    pub fn move_piece_basic(&mut self, basic_move: BasicMove) {
         let piece = self.get_piece(basic_move.from_position()).expect("no piece at move's \"from\" tile");
 
         self.set_piece(piece, basic_move.to_position());
         self.remove_piece(basic_move.from_position());
+    }
+
+    pub fn move_piece_castling(&mut self, castling_move: CastlingMove) {
+        self.move_piece_basic(castling_move.king_basic_move());
+        self.move_piece_basic(castling_move.rook_basic_move());
     }
 
     pub fn get_piece_from_offset(&self, bit_offset: u32) -> Option<PlayerPiece> {

@@ -242,11 +242,27 @@ impl Position {
             return Err(());
         };
 
-        self.board.move_piece(moove);
+        match moove {
+            Move::Basic(basic_move) => self.board.move_piece_basic(basic_move),
+            Move::Castling(castling_move) => {
+                self.set_castling_availability(castling_move.player(), castling_move.side(), false);
+                self.board.move_piece_castling(castling_move);
+            }
+            _ => unimplemented!()
+        }
 
         self.current_player = self.current_player.opposite();
 
         Ok(())
+    }
+
+    fn set_castling_availability(&mut self, player: Player, side: CastleSide, value: bool) {
+        match (player, side) {
+            (Player::White, CastleSide::KingSide) => self.white_short_castling = value,
+            (Player::White, CastleSide::QueenSide) => self.white_long_castling = value,
+            (Player::Black, CastleSide::KingSide) => self.black_short_castling = value,
+            (Player::Black, CastleSide::QueenSide) => self.black_long_castling = value
+        }
     }
 }
 
