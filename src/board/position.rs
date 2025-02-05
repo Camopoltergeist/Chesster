@@ -127,9 +127,9 @@ impl Position {
         println!("Black Queen side: {}", self.black_long_castling);
     }
 
-    pub fn is_in_check(&self) -> bool {
-        let king_mask = *self.board.get_piece_bitboard(PieceType::King) & *self.board.get_player_bitboard(self.current_player);
-        let attack_mask = self.board.get_attack_mask(self.current_player.opposite());
+    pub fn is_in_check(&self, player: Player) -> bool {
+        let king_mask = *self.board.get_piece_bitboard(PieceType::King) & *self.board.get_player_bitboard(player);
+        let attack_mask = self.board.get_attack_mask(player.opposite());
 
         return !(king_mask & attack_mask).is_empty();
     }
