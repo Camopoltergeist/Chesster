@@ -15,6 +15,14 @@ pub struct Position {
 }
 
 impl Position {
+    pub fn current_player(&self) -> Player {
+        self.current_player
+    }
+
+    pub fn board(&self) -> &Board {
+        &self.board
+    }
+
     pub fn from_fen_str(fen: &str) -> Result<Self, FenParseError> {
         let mut board = Board::empty();
 
@@ -123,13 +131,13 @@ impl Position {
 
             let tile_pos = TilePosition::from_bit_offset(bit_offset);
 
-            legal_moves.append(&mut self.get_basic_moves(tile_pos));
+            legal_moves.append(&mut self.get_basic_moves_for_tile_position(tile_pos));
         };
 
         return legal_moves;
     }
 
-    pub fn get_basic_moves(&self, tile_pos: TilePosition) -> Vec<Move> {
+    pub fn get_basic_moves_for_tile_position(&self, tile_pos: TilePosition) -> Vec<Move> {
         let mut legal_moves = Vec::new();
 
         if let Some(piece) = self.board.get_piece(tile_pos) {
@@ -201,32 +209,30 @@ impl Position {
         self.board.get_piece(tile_pos)
     } 
 
-    pub fn board(&self) -> &Board {
-        &self.board
-    }
-
     pub fn is_legal_move(&self, moove: &Move) -> bool {
         match moove {
-            Move::Basic(basic_move) => {
-                let collision_mask = get_collision_mask(self.board.clone(), basic_move.from_position());
-                if !collision_mask.check_bit(basic_move.to_position().bit_offset()) {
-                    return false;
-                };
-
-                let piece = self.board.get_piece(basic_move.from_position()).unwrap();
-
-                if piece.player() != self.current_player {
-                    return false;
-                };
-
-                return true;
-            },
+            Move::Basic(basic_move) => self.is_legal_basic_move(basic_move),
             Move::Castling(castling_move) => {
                 self.get_castling_move_if_legal(castling_move.player(), castling_move.side()).is_some()
             }
             _ => unimplemented!()
         }
-        
+    }
+
+    /// Checks if a BasicMove is legal
+    fn is_legal_basic_move(&self, basic_move: &BasicMove) -> bool {
+        let collision_mask = get_collision_mask(self.board.clone(), basic_move.from_position());
+        if !collision_mask.check_bit(basic_move.to_position().bit_offset()) {
+            return false;
+        };
+
+        let piece = self.board.get_piece(basic_move.from_position()).unwrap();
+
+        if piece.player() != self.current_player {
+            return false;
+        };
+
+        return true;
     }
 
     pub fn make_move(&mut self, moove: Move) -> Result<(), ()> {
@@ -239,10 +245,6 @@ impl Position {
         self.current_player = self.current_player.opposite();
 
         Ok(())
-    }
-
-    pub fn current_player(&self) -> Player {
-        self.current_player
     }
 }
 

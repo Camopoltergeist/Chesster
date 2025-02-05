@@ -143,7 +143,7 @@ impl UI {
 			return;
 		}
 
-		let legal_moves = self.position.get_basic_moves(selected_tile);
+		let legal_moves = self.position.get_basic_moves_for_tile_position(selected_tile);
 
 		for m in legal_moves {
 			if m.to_position() == clicked_tile {
