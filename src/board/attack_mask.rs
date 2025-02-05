@@ -1,4 +1,4 @@
-use crate::piece::Piece;
+use crate::piece::PieceType;
 
 use super::{
     bitboard::Bitboard,
@@ -22,7 +22,7 @@ pub fn get_opposite_attack_mask(position: Position) -> Bitboard {
         let tile_pos = TilePosition::from_bit_offset(bit_offset);
         if let Some(player_piece) = position.get_piece(tile_pos) {
             attack_mask |= match player_piece.piece() {
-                Piece::Pawn => Bitboard(get_pawn_capture(player_piece.player(), tile_pos)),
+                PieceType::Pawn => Bitboard(get_pawn_capture(player_piece.player(), tile_pos)),
                 _ => get_collision_mask(position.board().clone(), tile_pos),
             };
         }
