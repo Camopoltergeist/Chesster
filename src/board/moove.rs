@@ -22,6 +22,15 @@ impl Move {
 
         TilePosition::new(column, rank)
     }
+
+    pub fn debug_string(&self) -> String {
+        match self {
+            Self::Basic(basic_move) => {
+                return format!("{} -> {}", basic_move.from.notation_string(), basic_move.to.notation_string());
+            },
+            _ => unimplemented!()
+        }
+    }
 }
 
 impl From<BasicMove> for Move {

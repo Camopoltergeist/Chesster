@@ -106,7 +106,7 @@ impl Position {
         let mut counter = 1;
 
 		for m in self.get_all_legal_moves() {
-			println!("{}: {:?}", counter, m);
+			println!("{}: {}", counter, m.debug_string());
 			counter += 1;
 		}
     }
@@ -123,7 +123,7 @@ impl Position {
 
             let tile_pos = TilePosition::from_bit_offset(bit_offset);
 
-            legal_moves.append(&mut self.get_legal_moves(tile_pos));
+            legal_moves.append(&mut self.get_basic_moves(tile_pos));
         };
 
         // let castling_moves = self.get_legal_castling_moves();
@@ -133,7 +133,7 @@ impl Position {
         return legal_moves;
     }
 
-    pub fn get_legal_moves(&self, tile_pos: TilePosition) -> Vec<Move> {
+    pub fn get_basic_moves(&self, tile_pos: TilePosition) -> Vec<Move> {
         let mut legal_moves = Vec::new();
 
         if let Some(_) = self.board.get_piece(tile_pos) {
