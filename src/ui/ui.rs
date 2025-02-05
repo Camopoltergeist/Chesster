@@ -131,9 +131,18 @@ impl UI {
 				debug_assert!(self.position.make_move(m).is_ok());
 				self.select_tile(None);
 				self.board_renderer.set_board(&self.position.board());
-				break;
+				return;
 			}
 		}
+
+		if let Some(piece) = self.position.get_piece(clicked_tile) {
+			if piece.player() == self.position.current_player() {
+				self.select_tile(Some(clicked_tile));
+				return;
+			}
+		}
+
+		self.select_tile(None);
 	}
 
 	fn select_tile(&mut self, tile_pos: Option<TilePosition>) {
