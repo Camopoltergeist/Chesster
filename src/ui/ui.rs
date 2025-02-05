@@ -1,7 +1,7 @@
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{bitboard::Bitboard, moove::Move, move_collision::get_collision_mask, position::Position, tile_position::TilePosition}, player::Player};
+use crate::{board::{bitboard::Bitboard, moove::{BasicMove, Move}, move_collision::get_collision_mask, position::Position, tile_position::TilePosition}, player::Player};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::load_piece_textures};
 
@@ -102,9 +102,9 @@ impl UI {
 		if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
 			if let Some(selected_tile) = self.selected_tile {
 				if let Some(clicked_tile) = tile_pos_opt {
-					let moove = Move::new(selected_tile, clicked_tile);
+					let moove = BasicMove::new(selected_tile, clicked_tile);
 
-					let move_result = self.position.make_move(moove);
+					let move_result = self.position.make_move(moove.into());
 
 					if move_result.is_ok() {
 						self.board_renderer.set_board(Some(self.position.board()));

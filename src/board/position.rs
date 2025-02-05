@@ -1,6 +1,6 @@
 use crate::{board::moove::CastleSide, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
-use super::{board::Board, moove::Move, move_collision::get_collision_mask, tile_position::TilePosition};
+use super::{board::Board, moove::{BasicMove, Move}, move_collision::get_collision_mask, tile_position::TilePosition};
 
 #[derive(Clone)]
 pub struct Position {
@@ -126,9 +126,9 @@ impl Position {
             legal_moves.append(&mut self.get_legal_moves(tile_pos));
         };
 
-        let castling_moves = self.get_legal_castling_moves();
+        // let castling_moves = self.get_legal_castling_moves();
 
-        legal_moves.extend(castling_moves);
+        // legal_moves.extend(castling_moves);
 
         return legal_moves;
     }
@@ -145,7 +145,7 @@ impl Position {
 
             for bit_offset in 0..64 {
                 if moves_bitboard.check_bit(bit_offset) {
-                    legal_moves.push(Move::new(tile_pos, TilePosition::from_bit_offset(bit_offset)));
+                    legal_moves.push(BasicMove::new(tile_pos, TilePosition::from_bit_offset(bit_offset)).into());
                 }
             }
         }
@@ -153,48 +153,48 @@ impl Position {
         return legal_moves;
     }
 
-    pub fn get_legal_castling_moves(&self) -> Vec<Move> {
-        let mut castling_moves = Vec::with_capacity(4);
+    // pub fn get_legal_castling_moves(&self) -> Vec<Move> {
+    //     let mut castling_moves = Vec::with_capacity(4);
         
-        match self.current_player {
-            Player::White => {
-                if self.white_short_castling {
-                    if let Some(moove) = self.get_castling_move_if_legal(Player::White, CastleSide::KingSide) {
-                        castling_moves.push(moove);
-                    }
-                }
+    //     match self.current_player {
+    //         Player::White => {
+    //             if self.white_short_castling {
+    //                 if let Some(moove) = self.get_castling_move_if_legal(Player::White, CastleSide::KingSide) {
+    //                     castling_moves.push(moove);
+    //                 }
+    //             }
         
-                if self.white_long_castling {
-                    if let Some(moove) = self.get_castling_move_if_legal(Player::White, CastleSide::QueenSide) {
-                        castling_moves.push(moove);
-                    }
-                }
-            },
-            Player::Black => {
-                if self.black_short_castling {
-                    if let Some(moove) = self.get_castling_move_if_legal(Player::Black, CastleSide::KingSide) {
-                        castling_moves.push(moove);
-                    }
-                }
+    //             if self.white_long_castling {
+    //                 if let Some(moove) = self.get_castling_move_if_legal(Player::White, CastleSide::QueenSide) {
+    //                     castling_moves.push(moove);
+    //                 }
+    //             }
+    //         },
+    //         Player::Black => {
+    //             if self.black_short_castling {
+    //                 if let Some(moove) = self.get_castling_move_if_legal(Player::Black, CastleSide::KingSide) {
+    //                     castling_moves.push(moove);
+    //                 }
+    //             }
         
-                if self.black_long_castling {
-                    if let Some(moove) = self.get_castling_move_if_legal(Player::Black, CastleSide::QueenSide) {
-                        castling_moves.push(moove);
-                    }
-                }
-            }
-        };
+    //             if self.black_long_castling {
+    //                 if let Some(moove) = self.get_castling_move_if_legal(Player::Black, CastleSide::QueenSide) {
+    //                     castling_moves.push(moove);
+    //                 }
+    //             }
+    //         }
+    //     };
 
-        return castling_moves;
-    }
+    //     return castling_moves;
+    // }
 
-    pub fn get_castling_move_if_legal(&self, player: Player, side: CastleSide) -> Option<Move> {
-        if self.board.is_castling_possible(player, side.clone()) {
-            return Some(Move::with_castling(player, side));
-        };
+    // pub fn get_castling_move_if_legal(&self, player: Player, side: CastleSide) -> Option<Move> {
+    //     if self.board.is_castling_possible(player, side.clone()) {
+    //         return Some(Move::with_castling(player, side));
+    //     };
 
-        return None;
-    }
+    //     return None;
+    // }
 
     pub fn get_piece(&self, tile_pos: TilePosition) -> Option<PlayerPiece> {
         self.board.get_piece(tile_pos)
@@ -205,16 +205,16 @@ impl Position {
     }
 
     pub fn is_legal_move(&self, moove: &Move) -> bool {
-        let collision_mask = get_collision_mask(self.board.clone(), moove.from());
-        if !collision_mask.check_bit(moove.to().bit_offset()) {
-            return false;
-        };
+        // let collision_mask = get_collision_mask(self.board.clone(), moove.from());
+        // if !collision_mask.check_bit(moove.to().bit_offset()) {
+        //     return false;
+        // };
 
-        let piece = self.board.get_piece(moove.from()).unwrap();
+        // let piece = self.board.get_piece(moove.from()).unwrap();
 
-        if piece.player() != self.current_player {
-            return false;
-        };
+        // if piece.player() != self.current_player {
+        //     return false;
+        // };
 
         return true;
     }
