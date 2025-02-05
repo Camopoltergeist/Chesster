@@ -6,6 +6,7 @@ use super::tile_position::TilePosition;
 pub enum Move {
     Basic(BasicMove),
     Castling(CastlingMove),
+    EnPassant(EnPassantMove),
     Promoting {
         from: TilePosition,
         to: TilePosition,
@@ -42,6 +43,7 @@ impl Move {
         match self {
             Self::Basic(basic_move) => basic_move.from_position(),
             Self::Castling(castling_move) => castling_move.from_position(),
+            Self::EnPassant(en_passant_move) => en_passant_move.from_position(),
             _ => unimplemented!()
         }
     }
@@ -50,6 +52,7 @@ impl Move {
         match self {
             Self::Basic(basic_move) => basic_move.to_position(),
             Self::Castling(castling_move) => castling_move.to_position(),
+            Self::EnPassant(en_passant_move) => en_passant_move.to_position(),
             _ => unimplemented!()
         }
     }
@@ -64,6 +67,12 @@ impl From<BasicMove> for Move {
 impl From<CastlingMove> for Move {
     fn from(value: CastlingMove) -> Self {
         Self::Castling(value)
+    }
+}
+
+impl From<EnPassantMove> for Move {
+    fn from(value: EnPassantMove) -> Self {
+        Self::EnPassant(value)
     }
 }
 
@@ -87,6 +96,12 @@ impl BasicMove {
 
     pub fn to_position(&self) -> TilePosition {
         self.to
+    }
+}
+
+impl From<EnPassantMove> for BasicMove {
+    fn from(value: EnPassantMove) -> Self {
+        Self::new(value.from, value.to)
     }
 }
 
@@ -172,5 +187,34 @@ impl CastleSide {
             Self::KingSide => 5,
             Self::QueenSide => 3
         }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct EnPassantMove {
+    from: TilePosition,
+    to: TilePosition,
+    captured_tile: TilePosition,
+}
+
+impl EnPassantMove {
+    pub fn new(from: TilePosition, to: TilePosition, captured_tile: TilePosition) -> Self {
+        Self {
+            from,
+            to,
+            captured_tile
+        }
+    }
+
+    pub fn from_position(&self) -> TilePosition {
+        self.from
+    }
+
+    pub fn to_position(&self) -> TilePosition {
+        self.to
+    }
+
+    pub fn captured_tile(&self) -> TilePosition {
+        self.captured_tile
     }
 }

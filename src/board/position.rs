@@ -1,6 +1,6 @@
 use crate::{board::moove::CastleSide, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
-use super::{board::Board, moove::{BasicMove, CastlingMove, Move}, move_collision::get_collision_mask, tile_position::TilePosition};
+use super::{board::Board, moove::{BasicMove, CastlingMove, EnPassantMove, Move}, move_collision::get_collision_mask, tile_position::TilePosition};
 
 #[derive(Clone)]
 pub struct Position {
@@ -176,7 +176,9 @@ impl Position {
                 },
                 PieceType::Pawn => {
                     if self.can_en_passant(tile_pos) {
-                        moves.push(BasicMove::new(tile_pos, self.en_passant_target.unwrap()).into());
+                        let target = self.en_passant_target.unwrap();
+
+                        moves.push(EnPassantMove::new(tile_pos, target, TilePosition::new(target.column(), tile_pos.rank())).into());
                     }
                 }
                 _ => ()
@@ -274,16 +276,13 @@ impl Position {
         match moove {
             Move::Basic(basic_move) => self.is_legal_basic_move(basic_move),
             Move::Castling(castling_move) => self.is_legal_castling_move(castling_move),
+            Move::EnPassant(en_passant_move) => self.is_legal_en_passant_move(en_passant_move),
             _ => unimplemented!()
         }
     }
 
     /// Checks if a BasicMove is legal
     fn is_legal_basic_move(&self, basic_move: &BasicMove) -> bool {
-        if self.can_en_passant(basic_move.from_position()) {
-            return true;
-        }
-
         let collision_mask = get_collision_mask(self.board.clone(), basic_move.from_position());
         if !collision_mask.check_bit(basic_move.to_position().bit_offset()) {
             return false;
@@ -302,6 +301,10 @@ impl Position {
         self.board.is_castling_possible(castling_move.player(), castling_move.side())
     }
 
+    fn is_legal_en_passant_move(&self, en_passant_move: &EnPassantMove) -> bool {
+        self.can_en_passant(en_passant_move.from_position())
+    }
+
     pub fn make_move(&mut self, moove: Move) -> Result<(), ()> {
         if !self.is_legal_move(&moove) {
             return Err(());
@@ -313,10 +316,8 @@ impl Position {
 
         match moove {
             Move::Basic(basic_move) => self.board.move_piece_basic(basic_move),
-            Move::Castling(castling_move) => {
-                
-                self.board.move_piece_castling(castling_move);
-            }
+            Move::Castling(castling_move) => self.board.move_piece_castling(castling_move),
+            Move::EnPassant(en_passant_move) => self.board.move_piece_en_passant(en_passant_move),
             _ => unimplemented!()
         }
 
