@@ -5,9 +5,7 @@ use super::tile_position::TilePosition;
 #[derive(Debug)]
 pub enum Move {
     Basic(BasicMove),
-    Castling {
-        castling: CastleSide,
-    },
+    Castling(CastlingMove),
     Promoting {
         from: TilePosition,
         to: TilePosition,
@@ -28,6 +26,14 @@ impl Move {
             Self::Basic(basic_move) => {
                 return format!("{} -> {}", basic_move.from.notation_string(), basic_move.to.notation_string());
             },
+            Self::Castling(castling_move) => {
+                let side = match castling_move.side {
+                    CastleSide::KingSide => "King Side",
+                    CastleSide::QueenSide => "Queen Side"
+                };
+
+                return format!("Castling {}", side);
+            }
             _ => unimplemented!()
         }
     }
@@ -39,18 +45,9 @@ impl From<BasicMove> for Move {
     }
 }
 
-#[derive(Debug, Clone)]
-pub enum CastleSide {
-    KingSide,
-    QueenSide
-}
-
-impl CastleSide {
-    pub fn castling_target_column(&self) -> u32 {
-        match self {
-            Self::KingSide => 6,
-            Self::QueenSide => 2
-        }
+impl From<CastlingMove> for Move {
+    fn from(value: CastlingMove) -> Self {
+        Self::Castling(value)
     }
 }
 
@@ -74,5 +71,37 @@ impl BasicMove {
 
     pub fn to(&self) -> TilePosition {
         self.to
+    }
+}
+
+#[derive(Debug)]
+pub struct CastlingMove {
+    side: CastleSide
+}
+
+impl CastlingMove {
+    pub fn new(side: CastleSide) -> Self {
+        Self {
+            side
+        }
+    }
+
+    pub fn side(&self) -> CastleSide {
+        self.side.clone()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum CastleSide {
+    KingSide,
+    QueenSide
+}
+
+impl CastleSide {
+    pub fn castling_target_column(&self) -> u32 {
+        match self {
+            Self::KingSide => 6,
+            Self::QueenSide => 2
+        }
     }
 }
