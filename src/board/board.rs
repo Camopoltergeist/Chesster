@@ -1,4 +1,4 @@
-use super::{bitboard::Bitboard, moove::{BasicMove, CastleSide, CastlingMove}, tile_position::TilePosition};
+use super::{bitboard::Bitboard, moove::{BasicMove, CastleSide, CastlingMove}, move_collision::{get_collision_mask, get_pawn_capture}, tile_position::TilePosition};
 use crate::{piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 #[derive(Clone)]
@@ -207,6 +207,27 @@ impl Board {
 
     pub fn is_castling_possible(&self, player: Player, side: CastleSide) -> bool {
         self.get_all_pieces_mask() & Bitboard::generate_castling_block_mask(player, side) == 0
+    }
+
+    pub fn get_attack_mask(&self, player: Player) -> Bitboard {
+        let player_board = self.get_player_bitboard(player);
+
+        let mut attack_mask: Bitboard = Bitboard(0);
+        for bit_offset in 0..64 {
+            if !player_board.check_bit(bit_offset) {
+                continue;
+            }
+
+            let tile_pos = TilePosition::from_bit_offset(bit_offset);
+            if let Some(player_piece) = self.get_piece(tile_pos) {
+                attack_mask |= match player_piece.piece() {
+                    PieceType::Pawn => Bitboard(get_pawn_capture(player_piece.player(), tile_pos)),
+                    _ => get_collision_mask(self.clone(), tile_pos),
+                };
+            }
+        }
+
+        attack_mask
     }
 }
 
