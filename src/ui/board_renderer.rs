@@ -50,10 +50,13 @@ pub struct BoardRenderer {
     highlighted_tile: Option<TilePosition>,
 
     /// Vector of moves to be shown on board
-    legal_moves: Vec<Move>,
+    moves: Vec<Move>,
 
     /// Color of the legal move indicator circles
-    legal_move_color: Color,
+    move_color: Color,
+
+    /// Color of capturing moves
+    capturing_move_color: Color
 }
 
 impl BoardRenderer {
@@ -74,8 +77,9 @@ impl BoardRenderer {
             circle_texture,
             board: Board::empty(),
             highlighted_tile: None,
-            legal_moves: Vec::new(),
-            legal_move_color: Color { r: 0, g: 0, b: 0, a: 127 },
+            moves: Vec::new(),
+            move_color: Color { r: 0, g: 0, b: 0, a: 127 },
+            capturing_move_color: Color { r: 255, g: 0, b: 0, a: 127 }
         }
     }
 
@@ -149,7 +153,7 @@ impl BoardRenderer {
     }
 
     pub fn set_legal_moves(&mut self, legal_moves: Vec<Move>) {
-        self.legal_moves = legal_moves;
+        self.moves = legal_moves;
     }
 
     fn flipped(&self) -> bool {
@@ -241,10 +245,14 @@ impl BoardRenderer {
 
         let scale = circle_diameter / texture_size as f32;
 
-        for m in &self.legal_moves {
+        for m in &self.moves {
+            let is_capturing = self.board.get_piece(m.to_position()).is_some();
+
+            let color = if is_capturing { self.capturing_move_color } else { self.move_color };
+
             let (x, y) = self.get_tile_pixel_pos(m.to_position());
 
-            draw_handle.draw_texture_ex(&self.circle_texture, Vector2::new(x as f32 + circle_diameter, y as f32 + circle_diameter), 0.0, scale, self.legal_move_color);
+            draw_handle.draw_texture_ex(&self.circle_texture, Vector2::new(x as f32 + circle_diameter, y as f32 + circle_diameter), 0.0, scale, color);
         }
     }
 
