@@ -134,6 +134,7 @@ impl UI {
 				
 				self.select_tile(None);
 				self.board_renderer.set_board(&self.position.board());
+
 				return;
 			}
 		}

@@ -7,7 +7,8 @@ pub struct Position {
     board: Board,
     current_player: Player,
 
-    en_passant: bool,
+    pub en_passant_target: Option<TilePosition>,
+
     white_short_castling: bool,
     white_long_castling: bool,
     black_short_castling: bool,
@@ -270,6 +271,8 @@ impl Position {
 
         self.change_castling_availability_if_needed(&moove);
 
+        self.en_passant_target = self.get_en_passant_target_for_move(&moove);
+
         match moove {
             Move::Basic(basic_move) => self.board.move_piece_basic(basic_move),
             Move::Castling(castling_move) => {
@@ -282,6 +285,27 @@ impl Position {
         self.current_player = self.current_player.opposite();
 
         Ok(())
+    }
+
+    fn get_en_passant_target_for_move(&self, moove: &Move) -> Option<TilePosition> {
+        let from_pos = moove.from_position();
+
+        if !self.board.pawns.check_bit(from_pos.bit_offset()) {
+            return None;
+        };
+
+        let to_pos = moove.to_position();
+
+        let move_length: i32 = from_pos.rank() as i32 - to_pos.rank() as i32;
+
+        if move_length.abs() != 2 {
+            return None;
+        };
+
+        return match self.current_player {
+            Player::White => Some(TilePosition::new(to_pos.column(), 2)),
+            Player::Black => Some(TilePosition::new(to_pos.column(), 5))
+        }
     }
 
     fn change_castling_availability_if_needed(&mut self, moove: &Move) {
@@ -386,7 +410,7 @@ impl Default for Position {
             board: Board::default(),
             current_player: Player::White,
 
-            en_passant: false,
+            en_passant_target: None,
             white_short_castling: true,
             white_long_castling: true,
             black_short_castling: true,
