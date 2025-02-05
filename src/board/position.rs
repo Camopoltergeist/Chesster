@@ -212,9 +212,7 @@ impl Position {
     pub fn is_legal_move(&self, moove: &Move) -> bool {
         match moove {
             Move::Basic(basic_move) => self.is_legal_basic_move(basic_move),
-            Move::Castling(castling_move) => {
-                self.get_castling_move_if_legal(castling_move.player(), castling_move.side()).is_some()
-            }
+            Move::Castling(castling_move) => self.is_legal_castling_move(castling_move),
             _ => unimplemented!()
         }
     }
@@ -233,6 +231,10 @@ impl Position {
         };
 
         return true;
+    }
+
+    fn is_legal_castling_move(&self, castling_move: &CastlingMove) -> bool {
+        self.board.is_castling_possible(castling_move.player(), castling_move.side())
     }
 
     pub fn make_move(&mut self, moove: Move) -> Result<(), ()> {
