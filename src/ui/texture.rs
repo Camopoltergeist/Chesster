@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use raylib::{texture::{RaylibTexture2D, Texture2D}, RaylibHandle, RaylibThread};
+use raylib::{ffi::TextureFilter, texture::{RaylibTexture2D, Texture2D}, RaylibHandle, RaylibThread};
 
 use crate::{piece::PieceType, player::Player, player_piece::PlayerPiece};
 
@@ -59,11 +59,19 @@ pub fn load_piece_textures(rl: &mut RaylibHandle, thread: &RaylibThread) -> Hash
 		let file_path = format!("{}{}", texture_dir, piece_texture.texture_string());
 
 		let mut texture = rl.load_texture(thread, &file_path).expect("failed to load piece texture");
-		texture.set_texture_filter(thread, raylib::ffi::TextureFilter::TEXTURE_FILTER_TRILINEAR);
 		texture.gen_texture_mipmaps();
+		texture.set_texture_filter(thread, TextureFilter::TEXTURE_FILTER_TRILINEAR);
 
 		texture_map.insert(piece_texture, texture);
 	};
 
 	return texture_map;
+}
+
+pub fn load_circle_texture(rl: &mut RaylibHandle, thread: &RaylibThread) -> Texture2D {
+	let mut texture = rl.load_texture(thread, "./res/circle.png").expect("failed to load circle texture");
+	texture.gen_texture_mipmaps();
+	texture.set_texture_filter(thread, TextureFilter::TEXTURE_FILTER_TRILINEAR);
+
+	return texture;
 }
