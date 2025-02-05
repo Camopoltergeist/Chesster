@@ -24,7 +24,7 @@ impl UI {
 		let mut board_renderer = BoardRenderer::new(0, 0, rl.get_screen_height(), 32, Player::White, piece_textures);
 
 		let position = Position::default();
-		board_renderer.set_board(Some(position.board()));
+		board_renderer.set_board(position.board());
 
 		rl.gui_load_style_default();
 
@@ -147,7 +147,7 @@ impl UI {
 			if m.to_position() == clicked_tile {
 				debug_assert!(self.position.make_move(m).is_ok());
 				self.select_tile(None);
-				self.board_renderer.set_board(Some(&self.position.board()));
+				self.board_renderer.set_board(&self.position.board());
 				break;
 			}
 		}
@@ -176,7 +176,7 @@ impl UI {
 
 	pub fn set_position(&mut self, position: Position) {
 		self.position = position;
-		self.board_renderer.set_board(Some(self.position.board()));
+		self.board_renderer.set_board(self.position.board());
 	}
 
 	fn toggle_board_perspective(&mut self) {

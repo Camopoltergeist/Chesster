@@ -41,7 +41,7 @@ pub struct BoardRenderer {
     textures: HashMap<PieceTexture, Texture2D>,
 
     /// Board state used to draw pieces
-    board: Option<Board>,
+    board: Board,
 
     /// Tile which is highlighted separately
     highlighted_tile: Option<TilePosition>,
@@ -62,7 +62,7 @@ impl BoardRenderer {
             bitboard_on_color: Color { r: 255, g: 0, b: 0, a: 127 },
             bitboard_off_color: Color { r: 0, g: 0, b: 255, a: 127 },
             textures: piece_textures,
-            board: None,
+            board: Board::empty(),
             highlighted_tile: None
         }
     }
@@ -173,25 +173,19 @@ impl BoardRenderer {
     }
 
     /// Sets the current board to be drawn. Set to None to disable pieces.
-    pub fn set_board(&mut self, board: Option<&Board>) {
-        self.board = board.cloned();
+    pub fn set_board(&mut self, board: &Board) {
+        self.board = board.clone();
     }
 
-    pub fn board(&self) -> Option<&Board> {
-        self.board.as_ref()
+    pub fn board(&self) -> &Board {
+        &self.board
     }
 
     fn draw_board_pieces(&self, draw_handle: &mut RaylibDrawHandle) {
-        if let None = self.board {
-            return;
-        }
-
-        let board = self.board.as_ref().unwrap();
-
         for bit_offset in 0..64 {
             let tile_pos = TilePosition::from_bit_offset(bit_offset);
 
-            let player_piece_opt = board.get_piece(tile_pos);
+            let player_piece_opt = self.board.get_piece(tile_pos);
 
             if let Some(piece) = player_piece_opt {
                 self.draw_piece(draw_handle, PieceTexture::new(piece), tile_pos);
