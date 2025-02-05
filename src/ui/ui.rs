@@ -1,7 +1,7 @@
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{moove::Move, move_collision::get_collision_mask, position::Position, tile_position::TilePosition}, player::Player};
+use crate::{board::{move_collision::get_collision_mask, position::Position, tile_position::TilePosition}, player::Player};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::load_piece_textures};
 
@@ -98,21 +98,58 @@ impl UI {
 
 		// TODO: Holy fuck, this is a mess
 		if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-			if let Some(selected_tile) = self.selected_tile {
-				if let Some(clicked_tile) = tile_pos_opt {
-					let moove = Move::new(selected_tile, clicked_tile);
+			// if let Some(selected_tile) = self.selected_tile {
+			// 	if let Some(clicked_tile) = tile_pos_opt {
+			// 		let moove = BasicMove::new(selected_tile, clicked_tile);
 
-					let move_result = self.position.make_move(moove);
+			// 		let move_result = self.position.make_move(moove.into());
 
-					if move_result.is_ok() {
-						self.board_renderer.set_board(Some(self.position.board()));
-						self.select_tile(None);
-						return;
-					}
+			// 		if move_result.is_ok() {
+			// 			self.board_renderer.set_board(Some(self.position.board()));
+			// 			self.select_tile(None);
+			// 			self.position.print_all_legal_moves();
+			// 			return;
+			// 		}
+			// 	}
+			// }
+
+			// self.select_tile(tile_pos_opt);
+
+			if let Some(clicked_tile) = tile_pos_opt {
+				self.handle_click_play_mode(clicked_tile);
+			}
+		}
+	}
+
+	fn handle_click_play_mode(&mut self, clicked_tile: TilePosition) {
+		if self.selected_tile.is_none() {
+			if let Some(piece) = self.position.get_piece(clicked_tile) {
+				if piece.player() != self.position.current_player() {
+					return;
 				}
+
+				self.select_tile(Some(clicked_tile));
 			}
 
-			self.select_tile(tile_pos_opt);
+			return;
+		}
+
+		let selected_tile = self.selected_tile.unwrap();
+
+		if selected_tile == clicked_tile {
+			self.select_tile(None);
+			return;
+		}
+
+		let legal_moves = self.position.get_basic_moves_for_tile_position(selected_tile);
+
+		for m in legal_moves {
+			if m.to_position() == clicked_tile {
+				debug_assert!(self.position.make_move(m).is_ok());
+				self.select_tile(None);
+				self.board_renderer.set_board(Some(&self.position.board()));
+				break;
+			}
 		}
 	}
 

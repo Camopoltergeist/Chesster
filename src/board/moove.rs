@@ -1,12 +1,79 @@
+use crate::{piece::PieceType, player::Player};
+
 use super::tile_position::TilePosition;
 
 #[derive(Debug)]
-pub struct Move {
-    from: TilePosition,
-    to: TilePosition
+pub enum Move {
+    Basic(BasicMove),
+    Castling(CastlingMove),
+    Promoting {
+        from: TilePosition,
+        to: TilePosition,
+        promotion: PieceType
+    }
 }
 
 impl Move {
+    pub fn get_castling_target(player: Player, side: CastleSide) -> TilePosition {
+        let rank = player.castling_rank();
+        let column = side.castling_king_target_column();
+
+        TilePosition::new(column, rank)
+    }
+
+    pub fn debug_string(&self) -> String {
+        match self {
+            Self::Basic(basic_move) => {
+                return format!("{} -> {}", basic_move.from.notation_string(), basic_move.to.notation_string());
+            },
+            Self::Castling(castling_move) => {
+                let side = match castling_move.side {
+                    CastleSide::KingSide => "King Side",
+                    CastleSide::QueenSide => "Queen Side"
+                };
+
+                return format!("Castling {}", side);
+            }
+            _ => unimplemented!()
+        }
+    }
+
+    pub fn from_position(&self) -> TilePosition {
+        match self {
+            Self::Basic(basic_move) => basic_move.from_position(),
+            Self::Castling(castling_move) => castling_move.from_position(),
+            _ => unimplemented!()
+        }
+    }
+
+    pub fn to_position(&self) -> TilePosition {
+        match self {
+            Self::Basic(basic_move) => basic_move.to_position(),
+            Self::Castling(castling_move) => castling_move.to_position(),
+            _ => unimplemented!()
+        }
+    }
+}
+
+impl From<BasicMove> for Move {
+    fn from(value: BasicMove) -> Self {
+        Self::Basic(value)
+    }
+}
+
+impl From<CastlingMove> for Move {
+    fn from(value: CastlingMove) -> Self {
+        Self::Castling(value)
+    }
+}
+
+#[derive(Debug)]
+pub struct BasicMove {
+    from: TilePosition,
+    to: TilePosition,
+}
+
+impl BasicMove {
     pub fn new(from: TilePosition, to: TilePosition) -> Self {
         Self {
             from,
@@ -14,11 +81,96 @@ impl Move {
         }
     }
 
-    pub fn from(&self) -> TilePosition {
+    pub fn from_position(&self) -> TilePosition {
         self.from
     }
 
-    pub fn to(&self) -> TilePosition {
+    pub fn to_position(&self) -> TilePosition {
         self.to
+    }
+}
+
+#[derive(Debug)]
+pub struct CastlingMove {
+    player: Player,
+    side: CastleSide,
+}
+
+impl CastlingMove {
+    pub fn new(player: Player, side: CastleSide) -> Self {
+        Self {
+            player,
+            side
+        }
+    }
+
+    pub fn from_position(&self) -> TilePosition {
+        self.player.castling_king_starting_position()
+    }
+
+    pub fn to_position(&self) -> TilePosition {
+        let column = self.side.castling_king_target_column();
+        let rank = self.player.castling_rank();
+
+        TilePosition::new(column, rank)
+    }
+
+    pub fn rook_from_position(&self) -> TilePosition {
+        let column = self.side.castling_rook_starting_column();
+        let rank = self.player.castling_rank();
+
+        TilePosition::new(column, rank)
+    }
+
+    pub fn rook_to_position(&self) -> TilePosition {
+        let column = self.side.castling_rook_target_column();
+        let rank = self.player.castling_rank();
+
+        TilePosition::new(column, rank)
+    }
+
+    pub fn king_basic_move(&self) -> BasicMove {
+        BasicMove::new(self.from_position(), self.to_position())
+    }
+
+    pub fn rook_basic_move(&self) -> BasicMove {
+        BasicMove::new(self.rook_from_position(), self.rook_to_position())
+    }
+
+    pub fn player(&self) -> Player {
+        self.player
+    }
+
+    pub fn side(&self) -> CastleSide {
+        self.side.clone()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum CastleSide {
+    KingSide,
+    QueenSide
+}
+
+impl CastleSide {
+    pub fn castling_king_target_column(&self) -> u32 {
+        match self {
+            Self::KingSide => 6,
+            Self::QueenSide => 2
+        }
+    }
+
+    pub fn castling_rook_starting_column(&self) -> u32 {
+        match self {
+            Self::KingSide => 7,
+            Self::QueenSide => 0,
+        }
+    }
+
+    pub fn castling_rook_target_column(&self) -> u32 {
+        match self {
+            Self::KingSide => 5,
+            Self::QueenSide => 3
+        }
     }
 }

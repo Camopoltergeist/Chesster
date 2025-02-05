@@ -2,7 +2,9 @@ use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, N
 
 use const_for::const_for;
 
-use super::tile_position::TilePosition;
+use crate::player::Player;
+
+use super::{moove::CastleSide, tile_position::TilePosition};
 
 #[derive(Clone, Copy)]
 
@@ -210,6 +212,15 @@ impl Bitboard {
         }
 
         Bitboard(pawn_mask)
+    }
+
+    pub fn generate_castling_block_mask(player: Player, side: CastleSide) -> Bitboard {
+        match (player, side) {
+            (Player::White, CastleSide::KingSide) => Bitboard::from(0b01100000),
+            (Player::White, CastleSide::QueenSide) => Bitboard::from(0b00001110),
+            (Player::Black, CastleSide::KingSide) => Bitboard::from(0b01100000 << (8 * 7)),
+            (Player::Black, CastleSide::QueenSide) => Bitboard::from(0b00001110 << (8 * 7))
+        }
     }
 }
 

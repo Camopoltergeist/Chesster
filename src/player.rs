@@ -1,3 +1,5 @@
+use crate::board::tile_position::TilePosition;
+
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum Player {
     White,
@@ -35,5 +37,19 @@ impl Player {
         }
 
         return Self::Black;
+    }
+
+    pub fn castling_king_starting_position(&self) -> TilePosition {
+        match self {
+            Player::White => TilePosition::new(4, 0),
+            Player::Black => TilePosition::new(4, 7)
+        }
+    }
+
+    pub fn castling_rank(&self) -> u32 {
+        match self {
+            Player::White => 0,
+            Player::Black => 7
+        }
     }
 }
