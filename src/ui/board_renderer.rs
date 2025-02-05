@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use raylib::{color::Color, math::Vector2, prelude::{RaylibDraw, RaylibDrawHandle}, texture::Texture2D};
 
-use crate::{board::{bitboard::Bitboard, board::Board, tile_position::TilePosition}, player::Player};
+use crate::{board::{bitboard::Bitboard, board::Board, moove::Move, tile_position::TilePosition}, player::Player};
 
 use super::texture::PieceTexture;
 
@@ -45,6 +45,12 @@ pub struct BoardRenderer {
 
     /// Tile which is highlighted separately
     highlighted_tile: Option<TilePosition>,
+
+    /// Vector of moves to be shown on board
+    legal_moves: Vec<Move>,
+
+    /// Color of the legal move indicator circles
+    legal_move_color: Color,
 }
 
 impl BoardRenderer {
@@ -63,7 +69,9 @@ impl BoardRenderer {
             bitboard_off_color: Color { r: 0, g: 0, b: 255, a: 127 },
             textures: piece_textures,
             board: Board::empty(),
-            highlighted_tile: None
+            highlighted_tile: None,
+            legal_moves: Vec::new(),
+            legal_move_color: Color { r: 0, g: 0, b: 0, a: 127 },
         }
     }
 
@@ -136,6 +144,10 @@ impl BoardRenderer {
         self.highlighted_tile = tile;
     }
 
+    pub fn set_legal_moves(&mut self, legal_moves: Vec<Move>) {
+        self.legal_moves = legal_moves;
+    }
+
     fn flipped(&self) -> bool {
         self.player == Player::Black
     }
@@ -168,6 +180,7 @@ impl BoardRenderer {
         self.draw_ranks(draw_handle);
         self.draw_columns(draw_handle);
         self.draw_board_pieces(draw_handle);
+        self.draw_legal_moves(draw_handle);
 
         self.draw_bitboard_overlay(draw_handle);
     }
@@ -213,6 +226,21 @@ impl BoardRenderer {
             let pos = self.get_tile_pixel_pos(highlight);
 
             draw_handle.draw_rectangle(pos.0, pos.1, tile_size, tile_size, Color::GREEN);
+        }
+    }
+
+    fn draw_legal_moves(&self, draw_handle: &mut RaylibDrawHandle) {
+        let tile_size = self.tile_size();
+
+        let x_offset = tile_size / 2;
+        let y_offset = tile_size / 2;
+
+        let circle_radius = tile_size as f32 / 6.0;
+
+        for m in &self.legal_moves {
+            let (x, y) = self.get_tile_pixel_pos(m.to_position());
+
+            draw_handle.draw_circle(x + x_offset, y + y_offset, circle_radius, self.legal_move_color);
         }
     }
 

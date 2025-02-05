@@ -139,13 +139,13 @@ impl Position {
 
             let tile_pos = TilePosition::from_bit_offset(bit_offset);
 
-            legal_moves.append(&mut self.get_basic_moves_for_tile_position(tile_pos));
+            legal_moves.append(&mut self.get_legal_moves_for_tile_position(tile_pos));
         };
 
         return legal_moves;
     }
 
-    pub fn get_basic_moves_for_tile_position(&self, tile_pos: TilePosition) -> Vec<Move> {
+    pub fn get_legal_moves_for_tile_position(&self, tile_pos: TilePosition) -> Vec<Move> {
         let mut legal_moves = Vec::new();
 
         if let Some(piece) = self.board.get_piece(tile_pos) {

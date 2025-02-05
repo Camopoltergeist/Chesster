@@ -1,7 +1,7 @@
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{move_collision::get_collision_mask, position::Position, tile_position::TilePosition}, player::Player};
+use crate::{board::{position::Position, tile_position::TilePosition}, player::Player};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::load_piece_textures};
 
@@ -96,25 +96,7 @@ impl UI {
 		let tile_pos_opt = self.board_renderer.get_tile_from_pixel_pos(mouse_pos);
 		self.hovered_tile = tile_pos_opt;
 
-		// TODO: Holy fuck, this is a mess
 		if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-			// if let Some(selected_tile) = self.selected_tile {
-			// 	if let Some(clicked_tile) = tile_pos_opt {
-			// 		let moove = BasicMove::new(selected_tile, clicked_tile);
-
-			// 		let move_result = self.position.make_move(moove.into());
-
-			// 		if move_result.is_ok() {
-			// 			self.board_renderer.set_board(Some(self.position.board()));
-			// 			self.select_tile(None);
-			// 			self.position.print_all_legal_moves();
-			// 			return;
-			// 		}
-			// 	}
-			// }
-
-			// self.select_tile(tile_pos_opt);
-
 			if let Some(clicked_tile) = tile_pos_opt {
 				self.handle_click_play_mode(clicked_tile);
 			}
@@ -141,7 +123,7 @@ impl UI {
 			return;
 		}
 
-		let legal_moves = self.position.get_basic_moves_for_tile_position(selected_tile);
+		let legal_moves = self.position.get_legal_moves_for_tile_position(selected_tile);
 
 		for m in legal_moves {
 			if m.to_position() == clicked_tile {
@@ -156,7 +138,7 @@ impl UI {
 	fn select_tile(&mut self, tile_pos: Option<TilePosition>) {
 		self.selected_tile = tile_pos;
 		self.board_renderer.set_highlighted_tile(tile_pos);
-		self.board_renderer.set_bitboard_overlay(None);
+		self.board_renderer.set_legal_moves(Vec::new());
 
 		if tile_pos.is_none() {
 			return;
@@ -165,8 +147,7 @@ impl UI {
 		let tile_pos = tile_pos.unwrap();
 
 		if let Some(_) = self.position.get_piece(tile_pos) {
-			let mask = get_collision_mask(self.position.board().clone(), tile_pos);
-			self.board_renderer.set_bitboard_overlay(Some(mask));
+			self.board_renderer.set_legal_moves(self.position.get_legal_moves_for_tile_position(tile_pos));
 		}
 	}
 
