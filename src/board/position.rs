@@ -127,6 +127,13 @@ impl Position {
         println!("Black Queen side: {}", self.black_long_castling);
     }
 
+    pub fn is_in_check(&self) -> bool {
+        let king_mask = *self.board.get_piece_bitboard(PieceType::King) & *self.board.get_player_bitboard(self.current_player);
+        let attack_mask = self.board.get_attack_mask(self.current_player.opposite());
+
+        return !(king_mask & attack_mask).is_empty();
+    }
+
     pub fn get_all_legal_moves(&self) -> Vec<Move> {
         let piece_mask = self.board.get_player_bitboard(self.current_player);
 
