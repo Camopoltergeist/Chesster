@@ -266,15 +266,6 @@ impl Position {
         Ok(())
     }
 
-    fn set_castling_availability(&mut self, player: Player, side: CastleSide, value: bool) {
-        match (player, side) {
-            (Player::White, CastleSide::KingSide) => self.white_short_castling = value,
-            (Player::White, CastleSide::QueenSide) => self.white_long_castling = value,
-            (Player::Black, CastleSide::KingSide) => self.black_short_castling = value,
-            (Player::Black, CastleSide::QueenSide) => self.black_long_castling = value
-        }
-    }
-
     fn change_castling_availability_if_needed(&mut self, moove: &Move) {
         let from_pos = moove.from_position();
         let piece = self.board.get_piece(from_pos).expect("no piece at position");
