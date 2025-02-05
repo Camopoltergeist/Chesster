@@ -1,4 +1,4 @@
-use crate::{board::moove::CastleSide, piece::PieceType, player::{self, Player}, player_piece::PlayerPiece};
+use crate::{board::moove::CastleSide, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 use super::{board::Board, moove::{BasicMove, CastlingMove, Move}, move_collision::get_collision_mask, tile_position::TilePosition};
 
@@ -117,6 +117,14 @@ impl Position {
 			println!("{}: {}", counter, m.debug_string());
 			counter += 1;
 		}
+    }
+
+    pub fn print_castling_availability(&self) {
+        println!("Castling available:");
+        println!("White King side: {}", self.white_short_castling);
+        println!("White Queen side: {}", self.white_long_castling);
+        println!("Black King side: {}", self.black_short_castling);
+        println!("Black Queen side: {}", self.black_long_castling);
     }
 
     pub fn get_all_legal_moves(&self) -> Vec<Move> {
@@ -242,10 +250,12 @@ impl Position {
             return Err(());
         };
 
+        self.change_castling_availability_if_needed(&moove);
+
         match moove {
             Move::Basic(basic_move) => self.board.move_piece_basic(basic_move),
             Move::Castling(castling_move) => {
-                self.set_castling_availability(castling_move.player(), castling_move.side(), false);
+                
                 self.board.move_piece_castling(castling_move);
             }
             _ => unimplemented!()
@@ -264,6 +274,80 @@ impl Position {
             (Player::Black, CastleSide::QueenSide) => self.black_long_castling = value
         }
     }
+
+    fn change_castling_availability_if_needed(&mut self, moove: &Move) {
+        let from_pos = moove.from_position();
+        let piece = self.board.get_piece(from_pos).expect("no piece at position");
+
+        // Handle king moves
+        if PieceType::King == piece.piece() {
+            match self.current_player {
+                Player::White => {
+                    self.white_short_castling = false;
+                    self.white_long_castling = false;
+                },
+                Player::Black => {
+                    self.black_short_castling = false;
+                    self.black_long_castling = false;
+                }
+            }
+
+            return;
+        }
+
+        // Handle own rook moves
+        if PieceType::Rook == piece.piece() {
+            match piece.player() {
+                Player::White => {
+                    if from_pos == TilePosition::new(0, 0) {
+                        self.white_long_castling = false;
+                        return;
+                    }
+
+                    if from_pos == TilePosition::new(7, 0) {
+                        self.white_short_castling = false;
+                        return;
+                    }
+                },
+                Player::Black => {
+                    if from_pos == TilePosition::new(0, 7) {
+                        self.black_long_castling = false;
+                        return;
+                    }
+
+                    if from_pos == TilePosition::new(7, 7) {
+                        self.black_short_castling = false;
+                        return;
+                    }
+                }
+            }
+
+            return;
+        }
+
+        // Handle capturing moves for opponent's castling
+        let to_pos = moove.to_position();
+
+        if to_pos == TilePosition::new(0, 0) {
+            self.white_long_castling = false;
+            return;
+        }
+
+        if to_pos == TilePosition::new(7, 0) {
+            self.white_short_castling = false;
+            return;
+        }
+
+        if to_pos == TilePosition::new(0, 7) {
+            self.black_long_castling = false;
+            return;
+        }
+
+        if to_pos == TilePosition::new(7, 7) {
+            self.black_short_castling = false;
+            return;
+        }
+    }
 }
 
 impl Position {
@@ -278,6 +362,10 @@ impl Position {
     pub fn empty() -> Self {
         Self {
             board: Board::empty(),
+            white_short_castling: false,
+            white_long_castling: false,
+            black_short_castling: false,
+            black_long_castling: false,
             ..Default::default()
         }
     }

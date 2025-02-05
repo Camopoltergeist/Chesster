@@ -1,4 +1,4 @@
-use crate::{piece::PieceType, player::{self, Player}};
+use crate::{piece::PieceType, player::Player};
 
 use super::tile_position::TilePosition;
 

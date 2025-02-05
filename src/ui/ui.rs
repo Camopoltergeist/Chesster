@@ -1,7 +1,7 @@
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{bitboard::Bitboard, moove::{BasicMove, Move}, move_collision::get_collision_mask, position::Position, tile_position::{self, TilePosition}}, player::Player};
+use crate::{board::{move_collision::get_collision_mask, position::Position, tile_position::TilePosition}, player::Player};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::load_piece_textures};
 
@@ -25,8 +25,6 @@ impl UI {
 
 		let position = Position::default();
 		board_renderer.set_board(Some(position.board()));
-
-		position.print_all_legal_moves();
 
 		rl.gui_load_style_default();
 

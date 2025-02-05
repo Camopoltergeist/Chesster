@@ -1,4 +1,4 @@
-use super::{bitboard::Bitboard, moove::{BasicMove, CastleSide, CastlingMove, Move}, tile_position::TilePosition};
+use super::{bitboard::Bitboard, moove::{BasicMove, CastleSide, CastlingMove}, tile_position::TilePosition};
 use crate::{piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 #[derive(Clone)]
