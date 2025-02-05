@@ -1,4 +1,4 @@
-use crate::{board::moove::CastleSide, piece::PieceType, player::Player, player_piece::PlayerPiece};
+use crate::{board::moove::CastleSide, piece::PieceType, player::{self, Player}, player_piece::PlayerPiece};
 
 use super::{board::Board, moove::{BasicMove, CastlingMove, Move}, move_collision::get_collision_mask, tile_position::TilePosition};
 
@@ -191,7 +191,7 @@ impl Position {
 
     pub fn get_castling_move_if_legal(&self, player: Player, side: CastleSide) -> Option<Move> {
         if self.board.is_castling_possible(player, side.clone()) {
-            return Some(CastlingMove::new(side).into());
+            return Some(CastlingMove::new(player, side).into());
         };
 
         return None;
@@ -208,12 +208,12 @@ impl Position {
     pub fn is_legal_move(&self, moove: &Move) -> bool {
         match moove {
             Move::Basic(basic_move) => {
-                let collision_mask = get_collision_mask(self.board.clone(), basic_move.from());
-                if !collision_mask.check_bit(basic_move.to().bit_offset()) {
+                let collision_mask = get_collision_mask(self.board.clone(), basic_move.from_position());
+                if !collision_mask.check_bit(basic_move.to_position().bit_offset()) {
                     return false;
                 };
 
-                let piece = self.board.get_piece(basic_move.from()).unwrap();
+                let piece = self.board.get_piece(basic_move.from_position()).unwrap();
 
                 if piece.player() != self.current_player {
                     return false;
@@ -221,6 +221,9 @@ impl Position {
 
                 return true;
             },
+            Move::Castling(castling_move) => {
+                self.get_castling_move_if_legal(castling_move.player(), castling_move.side()).is_some()
+            }
             _ => unimplemented!()
         }
         

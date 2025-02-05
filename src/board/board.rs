@@ -90,10 +90,10 @@ impl Board {
     }
 
     fn move_piece_basic(&mut self, basic_move: BasicMove) {
-        let piece = self.get_piece(basic_move.from()).expect("no piece at move's \"from\" tile");
+        let piece = self.get_piece(basic_move.from_position()).expect("no piece at move's \"from\" tile");
 
-        self.set_piece(piece, basic_move.to());
-        self.remove_piece(basic_move.from());
+        self.set_piece(piece, basic_move.to_position());
+        self.remove_piece(basic_move.from_position());
     }
 
     pub fn get_piece_from_offset(&self, bit_offset: u32) -> Option<PlayerPiece> {

@@ -1,4 +1,4 @@
-use crate::{piece::PieceType, player::Player};
+use crate::{piece::PieceType, player::{self, Player}};
 
 use super::tile_position::TilePosition;
 
@@ -37,6 +37,22 @@ impl Move {
             _ => unimplemented!()
         }
     }
+
+    pub fn from_position(&self) -> TilePosition {
+        match self {
+            Self::Basic(basic_move) => basic_move.from_position(),
+            Self::Castling(castling_move) => castling_move.from_position(),
+            _ => unimplemented!()
+        }
+    }
+
+    pub fn to_position(&self) -> TilePosition {
+        match self {
+            Self::Basic(basic_move) => basic_move.to_position(),
+            Self::Castling(castling_move) => castling_move.to_position(),
+            _ => unimplemented!()
+        }
+    }
 }
 
 impl From<BasicMove> for Move {
@@ -65,25 +81,42 @@ impl BasicMove {
         }
     }
 
-    pub fn from(&self) -> TilePosition {
+    pub fn from_position(&self) -> TilePosition {
         self.from
     }
 
-    pub fn to(&self) -> TilePosition {
+    pub fn to_position(&self) -> TilePosition {
         self.to
     }
 }
 
 #[derive(Debug)]
 pub struct CastlingMove {
-    side: CastleSide
+    player: Player,
+    side: CastleSide,
 }
 
 impl CastlingMove {
-    pub fn new(side: CastleSide) -> Self {
+    pub fn new(player: Player, side: CastleSide) -> Self {
         Self {
+            player,
             side
         }
+    }
+
+    pub fn from_position(&self) -> TilePosition {
+        self.player.castling_starting_position()
+    }
+
+    pub fn to_position(&self) -> TilePosition {
+        let column = self.side.castling_target_column();
+        let rank = self.player.castling_target_rank();
+
+        TilePosition::new(column, rank)
+    }
+
+    pub fn player(&self) -> Player {
+        self.player
     }
 
     pub fn side(&self) -> CastleSide {
