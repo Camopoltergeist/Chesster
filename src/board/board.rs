@@ -206,7 +206,12 @@ impl Board {
     }
 
     pub fn is_castling_possible(&self, player: Player, side: CastleSide) -> bool {
-        self.get_all_pieces_mask() & Bitboard::generate_castling_block_mask(player, side) == 0
+        let castling_block_mask = Bitboard::generate_castling_block_mask(player, side);
+
+        let is_blocking = self.get_all_pieces_mask() & castling_block_mask;
+        let is_attacked = self.get_attack_mask(player.opposite()) & castling_block_mask;
+
+        return is_blocking.is_empty() && is_attacked.is_empty();
     }
 
     pub fn get_attack_mask(&self, player: Player) -> Bitboard {
