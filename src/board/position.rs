@@ -169,9 +169,17 @@ impl Position {
                 }
             }
 
-            if piece.piece() == PieceType::King {
-                let castling_moves = self.get_legal_castling_moves();
-                moves.extend(castling_moves);
+            match piece.piece() {
+                PieceType::King => {
+                    let castling_moves = self.get_legal_castling_moves();
+                    moves.extend(castling_moves);
+                },
+                PieceType::Pawn => {
+                    if self.can_en_passant(tile_pos) {
+                        moves.push(BasicMove::new(tile_pos, self.en_passant_target.unwrap()).into());
+                    }
+                }
+                _ => ()
             }
         }
 
@@ -187,6 +195,32 @@ impl Position {
         }
 
         return legal_moves;
+    }
+
+    fn can_en_passant(&self, tile_pos: TilePosition) -> bool {
+        if self.en_passant_target.is_none() {
+            return false;
+        }
+
+        if !self.board.check_for_pawn(tile_pos) {
+            return false;
+        }
+
+        let en_passant_target = self.en_passant_target.unwrap();
+
+        if let Some(left_capture) = en_passant_target.get_en_passant_left_capture(self.current_player) {
+            if left_capture == tile_pos {
+                return true;
+            }
+        }
+
+        if let Some(right_capture) = en_passant_target.get_en_passant_right_capture(self.current_player) {
+            if right_capture == tile_pos {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     pub fn get_legal_castling_moves(&self) -> Vec<Move> {
@@ -246,6 +280,10 @@ impl Position {
 
     /// Checks if a BasicMove is legal
     fn is_legal_basic_move(&self, basic_move: &BasicMove) -> bool {
+        if self.can_en_passant(basic_move.from_position()) {
+            return true;
+        }
+
         let collision_mask = get_collision_mask(self.board.clone(), basic_move.from_position());
         if !collision_mask.check_bit(basic_move.to_position().bit_offset()) {
             return false;
@@ -290,7 +328,7 @@ impl Position {
     fn get_en_passant_target_for_move(&self, moove: &Move) -> Option<TilePosition> {
         let from_pos = moove.from_position();
 
-        if !self.board.pawns.check_bit(from_pos.bit_offset()) {
+        if !self.board.check_for_pawn(from_pos) {
             return None;
         };
 

@@ -114,6 +114,10 @@ impl Board {
         Some(PlayerPiece::new(player, piece))
     }
 
+    pub fn check_for_pawn(&self, tile_pos: TilePosition) -> bool {
+        self.pawns.check_bit(tile_pos.bit_offset())
+    }
+
     pub const fn get_player_bitboard(&self, player: Player) -> &Bitboard {
         match player {
             Player::White => &self.white_pieces,
