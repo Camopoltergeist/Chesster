@@ -38,7 +38,10 @@ pub struct BoardRenderer {
     bitboard_off_color: Color,
 
     /// Map of chess piece textures
-    textures: HashMap<PieceTexture, Texture2D>,
+    piece_textures: HashMap<PieceTexture, Texture2D>,
+
+    /// Texture used to indicate possible moves
+    circle_texture: Texture2D,
 
     /// Board state used to draw pieces
     board: Board,
@@ -54,7 +57,7 @@ pub struct BoardRenderer {
 }
 
 impl BoardRenderer {
-    pub fn new(x: i32, y: i32, size: i32, margin: i32, player: Player, piece_textures: HashMap<PieceTexture, Texture2D>) -> Self {
+    pub fn new(x: i32, y: i32, size: i32, margin: i32, player: Player, piece_textures: HashMap<PieceTexture, Texture2D>, circle_texture: Texture2D) -> Self {
         Self {
             x,
             y,
@@ -67,7 +70,8 @@ impl BoardRenderer {
             bitboard: None,
             bitboard_on_color: Color { r: 255, g: 0, b: 0, a: 127 },
             bitboard_off_color: Color { r: 0, g: 0, b: 255, a: 127 },
-            textures: piece_textures,
+            piece_textures,
+            circle_texture,
             board: Board::empty(),
             highlighted_tile: None,
             legal_moves: Vec::new(),
@@ -87,7 +91,7 @@ impl BoardRenderer {
         let x = pos.0;
         let y = pos.1;
 
-        let texture = self.textures.get(&piece_texture).expect("invalid piece texture");
+        let texture = self.piece_textures.get(&piece_texture).expect("invalid piece texture");
 
         let scale = tile_size as f32 / texture.height as f32;
 
@@ -231,16 +235,16 @@ impl BoardRenderer {
 
     fn draw_legal_moves(&self, draw_handle: &mut RaylibDrawHandle) {
         let tile_size = self.tile_size();
+        let texture_size = self.circle_texture.height;
 
-        let x_offset = tile_size / 2;
-        let y_offset = tile_size / 2;
+        let circle_diameter = tile_size as f32 / 3.0;
 
-        let circle_radius = tile_size as f32 / 6.0;
+        let scale = circle_diameter / texture_size as f32;
 
         for m in &self.legal_moves {
             let (x, y) = self.get_tile_pixel_pos(m.to_position());
 
-            draw_handle.draw_circle(x + x_offset, y + y_offset, circle_radius, self.legal_move_color);
+            draw_handle.draw_texture_ex(&self.circle_texture, Vector2::new(x as f32 + circle_diameter, y as f32 + circle_diameter), 0.0, scale, self.legal_move_color);
         }
     }
 

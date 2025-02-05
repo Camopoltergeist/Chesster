@@ -3,7 +3,7 @@ use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw
 
 use crate::{board::{position::Position, tile_position::TilePosition}, player::Player};
 
-use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::load_piece_textures};
+use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::{load_circle_texture, load_piece_textures}};
 
 pub struct UI {
 	board_renderer: BoardRenderer,
@@ -21,7 +21,8 @@ pub struct UI {
 impl UI {
 	pub fn new(rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
 		let piece_textures = load_piece_textures(rl, thread);
-		let mut board_renderer = BoardRenderer::new(0, 0, rl.get_screen_height(), 32, Player::White, piece_textures);
+		let circle_texture = load_circle_texture(rl, thread);
+		let mut board_renderer = BoardRenderer::new(0, 0, rl.get_screen_height(), 32, Player::White, piece_textures, circle_texture);
 
 		let position = Position::default();
 		board_renderer.set_board(position.board());
