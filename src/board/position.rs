@@ -205,18 +205,24 @@ impl Position {
     }
 
     pub fn is_legal_move(&self, moove: &Move) -> bool {
-        // let collision_mask = get_collision_mask(self.board.clone(), moove.from());
-        // if !collision_mask.check_bit(moove.to().bit_offset()) {
-        //     return false;
-        // };
+        match moove {
+            Move::Basic(basic_move) => {
+                let collision_mask = get_collision_mask(self.board.clone(), basic_move.from());
+                if !collision_mask.check_bit(basic_move.to().bit_offset()) {
+                    return false;
+                };
 
-        // let piece = self.board.get_piece(moove.from()).unwrap();
+                let piece = self.board.get_piece(basic_move.from()).unwrap();
 
-        // if piece.player() != self.current_player {
-        //     return false;
-        // };
+                if piece.player() != self.current_player {
+                    return false;
+                };
 
-        return true;
+                return true;
+            },
+            _ => unimplemented!()
+        }
+        
     }
 
     pub fn make_move(&mut self, moove: Move) -> Result<(), ()> {
