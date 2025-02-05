@@ -246,7 +246,7 @@ impl BoardRenderer {
         let scale = circle_diameter / texture_size as f32;
 
         for m in &self.moves {
-            let is_capturing = self.board.get_piece(m.to_position()).is_some();
+            let is_capturing = self.board.get_piece(m.to_position()).is_some() || matches!(m, Move::EnPassant(_));
 
             let color = if is_capturing { self.capturing_move_color } else { self.move_color };
 
