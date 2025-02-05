@@ -128,7 +128,10 @@ impl UI {
 
 		for m in legal_moves {
 			if m.to_position() == clicked_tile {
-				debug_assert!(self.position.make_move(m).is_ok());
+				let move_res = self.position.make_move(m);
+
+				debug_assert!(move_res.is_ok());
+				
 				self.select_tile(None);
 				self.board_renderer.set_board(&self.position.board());
 				return;
