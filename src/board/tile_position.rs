@@ -6,6 +6,9 @@ pub struct TilePosition {
 
 impl TilePosition {
     pub const fn new(column: u32, rank: u32) -> Self {
+        debug_assert!(column <= 7);
+        debug_assert!(rank <= 7);
+
         Self {
             column,
             rank
