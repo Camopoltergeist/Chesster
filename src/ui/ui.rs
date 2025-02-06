@@ -1,7 +1,7 @@
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{game_state::GameState, position::Position, tile_position::TilePosition}, executor::{evaluate_material_only, negamax_search}, player::Player};
+use crate::{board::{game_state::GameState, position::Position, tile_position::TilePosition}, bot::{evaluation_funcs::evaluate_material_only, search_funcs::negamax_search}, player::Player};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::{load_circle_texture, load_piece_textures}};
 
