@@ -109,8 +109,8 @@ impl TilePosition {
         };
 
         let rank = match player {
-            Player::White => 3,
-            Player::Black => 4
+            Player::White => 4,
+            Player::Black => 3
         };
 
         return Some(TilePosition::new(self.column - 1, rank));
