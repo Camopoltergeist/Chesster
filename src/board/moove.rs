@@ -1,4 +1,4 @@
-use crate::{piece::PieceType, player::Player};
+use crate::{player::Player, player_piece::PlayerPiece};
 
 use super::tile_position::TilePosition;
 
@@ -7,11 +7,7 @@ pub enum Move {
     Basic(BasicMove),
     Castling(CastlingMove),
     EnPassant(EnPassantMove),
-    Promoting {
-        from: TilePosition,
-        to: TilePosition,
-        promotion: PieceType
-    }
+    Promoting(PromotingMove)
 }
 
 impl Move {
@@ -44,7 +40,7 @@ impl Move {
             Self::Basic(basic_move) => basic_move.from_position(),
             Self::Castling(castling_move) => castling_move.from_position(),
             Self::EnPassant(en_passant_move) => en_passant_move.from_position(),
-            _ => unimplemented!()
+            Self::Promoting(promoting_move) => promoting_move.from_position(),
         }
     }
 
@@ -53,7 +49,7 @@ impl Move {
             Self::Basic(basic_move) => basic_move.to_position(),
             Self::Castling(castling_move) => castling_move.to_position(),
             Self::EnPassant(en_passant_move) => en_passant_move.to_position(),
-            _ => unimplemented!()
+            Self::Promoting(promoting_move) => promoting_move.to_position(),
         }
     }
 }
@@ -73,6 +69,12 @@ impl From<CastlingMove> for Move {
 impl From<EnPassantMove> for Move {
     fn from(value: EnPassantMove) -> Self {
         Self::EnPassant(value)
+    }
+}
+
+impl From<PromotingMove> for Move {
+    fn from(value: PromotingMove) -> Self {
+        Self::Promoting(value)
     }
 }
 
@@ -101,6 +103,12 @@ impl BasicMove {
 
 impl From<EnPassantMove> for BasicMove {
     fn from(value: EnPassantMove) -> Self {
+        Self::new(value.from, value.to)
+    }
+}
+
+impl From<PromotingMove> for BasicMove {
+    fn from(value: PromotingMove) -> Self {
         Self::new(value.from, value.to)
     }
 }
@@ -216,5 +224,34 @@ impl EnPassantMove {
 
     pub fn captured_tile(&self) -> TilePosition {
         self.captured_tile
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct PromotingMove {
+    from: TilePosition,
+    to: TilePosition,
+    promotion_piece: PlayerPiece
+}
+
+impl PromotingMove {
+    pub fn new(from: TilePosition, to: TilePosition, promotion_piece: PlayerPiece) -> Self {
+        Self {
+            from,
+            to,
+            promotion_piece
+        }
+    }
+
+    pub fn from_position(&self) -> TilePosition {
+        self.from
+    }
+
+    pub fn to_position(&self) -> TilePosition {
+        self.to
+    }
+
+    pub fn promotion_piece(&self) -> PlayerPiece {
+        self.promotion_piece
     }
 }

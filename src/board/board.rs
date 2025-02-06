@@ -1,4 +1,4 @@
-use super::{bitboard::Bitboard, moove::{BasicMove, CastleSide, CastlingMove, EnPassantMove}, move_collision::{get_collision_mask, get_pawn_capture}, tile_position::TilePosition};
+use super::{bitboard::Bitboard, moove::{BasicMove, CastleSide, CastlingMove, EnPassantMove, PromotingMove}, move_collision::{get_collision_mask, get_pawn_capture}, tile_position::TilePosition};
 use crate::{piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 #[derive(Clone)]
@@ -95,6 +95,11 @@ impl Board {
     pub fn move_piece_en_passant(&mut self, en_passant_move: EnPassantMove) {
         self.remove_piece(en_passant_move.captured_tile());
         self.move_piece_basic(en_passant_move.into());
+    }
+
+    pub fn move_piece_promoting(&mut self, promoting_move: PromotingMove) {
+        self.move_piece_basic(promoting_move.clone().into());
+        self.set_piece(promoting_move.promotion_piece(), promoting_move.to_position());
     }
 
     pub fn get_piece_from_offset(&self, bit_offset: u32) -> Option<PlayerPiece> {
