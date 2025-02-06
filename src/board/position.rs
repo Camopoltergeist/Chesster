@@ -1,6 +1,6 @@
 use crate::{board::moove::CastleSide, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
-use super::{board::Board, moove::{BasicMove, CastlingMove, EnPassantMove, Move, PromotingMove}, move_collision::get_collision_mask, tile_position::TilePosition};
+use super::{board::Board, game_state::GameState, moove::{BasicMove, CastlingMove, EnPassantMove, Move, PromotingMove}, move_collision::get_collision_mask, tile_position::TilePosition};
 
 #[derive(Clone)]
 pub struct Position {
@@ -133,6 +133,20 @@ impl Position {
         let attack_mask = self.board.get_attack_mask(player.opposite());
 
         return !(king_mask & attack_mask).is_empty();
+    }
+
+    pub fn get_game_state(&self) -> GameState {
+        let legal_moves = self.get_all_legal_moves();
+
+        if legal_moves.len() > 0 {
+            return GameState::Ongoing;
+        };
+
+        if self.is_in_check(self.current_player) {
+            return GameState::Checkmate(self.current_player.opposite());
+        };
+
+        return GameState::Stalemate;
     }
 
     pub fn get_all_legal_moves(&self) -> Vec<Move> {
