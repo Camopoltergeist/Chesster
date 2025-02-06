@@ -47,6 +47,10 @@ impl Queen {
 
         masks
     }
+
+    pub const fn material_value() -> u32 {
+        9
+    }
 }
 
 impl Piece for Queen {

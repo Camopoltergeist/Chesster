@@ -70,6 +70,10 @@ impl Pawn {
 
         masks
     }
+
+    pub const fn material_value() -> u32 {
+        1
+    }
 }
 
 impl Piece for Pawn {

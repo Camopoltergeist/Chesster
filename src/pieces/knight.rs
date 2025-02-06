@@ -45,6 +45,10 @@ impl Knight {
 
         masks
     }
+
+    pub const fn material_value() -> u32 {
+        3
+    }
 }
 
 impl Piece for Knight {

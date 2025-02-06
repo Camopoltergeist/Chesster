@@ -115,6 +115,10 @@ impl Rook {
 
         masks
     }
+
+    pub const fn material_value() -> u32 {
+        5
+    }
 }
 
 impl Piece for Rook {
