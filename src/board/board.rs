@@ -1,4 +1,4 @@
-use super::{bitboard::Bitboard, moove::{BasicMove, CastleSide, CastlingMove}, move_collision::{get_collision_mask, get_pawn_capture}, tile_position::TilePosition};
+use super::{bitboard::Bitboard, moove::{BasicMove, CastleSide, CastlingMove, EnPassantMove}, move_collision::{get_collision_mask, get_pawn_capture}, tile_position::TilePosition};
 use crate::{piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 #[derive(Clone)]
@@ -92,6 +92,11 @@ impl Board {
         self.move_piece_basic(castling_move.rook_basic_move());
     }
 
+    pub fn move_piece_en_passant(&mut self, en_passant_move: EnPassantMove) {
+        self.remove_piece(en_passant_move.captured_tile());
+        self.move_piece_basic(en_passant_move.into());
+    }
+
     pub fn get_piece_from_offset(&self, bit_offset: u32) -> Option<PlayerPiece> {
         let player = if Bitboard::check_bit(&self.white_pieces, bit_offset) {
             Player::White
@@ -112,6 +117,10 @@ impl Board {
         };
 
         Some(PlayerPiece::new(player, piece))
+    }
+
+    pub fn check_for_pawn(&self, tile_pos: TilePosition) -> bool {
+        self.pawns.check_bit(tile_pos.bit_offset())
     }
 
     pub const fn get_player_bitboard(&self, player: Player) -> &Bitboard {

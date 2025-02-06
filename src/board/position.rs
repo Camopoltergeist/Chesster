@@ -1,13 +1,14 @@
 use crate::{board::moove::CastleSide, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
-use super::{board::Board, moove::{BasicMove, CastlingMove, Move}, move_collision::get_collision_mask, tile_position::TilePosition};
+use super::{board::Board, moove::{BasicMove, CastlingMove, EnPassantMove, Move}, move_collision::get_collision_mask, tile_position::TilePosition};
 
 #[derive(Clone)]
 pub struct Position {
     board: Board,
     current_player: Player,
 
-    en_passant: bool,
+    pub en_passant_target: Option<TilePosition>,
+
     white_short_castling: bool,
     white_long_castling: bool,
     black_short_castling: bool,
@@ -168,9 +169,19 @@ impl Position {
                 }
             }
 
-            if piece.piece() == PieceType::King {
-                let castling_moves = self.get_legal_castling_moves();
-                moves.extend(castling_moves);
+            match piece.piece() {
+                PieceType::King => {
+                    let castling_moves = self.get_legal_castling_moves();
+                    moves.extend(castling_moves);
+                },
+                PieceType::Pawn => {
+                    if self.can_en_passant(tile_pos) {
+                        let target = self.en_passant_target.unwrap();
+
+                        moves.push(EnPassantMove::new(tile_pos, target, TilePosition::new(target.column(), tile_pos.rank())).into());
+                    }
+                }
+                _ => ()
             }
         }
 
@@ -186,6 +197,32 @@ impl Position {
         }
 
         return legal_moves;
+    }
+
+    fn can_en_passant(&self, tile_pos: TilePosition) -> bool {
+        if self.en_passant_target.is_none() {
+            return false;
+        }
+
+        if !self.board.check_for_pawn(tile_pos) {
+            return false;
+        }
+
+        let en_passant_target = self.en_passant_target.unwrap();
+
+        if let Some(left_capture) = en_passant_target.get_en_passant_left_capture(self.current_player) {
+            if left_capture == tile_pos {
+                return true;
+            }
+        }
+
+        if let Some(right_capture) = en_passant_target.get_en_passant_right_capture(self.current_player) {
+            if right_capture == tile_pos {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     pub fn get_legal_castling_moves(&self) -> Vec<Move> {
@@ -239,6 +276,7 @@ impl Position {
         match moove {
             Move::Basic(basic_move) => self.is_legal_basic_move(basic_move),
             Move::Castling(castling_move) => self.is_legal_castling_move(castling_move),
+            Move::EnPassant(en_passant_move) => self.is_legal_en_passant_move(en_passant_move),
             _ => unimplemented!()
         }
     }
@@ -263,6 +301,10 @@ impl Position {
         self.board.is_castling_possible(castling_move.player(), castling_move.side())
     }
 
+    fn is_legal_en_passant_move(&self, en_passant_move: &EnPassantMove) -> bool {
+        self.can_en_passant(en_passant_move.from_position())
+    }
+
     pub fn make_move(&mut self, moove: Move) -> Result<(), ()> {
         if !self.is_legal_move(&moove) {
             return Err(());
@@ -270,18 +312,39 @@ impl Position {
 
         self.change_castling_availability_if_needed(&moove);
 
+        self.en_passant_target = self.get_en_passant_target_for_move(&moove);
+
         match moove {
             Move::Basic(basic_move) => self.board.move_piece_basic(basic_move),
-            Move::Castling(castling_move) => {
-                
-                self.board.move_piece_castling(castling_move);
-            }
+            Move::Castling(castling_move) => self.board.move_piece_castling(castling_move),
+            Move::EnPassant(en_passant_move) => self.board.move_piece_en_passant(en_passant_move),
             _ => unimplemented!()
         }
 
         self.current_player = self.current_player.opposite();
 
         Ok(())
+    }
+
+    fn get_en_passant_target_for_move(&self, moove: &Move) -> Option<TilePosition> {
+        let from_pos = moove.from_position();
+
+        if !self.board.check_for_pawn(from_pos) {
+            return None;
+        };
+
+        let to_pos = moove.to_position();
+
+        let move_length: i32 = from_pos.rank() as i32 - to_pos.rank() as i32;
+
+        if move_length.abs() != 2 {
+            return None;
+        };
+
+        return match self.current_player {
+            Player::White => Some(TilePosition::new(to_pos.column(), 2)),
+            Player::Black => Some(TilePosition::new(to_pos.column(), 5))
+        }
     }
 
     fn change_castling_availability_if_needed(&mut self, moove: &Move) {
@@ -386,7 +449,7 @@ impl Default for Position {
             board: Board::default(),
             current_player: Player::White,
 
-            en_passant: false,
+            en_passant_target: None,
             white_short_castling: true,
             white_long_castling: true,
             black_short_castling: true,

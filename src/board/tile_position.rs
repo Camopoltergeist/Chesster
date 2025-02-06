@@ -1,3 +1,5 @@
+use crate::player::Player;
+
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct TilePosition {
     column: u32,
@@ -6,6 +8,9 @@ pub struct TilePosition {
 
 impl TilePosition {
     pub const fn new(column: u32, rank: u32) -> Self {
+        debug_assert!(column <= 7);
+        debug_assert!(rank <= 7);
+
         Self {
             column,
             rank
@@ -96,6 +101,32 @@ impl TilePosition {
         };
 
         Ok(Self::new(column, rank))
+    }
+
+    pub fn get_en_passant_left_capture(&self, player: Player) -> Option<Self> {
+        if self.column < 1 {
+            return None;
+        };
+
+        let rank = match player {
+            Player::White => 4,
+            Player::Black => 3
+        };
+
+        return Some(TilePosition::new(self.column - 1, rank));
+    }
+
+    pub fn get_en_passant_right_capture(&self, player: Player) -> Option<Self> {
+        if self.column > 6 {
+            return None;
+        };
+
+        let rank = match player {
+            Player::White => 4,
+            Player::Black => 3
+        };
+
+        return Some(TilePosition::new(self.column + 1, rank));
     }
 }
 
