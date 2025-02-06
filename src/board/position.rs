@@ -168,10 +168,10 @@ impl Position {
                     let to_pos = TilePosition::from_bit_offset(bit_offset);
 
                     if self.can_promote(tile_pos, to_pos) {
-                        moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(self.current_player, PieceType::Rook)).into());
-                        moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(self.current_player, PieceType::Knight)).into());
-                        moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(self.current_player, PieceType::Bishop)).into());
                         moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(self.current_player, PieceType::Queen)).into());
+                        moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(self.current_player, PieceType::Knight)).into());
+                        moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(self.current_player, PieceType::Rook)).into());
+                        moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(self.current_player, PieceType::Bishop)).into());
                     }
                     else {
                         moves.push(BasicMove::new(tile_pos, TilePosition::from_bit_offset(bit_offset)).into());
