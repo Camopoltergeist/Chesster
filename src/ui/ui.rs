@@ -1,7 +1,7 @@
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{position::Position, tile_position::TilePosition}, player::Player};
+use crate::{board::{game_state::GameState, position::Position, tile_position::TilePosition}, player::Player};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::{load_circle_texture, load_piece_textures}};
 
@@ -78,6 +78,12 @@ impl UI {
 		}
 		else {
 			self.text_area.skip_line();
+		}
+
+		match self.position.get_game_state() {
+			GameState::Ongoing => self.text_area.skip_line(),
+			GameState::Checkmate(winner) => self.text_area.draw_line(draw_handle, &format!("{} wins!", winner.as_str())),
+			GameState::Stalemate => self.text_area.draw_line(draw_handle, "Draw: Stalemate!"),
 		}
 
 		self.text_area.reset();
