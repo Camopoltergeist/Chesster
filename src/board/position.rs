@@ -1,6 +1,6 @@
 use crate::{board::moove::CastleSide, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
-use super::{board::Board, moove::{BasicMove, CastlingMove, EnPassantMove, Move}, move_collision::get_collision_mask, tile_position::TilePosition};
+use super::{board::Board, moove::{BasicMove, CastlingMove, EnPassantMove, Move, PromotingMove}, move_collision::get_collision_mask, tile_position::TilePosition};
 
 #[derive(Clone)]
 pub struct Position {
@@ -165,7 +165,17 @@ impl Position {
 
             for bit_offset in 0..64 {
                 if moves_bitboard.check_bit(bit_offset) {
-                    moves.push(BasicMove::new(tile_pos, TilePosition::from_bit_offset(bit_offset)).into());
+                    let to_pos = TilePosition::from_bit_offset(bit_offset);
+
+                    if self.can_promote(tile_pos, to_pos) {
+                        moves.push(PromotingMove::new(tile_pos, to_pos, PieceType::Rook).into());
+                        moves.push(PromotingMove::new(tile_pos, to_pos, PieceType::Knight).into());
+                        moves.push(PromotingMove::new(tile_pos, to_pos, PieceType::Bishop).into());
+                        moves.push(PromotingMove::new(tile_pos, to_pos, PieceType::Queen).into());
+                    }
+                    else {
+                        moves.push(BasicMove::new(tile_pos, TilePosition::from_bit_offset(bit_offset)).into());
+                    }
                 }
             }
 
@@ -197,6 +207,19 @@ impl Position {
         }
 
         return legal_moves;
+    }
+
+    fn can_promote(&self, from_pos: TilePosition, to_pos: TilePosition) -> bool {
+        if !self.board.check_for_pawn(from_pos) {
+            return false;
+        };
+
+        let promotable_rank = match self.current_player {
+            Player::White => 7,
+            Player::Black => 0
+        };
+
+        return to_pos.rank() == promotable_rank;
     }
 
     fn can_en_passant(&self, tile_pos: TilePosition) -> bool {

@@ -107,6 +107,12 @@ impl From<EnPassantMove> for BasicMove {
     }
 }
 
+impl From<PromotingMove> for BasicMove {
+    fn from(value: PromotingMove) -> Self {
+        Self::new(value.from, value.to)
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct CastlingMove {
     player: Player,
@@ -229,6 +235,14 @@ pub struct PromotingMove {
 }
 
 impl PromotingMove {
+    pub fn new(from: TilePosition, to: TilePosition, promotion_piece: PieceType) -> Self {
+        Self {
+            from,
+            to,
+            promotion_piece
+        }
+    }
+
     pub fn from_position(&self) -> TilePosition {
         self.from
     }
