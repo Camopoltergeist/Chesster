@@ -1,22 +1,22 @@
-use crate::board::{moove::Move, position::Position};
+use crate::{board::{moove::Move, position::Position}, evaluation::Evaluation};
 
-pub type EvaluationFn = fn(&Position) -> f32;
-pub type SearchFn = fn(&Position, EvaluationFn, u32) -> (Move, f32);
+pub type EvaluationFn = fn(&Position) -> Evaluation;
+pub type SearchFn = fn(&Position, EvaluationFn, u32) -> (Move, Evaluation);
 
-pub fn evaluate_material_only(position: &Position) -> f32 {
+pub fn evaluate_material_only(position: &Position) -> Evaluation {
 	let own_material = position.board().get_material_for_for_player(position.current_player()) as f32;
 	let opponent_material = position.board().get_material_for_for_player(position.current_player().opposite()) as f32;
 
-	own_material - opponent_material
+	Evaluation::Score(own_material - opponent_material)
 }
 
-pub fn negamax_search(position: &Position, evaluation_fn: EvaluationFn, depth: u32) -> (Move, f32) {
-	fn negamax(position: &Position, evaluation_fn: EvaluationFn, depth: u32) -> f32 {
+pub fn negamax_search(position: &Position, evaluation_fn: EvaluationFn, depth: u32) -> (Move, Evaluation) {
+	fn negamax(position: &Position, evaluation_fn: EvaluationFn, depth: u32) -> Evaluation {
 		if depth == 0 {
 			return evaluation_fn(position);
 		};
 
-		let mut max = f32::NEG_INFINITY;
+		let mut max = Evaluation::Score(f32::NEG_INFINITY);
 
 		for m in position.get_all_legal_moves() {
 			let mut moved_position = position.clone();
@@ -32,7 +32,7 @@ pub fn negamax_search(position: &Position, evaluation_fn: EvaluationFn, depth: u
 		return max;
 	}
 
-	let mut max = f32::NEG_INFINITY;
+	let mut max = Evaluation::Score(f32::NEG_INFINITY);
 	let mut best_move: Option<Move> = None;
 
 	for m in position.get_all_legal_moves() {

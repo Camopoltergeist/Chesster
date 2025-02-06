@@ -141,9 +141,9 @@ impl UI {
 				self.select_tile(None);
 				self.board_renderer.set_board(&self.position.board());
 
-				let (best_move, score) = negamax_search(&self.position, evaluate_material_only, 5);
+				let (best_move, evaluation) = negamax_search(&self.position, evaluate_material_only, 5);
 
-				println!("{}: {}", best_move.debug_string(), score);
+				println!("{}: {:?}", best_move.debug_string(), evaluation);
 
 				return;
 			}
