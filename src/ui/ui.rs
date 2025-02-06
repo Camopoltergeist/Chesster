@@ -1,7 +1,7 @@
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{game_state::GameState, position::Position, tile_position::TilePosition}, player::Player};
+use crate::{board::{game_state::GameState, position::Position, tile_position::TilePosition}, bot::{evaluation_funcs::evaluate_material_only, search_funcs::negamax_search}, player::Player};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::{load_circle_texture, load_piece_textures}};
 
@@ -140,6 +140,10 @@ impl UI {
 				
 				self.select_tile(None);
 				self.board_renderer.set_board(&self.position.board());
+
+				let (best_move, evaluation) = negamax_search(&self.position, evaluate_material_only, 5);
+
+				println!("{}: {:?}", best_move.debug_string(), evaluation);
 
 				return;
 			}
