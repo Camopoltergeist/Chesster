@@ -1,6 +1,6 @@
 use crate::{board::{moove::Move, position::Position}, bot::evaluation::Evaluation};
 
-use super::executor::EvaluationFn;
+use super::EvaluationFn;
 
 pub fn negamax_search(position: &Position, evaluation_fn: EvaluationFn, depth: u32) -> (Move, Evaluation) {
 	fn negamax(position: &Position, evaluation_fn: EvaluationFn, depth: u32) -> Evaluation {
