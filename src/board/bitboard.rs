@@ -68,12 +68,16 @@ impl Bitboard {
     }
 
     pub const fn generate_rank_mask(rank: u32) -> Bitboard {
+        debug_assert!(rank <= 7);
+
         //A bitboard that goes through the first rank, then moved by column
         let rank_mask = 0xff << rank * 8;
         Bitboard(rank_mask)
     }
 
     pub const fn generate_column_mask(column: u32) -> Bitboard {
+        debug_assert!(column <= 7);
+
         //^The other way around: a bitboard going through the first column, then nudged left
         let column_mask = 0x101010101010101 << column;
         Bitboard(column_mask)
