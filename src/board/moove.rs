@@ -7,11 +7,7 @@ pub enum Move {
     Basic(BasicMove),
     Castling(CastlingMove),
     EnPassant(EnPassantMove),
-    Promoting {
-        from: TilePosition,
-        to: TilePosition,
-        promotion: PieceType
-    }
+    Promoting(PromotingMove)
 }
 
 impl Move {
@@ -44,7 +40,7 @@ impl Move {
             Self::Basic(basic_move) => basic_move.from_position(),
             Self::Castling(castling_move) => castling_move.from_position(),
             Self::EnPassant(en_passant_move) => en_passant_move.from_position(),
-            _ => unimplemented!()
+            Self::Promoting(promoting_move) => promoting_move.from_position(),
         }
     }
 
@@ -53,7 +49,7 @@ impl Move {
             Self::Basic(basic_move) => basic_move.to_position(),
             Self::Castling(castling_move) => castling_move.to_position(),
             Self::EnPassant(en_passant_move) => en_passant_move.to_position(),
-            _ => unimplemented!()
+            Self::Promoting(promoting_move) => promoting_move.to_position(),
         }
     }
 }
@@ -73,6 +69,12 @@ impl From<CastlingMove> for Move {
 impl From<EnPassantMove> for Move {
     fn from(value: EnPassantMove) -> Self {
         Self::EnPassant(value)
+    }
+}
+
+impl From<PromotingMove> for Move {
+    fn from(value: PromotingMove) -> Self {
+        Self::Promoting(value)
     }
 }
 
@@ -216,5 +218,26 @@ impl EnPassantMove {
 
     pub fn captured_tile(&self) -> TilePosition {
         self.captured_tile
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct PromotingMove {
+    from: TilePosition,
+    to: TilePosition,
+    promotion_piece: PieceType
+}
+
+impl PromotingMove {
+    pub fn from_position(&self) -> TilePosition {
+        self.from
+    }
+
+    pub fn to_position(&self) -> TilePosition {
+        self.to
+    }
+
+    pub fn promotion_piece(&self) -> PieceType {
+        self.promotion_piece
     }
 }
