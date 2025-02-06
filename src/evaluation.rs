@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, fmt::Display, ops::Neg};
+use std::{cmp::Ordering, ops::Neg};
 
 #[derive(Debug, PartialEq)]
 pub enum Evaluation {
