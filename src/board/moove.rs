@@ -1,4 +1,4 @@
-use crate::{piece::PieceType, player::Player};
+use crate::{player::Player, player_piece::PlayerPiece};
 
 use super::tile_position::TilePosition;
 
@@ -231,11 +231,11 @@ impl EnPassantMove {
 pub struct PromotingMove {
     from: TilePosition,
     to: TilePosition,
-    promotion_piece: PieceType
+    promotion_piece: PlayerPiece
 }
 
 impl PromotingMove {
-    pub fn new(from: TilePosition, to: TilePosition, promotion_piece: PieceType) -> Self {
+    pub fn new(from: TilePosition, to: TilePosition, promotion_piece: PlayerPiece) -> Self {
         Self {
             from,
             to,
@@ -251,7 +251,7 @@ impl PromotingMove {
         self.to
     }
 
-    pub fn promotion_piece(&self) -> PieceType {
+    pub fn promotion_piece(&self) -> PlayerPiece {
         self.promotion_piece
     }
 }

@@ -168,10 +168,10 @@ impl Position {
                     let to_pos = TilePosition::from_bit_offset(bit_offset);
 
                     if self.can_promote(tile_pos, to_pos) {
-                        moves.push(PromotingMove::new(tile_pos, to_pos, PieceType::Rook).into());
-                        moves.push(PromotingMove::new(tile_pos, to_pos, PieceType::Knight).into());
-                        moves.push(PromotingMove::new(tile_pos, to_pos, PieceType::Bishop).into());
-                        moves.push(PromotingMove::new(tile_pos, to_pos, PieceType::Queen).into());
+                        moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(self.current_player, PieceType::Rook)).into());
+                        moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(self.current_player, PieceType::Knight)).into());
+                        moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(self.current_player, PieceType::Bishop)).into());
+                        moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(self.current_player, PieceType::Queen)).into());
                     }
                     else {
                         moves.push(BasicMove::new(tile_pos, TilePosition::from_bit_offset(bit_offset)).into());
@@ -300,7 +300,7 @@ impl Position {
             Move::Basic(basic_move) => self.is_legal_basic_move(basic_move),
             Move::Castling(castling_move) => self.is_legal_castling_move(castling_move),
             Move::EnPassant(en_passant_move) => self.is_legal_en_passant_move(en_passant_move),
-            _ => unimplemented!()
+            Move::Promoting(promoting_move) => self.is_legal_promoting_move(promoting_move),
         }
     }
 
@@ -328,6 +328,10 @@ impl Position {
         self.can_en_passant(en_passant_move.from_position())
     }
 
+    fn is_legal_promoting_move(&self, promoting_move: &PromotingMove) -> bool {
+        return self.is_legal_basic_move(&promoting_move.clone().into());
+    }
+
     pub fn make_move(&mut self, moove: Move) -> Result<(), ()> {
         if !self.is_legal_move(&moove) {
             return Err(());
@@ -341,7 +345,7 @@ impl Position {
             Move::Basic(basic_move) => self.board.move_piece_basic(basic_move),
             Move::Castling(castling_move) => self.board.move_piece_castling(castling_move),
             Move::EnPassant(en_passant_move) => self.board.move_piece_en_passant(en_passant_move),
-            _ => unimplemented!()
+            Move::Promoting(promoting_move) => self.board.move_piece_promoting(promoting_move),
         }
 
         self.current_player = self.current_player.opposite();
