@@ -329,7 +329,7 @@ impl Position {
     }
 
     fn is_legal_promoting_move(&self, promoting_move: &PromotingMove) -> bool {
-        return self.is_legal_basic_move(&promoting_move.clone().into());
+        return self.is_legal_basic_move(&promoting_move.clone().into()) && promoting_move.promotion_piece().player() == self.current_player;
     }
 
     pub fn make_move(&mut self, moove: Move) -> Result<(), ()> {
