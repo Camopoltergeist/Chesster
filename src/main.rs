@@ -6,6 +6,7 @@ mod ui;
 pub mod piece;
 pub mod player_piece;
 pub mod pieces;
+pub mod executor;
 
 fn main() {
     start_ui();
