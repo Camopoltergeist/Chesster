@@ -142,7 +142,7 @@ impl UI {
 				self.board_renderer.set_board(&self.position.board());
 
 				if let GameState::Ongoing = self.position.get_game_state() {
-					let (evaluation, move_chain) = negamax_with_move_chain(&self.position, evaluate_material_and_checkmates, 2);
+					let (evaluation, move_chain) = negamax_with_move_chain(&self.position, evaluate_material_and_checkmates, 4);
 
 					println!("WWWWWWWWWWWW");
 					print_move_chain(&move_chain, evaluation);

@@ -3,8 +3,9 @@ use std::{cmp::Ordering, ops::Neg};
 #[derive(Debug, Clone, PartialEq)]
 pub enum Evaluation {
 	Score(f32),
-	Checkmate(i32),
-	Stalemate
+	Checkmate(bool),
+	Stalemate,
+	Initial,
 }
 
 impl PartialOrd for Evaluation {
@@ -12,25 +13,25 @@ impl PartialOrd for Evaluation {
 		match (self, other) {
 			// Comparisons with same match
 			(Self::Score(self_score), Self::Score(other_score)) => self_score.partial_cmp(other_score),
-			(Self::Checkmate(self_move_count), Self::Checkmate(other_move_count)) => self_move_count.partial_cmp(other_move_count),
+			(Self::Checkmate(self_is_winning), Self::Checkmate(other_is_winning)) => self_is_winning.partial_cmp(other_is_winning),
 			(Self::Stalemate, Self::Stalemate) => Some(Ordering::Equal),
 
 			// Score to checkmate comparisons
-			(Self::Score(_), Self::Checkmate(other_move_count)) => {
-				if *other_move_count < 0 {
-					Some(Ordering::Greater)
+			(Self::Score(_), Self::Checkmate(is_winning)) => {
+				if *is_winning {
+					Some(Ordering::Less)
 				}
 				else {
-					Some(Ordering::Less)
+					Some(Ordering::Greater)
 				}
 			},
 
-			(Self::Checkmate(self_move_count), Self::Score(_)) => {
-				if *self_move_count < 0 {
-					Some(Ordering::Less)
+			(Self::Checkmate(is_winning), Self::Score(_)) => {
+				if *is_winning {
+					Some(Ordering::Greater)
 				}
 				else {
-					Some(Ordering::Greater)
+					Some(Ordering::Less)
 				}
 			},
 
@@ -39,8 +40,17 @@ impl PartialOrd for Evaluation {
 			(Self::Stalemate, Self::Score(other_score)) => 0.0.partial_cmp(other_score),
 
 			// Checkmate to stalemate comparisons
-			(Self::Stalemate, Self::Checkmate(other_move_count)) => {
-				if *other_move_count < 0 {
+			(Self::Stalemate, Self::Checkmate(is_winning)) => {
+				if *is_winning {
+					Some(Ordering::Less)
+				}
+				else {
+					Some(Ordering::Greater)
+				}
+			},
+
+			(Self::Checkmate(is_winning), Self::Stalemate) => {
+				if *is_winning {
 					Some(Ordering::Greater)
 				}
 				else {
@@ -48,14 +58,16 @@ impl PartialOrd for Evaluation {
 				}
 			},
 
-			(Self::Checkmate(self_move_count), Self::Stalemate) => {
-				if *self_move_count < 0 {
-					Some(Ordering::Less)
-				}
-				else {
-					Some(Ordering::Greater)
-				}
-			},
+			// Initial value comparisons
+			(Self::Initial, Self::Score(_)) => Some(Ordering::Less),
+			(Self::Initial, Self::Checkmate(_)) => Some(Ordering::Less),
+			(Self::Initial, Self::Stalemate) => Some(Ordering::Less),
+
+			(Self::Score(_), Self::Initial) => Some(Ordering::Greater),
+			(Self::Checkmate(_), Self::Initial) => Some(Ordering::Greater),
+			(Self::Stalemate, Self::Initial) => Some(Ordering::Greater),
+
+			(Self::Initial, Self::Initial) => Some(Ordering::Equal)
 		}
 	}
 }
@@ -66,8 +78,9 @@ impl Neg for Evaluation {
 	fn neg(self) -> Self::Output {
 		match self {
 			Self::Score(score) => Self::Score(-score),
-			Self::Checkmate(move_count) => Self::Checkmate(-move_count),
-			Self::Stalemate => Self::Stalemate
+			Self::Checkmate(is_winning) => Self::Checkmate(!is_winning),
+			Self::Stalemate => Self::Stalemate,
+			Self::Initial => Self::Initial
 		}
 	}
 }

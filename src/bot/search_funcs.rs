@@ -14,7 +14,7 @@ pub fn negamax_search(position: &Position, evaluation_fn: EvaluationFn, depth: u
 			return evaluation_fn(position);
 		}
 
-		let mut max = Evaluation::Checkmate(i32::MIN);
+		let mut max = Evaluation::Initial;
 
 		for m in legal_moves {
 			let mut moved_position = position.clone();
@@ -25,10 +25,6 @@ pub fn negamax_search(position: &Position, evaluation_fn: EvaluationFn, depth: u
 			if score > max {
 				max = score;
 			}
-		}
-
-		if let Evaluation::Checkmate(moves) = max {
-			max = Evaluation::Checkmate(moves + 1);
 		}
 
 		return max;
@@ -68,7 +64,7 @@ pub fn negamax_with_move_chain(position: &Position, evaluation_fn: EvaluationFn,
 			return (evaluation_fn(position), Vec::new());
 		}
 
-		let mut best_eval = Evaluation::Checkmate(i32::MIN);
+		let mut best_eval = Evaluation::Initial;
 		let mut best_move_chain = Vec::new();
 
 		for m in legal_moves {
@@ -99,7 +95,7 @@ pub fn negamax_with_move_chain(position: &Position, evaluation_fn: EvaluationFn,
 		return (evaluation_fn(position), Vec::new());
 	};
 
-	let mut best_eval = Evaluation::Checkmate(i32::MIN);
+	let mut best_eval = Evaluation::Initial;
 	let mut best_move_chain = Vec::new();
 
 	for m in legal_moves {
