@@ -1,6 +1,6 @@
 use std::{cmp::Ordering, ops::Neg};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Evaluation {
 	Score(f32),
 	Checkmate(i32),
