@@ -1,7 +1,7 @@
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{game_state::GameState, position::Position, tile_position::TilePosition}, bot::{evaluation_funcs::evaluate_material_and_checkmates, search_funcs::{negamax_search, negamax_with_move_chain, print_move_chain}}, player::Player};
+use crate::{board::{game_state::GameState, position::Position, tile_position::TilePosition}, bot::{evaluation_funcs::{evaluate_material_and_checkmates, evaluate_material_and_mobility}, search_funcs::{negamax_search, negamax_with_move_chain, print_move_chain}}, player::Player};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::{load_circle_texture, load_piece_textures}};
 
@@ -142,7 +142,7 @@ impl UI {
 				self.board_renderer.set_board(&self.position.board());
 
 				if let GameState::Ongoing = self.position.get_game_state() {
-					let (evaluation, move_chain) = negamax_with_move_chain(&self.position, evaluate_material_and_checkmates, 4);
+					let (evaluation, move_chain) = negamax_with_move_chain(&self.position, evaluate_material_and_mobility, 4);
 
 					println!("WWWWWWWWWWWW");
 					print_move_chain(&move_chain, evaluation);
