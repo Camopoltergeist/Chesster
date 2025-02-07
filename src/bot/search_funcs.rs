@@ -14,7 +14,7 @@ pub fn negamax_search(position: &Position, evaluation_fn: EvaluationFn, depth: u
 			return evaluation_fn(position);
 		}
 
-		let mut max = Evaluation::Score(f32::NEG_INFINITY);
+		let mut max = Evaluation::Checkmate(i32::MIN);
 
 		for m in legal_moves {
 			let mut moved_position = position.clone();

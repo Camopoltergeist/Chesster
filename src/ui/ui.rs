@@ -142,7 +142,8 @@ impl UI {
 				self.board_renderer.set_board(&self.position.board());
 
 				if let GameState::Ongoing = self.position.get_game_state() {
-					let (best_move, evaluation) = negamax_search(&self.position, evaluate_material_and_checkmates, 4);
+					let (best_move, evaluation) = negamax_search(&self.position, evaluate_material_and_checkmates, 3);
+
 					println!("Best move {}: {:?}", best_move.debug_string(), evaluation);
 				}
 
