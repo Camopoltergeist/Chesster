@@ -2,7 +2,6 @@ use crate::{
     piece::PieceType,
     pieces::{bishop::Bishop, king::King, knight::Knight, pawn::Pawn, queen::Queen, rook::Rook},
     player::Player,
-    player_piece::{self, PlayerPiece},
 };
 
 use const_for::const_for;
@@ -64,12 +63,16 @@ pub fn e_collision_cut_mask(board: &Board, e_collision: Bitboard, player: Player
         .check_bit(first_collision.bit_offset())
     {
         true => {
-            Bitboard::generate_horizontal_line(7 - first_collision.column())
-                << first_collision.rank() as u64 * 8
+            if first_collision.column() == 7 {
+                Bitboard(0)
+            } else {
+                Bitboard::generate_horizontal_line(7 - first_collision.column())
+                    << first_collision.bit_offset() as u64 + 1
+            }
         }
         false => {
             Bitboard::generate_horizontal_line(8 - first_collision.column())
-                << first_collision.rank() as u64 * 8
+                << first_collision.bit_offset() as u64
         }
     }
 }
@@ -86,12 +89,12 @@ pub fn s_collision_cut_mask(board: &Board, s_collision: Bitboard, player: Player
                 Bitboard(0)
             } else {
                 Bitboard::generate_column_mask(first_collision.column())
-                    >> 8 - first_collision.rank() as u64 * 8
+                    >> (8 - first_collision.rank() as u64) * 8
             }
         }
         false => {
             Bitboard::generate_column_mask(first_collision.column())
-                >> 7 - first_collision.rank() as u64 * 8
+                >> (7 - first_collision.rank() as u64) * 8
         }
     }
 }
@@ -102,32 +105,15 @@ pub fn w_collision_cut_mask(board: &Board, w_collision: Bitboard, player: Player
         .get_player_bitboard(player.opposite())
         .check_bit(first_collision.bit_offset())
     {
-        true => Bitboard::generate_horizontal_line(first_collision.column()) << first_collision.rank() as u64 * 8 + 1,
-        false => Bitboard::generate_horizontal_line(first_collision.column() + 1) << first_collision.rank() as u64 * 8
+        true => {
+            Bitboard::generate_horizontal_line(first_collision.column())
+                << first_collision.rank() as u64 * 8
+        }
+        false => {
+            Bitboard::generate_horizontal_line(first_collision.column() + 1)
+                << first_collision.rank() as u64 * 8
+        }
     }
-}
-
-pub const fn get_cut_mask_horizontal(offset: u32, length: u32) -> u64 {
-    let tile_pos = TilePosition::from_bit_offset(offset);
-
-    let mask_length = if length == 0 {
-        return 0u64;
-    } else {
-        (1u64 << length) - 1
-    };
-
-    let rank_mask = mask_length << tile_pos.column();
-    rank_mask << (tile_pos.rank() * 8)
-}
-
-pub const fn get_cut_mask_vertical(offset: u32, length: u32) -> u64 {
-    let mut column_mask = 0u64;
-
-    const_for!(i in 0..length => {
-        column_mask |= 1u64 << (offset + i * 8);
-    });
-
-    column_mask
 }
 
 pub const fn get_cut_mask_asc(offset: u32, length: u32) -> u64 {

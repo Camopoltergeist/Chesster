@@ -1,41 +1,54 @@
-use crate::{board::{bitboard::Bitboard, board::Board, move_collision::{e_collision_cut_mask, get_cut_mask_horizontal, get_cut_mask_vertical, n_collision_cut_mask, s_collision_cut_mask, w_collision_cut_mask}, tile_position::TilePosition}, piece::{Piece, PieceType}, player::Player};
+use crate::{
+    board::{
+        bitboard::Bitboard,
+        board::Board,
+        move_collision::{
+            e_collision_cut_mask, n_collision_cut_mask, s_collision_cut_mask, w_collision_cut_mask,
+        },
+        tile_position::TilePosition,
+    },
+    piece::{Piece, PieceType},
+    player::Player,
+};
 
 use const_for::const_for;
 
 pub struct Rook {
-	player: Player,
+    player: Player,
     tile_position: TilePosition,
 }
 
 impl Rook {
     pub const MOVEMENT_MASKS: [Bitboard; 64] = Self::generate_all_movement_masks();
 
-	pub fn new(player: Player, tile_position: TilePosition) -> Self {
-		Self {
-			player,
+    pub fn new(player: Player, tile_position: TilePosition) -> Self {
+        Self {
+            player,
             tile_position,
-		}
-	}
+        }
+    }
 
-    pub fn generate_collision_mask(board: &Board, player: Player, tile_pos: TilePosition) -> Bitboard {
+    pub fn generate_collision_mask(
+        board: &Board,
+        player: Player,
+        tile_pos: TilePosition,
+    ) -> Bitboard {
         let bit_offset = tile_pos.bit_offset();
-
         let mut valid_moves = Rook::MOVEMENT_MASKS[bit_offset as usize];
-
         let mut collision_mask = (board.white_pieces | board.black_pieces) & valid_moves;
 
         if collision_mask == 0 {
             return valid_moves;
-        }; 
+        };
 
         let column = tile_pos.column();
         let rank = tile_pos.rank();
 
-        let n_collision = (Bitboard::generate_column_mask(column) << (rank as u64) * 8) & collision_mask;
+        let n_collision =
+            (Bitboard::generate_column_mask(column) << (rank as u64) * 8) & collision_mask;
 
         if n_collision != 0 {
             valid_moves &= !n_collision_cut_mask(board, n_collision, player);
-            
             collision_mask &= !n_collision;
         }
 
@@ -61,8 +74,8 @@ impl Rook {
     }
 
     pub const fn get_movement_mask(tile_pos: TilePosition) -> Bitboard {
-		Self::MOVEMENT_MASKS[tile_pos.bit_offset() as usize]
-	}
+        Self::MOVEMENT_MASKS[tile_pos.bit_offset() as usize]
+    }
 
     pub const fn generate_movement_mask(tile_pos: TilePosition) -> Bitboard {
         let rank_mask = Bitboard::generate_rank_mask(tile_pos.rank());
@@ -92,13 +105,13 @@ impl Rook {
 }
 
 impl Piece for Rook {
-	fn piece_type(&self) -> PieceType {
-		PieceType::Rook
-	}
+    fn piece_type(&self) -> PieceType {
+        PieceType::Rook
+    }
 
-	fn player(&self) -> Player {
-		self.player
-	}
+    fn player(&self) -> Player {
+        self.player
+    }
 
     fn tile_position(&self) -> TilePosition {
         self.tile_position
