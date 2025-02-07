@@ -226,6 +226,10 @@ impl Bitboard {
             (Player::Black, CastleSide::QueenSide) => Bitboard::from(0b00001110 << (8 * 7))
         }
     }
+
+    pub const fn generate_horizontal_line(length: u32) -> Bitboard {
+        Bitboard((1u64 << length) - 1)
+    }
 }
 
 impl From<u64> for Bitboard {
