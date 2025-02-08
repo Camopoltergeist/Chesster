@@ -33,8 +33,7 @@ impl Rook {
         player: Player,
         tile_pos: TilePosition,
     ) -> Bitboard {
-        let bit_offset = tile_pos.bit_offset();
-        let mut valid_moves = Rook::MOVEMENT_MASKS[bit_offset as usize];
+        let mut valid_moves = Rook::MOVEMENT_MASKS[tile_pos.bit_offset() as usize];
         let mut collision_mask = (board.white_pieces | board.black_pieces) & valid_moves;
 
         if collision_mask == 0 {
@@ -70,6 +69,7 @@ impl Rook {
             valid_moves &= !w_collision_cut_mask(board, collision_mask, player);
         }
 
+        Bitboard::print_bitboard(&valid_moves);
         valid_moves
     }
 

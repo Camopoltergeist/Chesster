@@ -1,4 +1,13 @@
-use crate::{board::{bitboard::Bitboard, board::Board, move_collision::{get_cut_mask_asc, get_cut_mask_des}, tile_position::TilePosition}, piece::{Piece, PieceType}, player::Player};
+use crate::{
+    board::{
+        bitboard::Bitboard,
+        board::Board,
+        move_collision::{ne_collision_cut_mask, nw_collision_cut_mask, se_collision_cut_mask, sw_collision_cut_mask},
+        tile_position::TilePosition,
+    },
+    piece::{Piece, PieceType},
+    player::Player,
+};
 
 use const_for::const_for;
 
@@ -13,97 +22,54 @@ impl Bishop {
     pub fn new(player: Player, tile_position: TilePosition) -> Self {
         Self {
             player,
-            tile_position
+            tile_position,
         }
     }
 
-    pub fn generate_collision_mask(board: &Board, player: Player, tile_pos: TilePosition) -> Bitboard {
-        let mut valid_moves: u64 = Bishop::MOVEMENT_MASKS[tile_pos.bit_offset() as usize].value();
+    pub fn generate_collision_mask(
+        board: &Board,
+        player: Player,
+        tile_pos: TilePosition,
+    ) -> Bitboard {
+        let mut valid_moves = Bishop::MOVEMENT_MASKS[tile_pos.bit_offset() as usize];
+        let mut collision_mask =
+            (board.white_pieces | board.black_pieces) & valid_moves;
+
+        if collision_mask == 0 {
+            return valid_moves;
+        }
+
         let column = tile_pos.column();
         let rank = tile_pos.rank();
         let offset = tile_pos.bit_offset();
 
-        let mut collision_mask: u64 = (board.white_pieces.value() | board.black_pieces.value()) & valid_moves;
-
-        if collision_mask == 0 {
-            return Bitboard(valid_moves);
-        }
-
-        let ne_collision: u64 = get_cut_mask_asc(offset, u32::min(8 - column, 8 - rank)) & collision_mask;
+        let ne_collision =
+            Bitboard::get_diagonal_mask_asc(0, 0) << offset as u64 & collision_mask;
 
         if ne_collision != 0 {
-            let ne_offset = TilePosition::from_bit_offset(ne_collision.trailing_zeros());
-            if board
-                .get_player_bitboard(player.opposite())
-                .check_bit(ne_offset.bit_offset())
-            {
-                valid_moves &=
-                    !(get_cut_mask_asc(ne_offset.bit_offset(), u32::min(7 - column, 7 - rank)) << 9);
-            } else {
-                valid_moves &= !get_cut_mask_asc(ne_offset.bit_offset(), u32::min(8 - column, 8 - rank));
-            }
+            valid_moves &= !ne_collision_cut_mask(board, ne_collision, player);
             collision_mask &= !ne_collision;
         }
 
-        let nw_collision: u64 = get_cut_mask_des(offset, u32::min(column + 1, 8 - rank)) & collision_mask;
+        let nw_collision =
+            (Bitboard::get_diagonal_mask_des(7, 0) >> 7) << offset as u64 & collision_mask;
         if nw_collision != 0 {
-            let nw_offset = TilePosition::from_bit_offset(nw_collision.trailing_zeros());
-            if board
-                .get_player_bitboard(player.opposite())
-                .check_bit(nw_offset.bit_offset())
-            {
-                let distance = u32::min(nw_offset.column(), 8 - nw_offset.rank());
-                valid_moves &= !(get_cut_mask_des(nw_offset.bit_offset(), distance) << 7);
-            } else {
-                let distance = u32::min(nw_offset.column(), 8 - nw_offset.rank());
-                valid_moves &= !get_cut_mask_des(nw_offset.bit_offset(), distance + 1);
-            }
+            valid_moves &= !nw_collision_cut_mask(board, nw_collision, player);
             collision_mask &= !nw_collision;
         }
 
-        let sw_collision = (Bitboard::get_diagonal_mask_asc(column, rank).value()) & collision_mask;
+        let sw_collision = Bitboard::get_diagonal_mask_asc(column, rank) & collision_mask;
         if sw_collision != 0 {
-            let sw_offset = TilePosition::from_bit_offset(63 - sw_collision.leading_zeros());
-            if board
-                .get_player_bitboard(player.opposite())
-                .check_bit(sw_offset.bit_offset())
-            {
-                let distance = u32::min(sw_offset.column(), sw_offset.rank());
-                valid_moves &= !get_cut_mask_asc(sw_offset.bit_offset() - distance * 9, distance);
-            } else {
-                let distance = u32::min(sw_offset.column(), sw_offset.rank());
-                valid_moves &= !get_cut_mask_asc(sw_offset.bit_offset() - distance * 9, distance + 1);
-            }
+            valid_moves &= !sw_collision_cut_mask(board, sw_collision, player);
             collision_mask &= !sw_collision;
         }
 
         if collision_mask != 0 {
-            let se_offset = TilePosition::from_bit_offset(63 - collision_mask.leading_zeros());
-            if board
-                .get_player_bitboard(player.opposite())
-                .check_bit(se_offset.bit_offset())
-            {
-                let distance = u32::min(8 - se_offset.column(), se_offset.rank());
-                let attack_offset;
-                if se_offset.bit_offset() > 7 {
-                    attack_offset = se_offset.bit_offset() - 7;
-                } else {
-                    attack_offset = se_offset.bit_offset()
-                };
-
-                const_for!(i in 0..distance => {
-                    valid_moves &= !(1 << attack_offset - 7 * i);
-                });
-
-            } else {
-                let distance = u32::min(8 - se_offset.column(), se_offset.rank() + 1);
-                for i in 0..distance {
-                    valid_moves &= !(1 << se_offset.bit_offset() - 7 * i);
-                }
-            }
+            valid_moves &= !se_collision_cut_mask(board, collision_mask, player);
         }
 
-        Bitboard(valid_moves)
+        Bitboard::print_bitboard(&valid_moves);
+        valid_moves
     }
 
     pub const fn get_movement_mask(tile_position: TilePosition) -> Bitboard {
@@ -111,8 +77,10 @@ impl Bishop {
     }
 
     pub const fn generate_movement_mask(tile_position: TilePosition) -> Bitboard {
-        let rank_mask = Bitboard::get_diagonal_mask_asc(tile_position.column(), tile_position.rank());
-        let column_mask = Bitboard::get_diagonal_mask_des(tile_position.column(), tile_position.rank());
+        let rank_mask =
+            Bitboard::get_diagonal_mask_asc(tile_position.column(), tile_position.rank());
+        let column_mask =
+            Bitboard::get_diagonal_mask_des(tile_position.column(), tile_position.rank());
 
         Bitboard(rank_mask.0 ^ column_mask.0)
     }
