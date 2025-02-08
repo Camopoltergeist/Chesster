@@ -69,7 +69,6 @@ impl Rook {
             valid_moves &= !w_collision_cut_mask(board, collision_mask, player);
         }
 
-        Bitboard::print_bitboard(&valid_moves);
         valid_moves
     }
 

@@ -68,7 +68,6 @@ impl Bishop {
             valid_moves &= !se_collision_cut_mask(board, collision_mask, player);
         }
 
-        Bitboard::print_bitboard(&valid_moves);
         valid_moves
     }
 
