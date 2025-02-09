@@ -266,7 +266,7 @@ impl Board {
         attack_mask
     }
 
-    pub fn get_material_for_for_player(&self, player: Player) -> u32 {
+    pub fn get_material_for_player(&self, player: Player) -> u32 {
         let player_bitboard = *self.get_player_bitboard(player);
 
         let mut material = 0;

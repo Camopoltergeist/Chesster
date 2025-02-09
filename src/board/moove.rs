@@ -30,8 +30,13 @@ impl Move {
                 };
 
                 return format!("Castling {}", side);
+            },
+            Self::EnPassant(en_passant_move) => {
+                return format!("{} -> {}", en_passant_move.from.notation_string(), en_passant_move.to.notation_string());
+            },
+            Self::Promoting(promoting_move) => {
+                return format!("{} -> {} {:?}", promoting_move.from.notation_string(), promoting_move.to.notation_string(), promoting_move.promotion_piece.piece());
             }
-            _ => unimplemented!()
         }
     }
 
