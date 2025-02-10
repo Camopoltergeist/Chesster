@@ -2,7 +2,10 @@ use crate::{
     board::{
         bitboard::Bitboard,
         board::Board,
-        move_collision::{ne_collision_cut_mask, nw_collision_cut_mask, se_collision_cut_mask, sw_collision_cut_mask},
+        move_collision::{
+            ne_collision_cut_mask, nw_collision_cut_mask, se_collision_cut_mask,
+            sw_collision_cut_mask,
+        },
         tile_position::TilePosition,
     },
     piece::{Piece, PieceType},
@@ -32,8 +35,7 @@ impl Bishop {
         tile_pos: TilePosition,
     ) -> Bitboard {
         let mut valid_moves = Bishop::MOVEMENT_MASKS[tile_pos.bit_offset() as usize];
-        let mut collision_mask =
-            (board.white_pieces | board.black_pieces) & valid_moves;
+        let mut collision_mask = (board.white_pieces | board.black_pieces) & valid_moves;
 
         if collision_mask == 0 {
             return valid_moves;
@@ -43,16 +45,18 @@ impl Bishop {
         let rank = tile_pos.rank();
         let offset = tile_pos.bit_offset();
 
-        let ne_collision =
-            Bitboard::get_diagonal_mask_asc(0, 0) << offset as u64 & collision_mask;
+        let ne_mask = Bitboard::get_diagonal_mask_asc(column, rank)
+            & !Bitboard::generate_horizontal_line(offset);
+        let ne_collision = ne_mask & collision_mask;
 
         if ne_collision != 0 {
             valid_moves &= !ne_collision_cut_mask(board, ne_collision, player);
             collision_mask &= !ne_collision;
         }
 
-        let nw_collision =
-            (Bitboard::get_diagonal_mask_des(7, 0) >> 7) << offset as u64 & collision_mask;
+        let nw_mask = Bitboard::get_diagonal_mask_des(column, rank)
+            & !Bitboard::generate_horizontal_line(offset);
+        let nw_collision = nw_mask & collision_mask;
         if nw_collision != 0 {
             valid_moves &= !nw_collision_cut_mask(board, nw_collision, player);
             collision_mask &= !nw_collision;
