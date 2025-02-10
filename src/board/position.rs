@@ -263,6 +263,10 @@ impl Position {
     }
 
     pub fn get_legal_castling_moves(&self) -> Vec<Move> {
+        if self.is_in_check(self.current_player) {
+            return Vec::new();
+        }
+
         let mut castling_moves = Vec::with_capacity(4);
         
         match self.current_player {
