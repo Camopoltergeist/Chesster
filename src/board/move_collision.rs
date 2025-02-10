@@ -115,10 +115,10 @@ pub fn ne_collision_cut_mask(board: &Board, ne_collision: Bitboard, player: Play
         if first_collision.bit_offset() > 54 {
             Bitboard(0)
         } else {
-            Bitboard::get_diagonal_mask_asc(0, 0) << first_collision.bit_offset() as u64 + 9
+            Bitboard::get_diagonal_mask_asc(first_collision.column(), first_collision.rank()) & !Bitboard::generate_horizontal_line(first_collision.bit_offset() + 9)
         }
     } else {
-        Bitboard::get_diagonal_mask_asc(0, 0) << first_collision.bit_offset() as u64
+        Bitboard::get_diagonal_mask_asc(first_collision.column(), first_collision.rank()) & !Bitboard::generate_horizontal_line(first_collision.bit_offset())
     }
 }
 
@@ -132,10 +132,10 @@ pub fn nw_collision_cut_mask(board: &Board, nw_collision: Bitboard, player: Play
         if first_collision.rank() == 7 {
             Bitboard(0)
         } else {
-            (Bitboard::get_diagonal_mask_des(7, 0) >> 7) << first_collision.bit_offset() as u64 + 7
+            Bitboard::get_diagonal_mask_des(first_collision.column(), first_collision.rank()) & !Bitboard::generate_horizontal_line(first_collision.bit_offset() + 7)
         }
     } else {
-        (Bitboard::get_diagonal_mask_des(7, 0) >> 7) << first_collision.bit_offset() as u64
+        Bitboard::get_diagonal_mask_des(first_collision.column(), first_collision.rank()) & !Bitboard::generate_horizontal_line(first_collision.bit_offset())
     }
 }
 
@@ -149,10 +149,10 @@ pub fn sw_collision_cut_mask(board: &Board, sw_collision: Bitboard, player: Play
         if first_collision.bit_offset() < 9 {
             Bitboard(0)
         } else {
-            Bitboard::get_diagonal_mask_asc(7, 7) >> (63 - first_collision.bit_offset() as u64) >> 9
+            Bitboard::get_diagonal_mask_asc(first_collision.column(), first_collision.rank()) & Bitboard::generate_horizontal_line(first_collision.bit_offset())
         }
     } else {
-        Bitboard::get_diagonal_mask_asc(7, 7) >> 63 - first_collision.bit_offset() as u64
+        Bitboard::get_diagonal_mask_asc(first_collision.column(), first_collision.rank()) & Bitboard::generate_horizontal_line(first_collision.bit_offset() + 1)
     }
 }
 
@@ -166,12 +166,11 @@ pub fn se_collision_cut_mask(board: &Board, se_collision: Bitboard, player: Play
         if first_collision.bit_offset() < 7 {
             Bitboard(0)
         } else {
-            (Bitboard::get_diagonal_mask_des(0, 7) << 7)
-                >> (63 - first_collision.bit_offset() as u64)
-                >> 7
+            Bitboard::get_diagonal_mask_des(first_collision.column(), first_collision.rank()) & Bitboard::generate_horizontal_line(first_collision.bit_offset())
+
         }
     } else {
-        (Bitboard::get_diagonal_mask_des(0, 7) << 7) >> 63 - first_collision.bit_offset() as u64
+        Bitboard::get_diagonal_mask_des(first_collision.column(), first_collision.rank()) & Bitboard::generate_horizontal_line(first_collision.bit_offset() + 1)
     }
 }
 
