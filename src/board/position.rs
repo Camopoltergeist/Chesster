@@ -319,7 +319,11 @@ impl Position {
 
     pub fn get_piece(&self, tile_pos: TilePosition) -> Option<PlayerPiece> {
         self.board.get_piece(tile_pos)
-    } 
+    }
+
+    pub fn get_piece_debug(&self, tile_str: &str) -> Option<PlayerPiece> {
+        self.board.get_piece_debug(tile_str)
+    }
 
     pub fn is_legal_move(&self, moove: &Move) -> bool {
         match moove {
