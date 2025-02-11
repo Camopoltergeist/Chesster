@@ -6,7 +6,10 @@ mod rook_movement;
 mod starting_position;
 #[cfg(test)]
 mod bishop_movement;
+#[cfg(test)]
+mod knight_movement;
 
+#[cfg(test)]
 fn compare_moves(desired_moves: &Vec<Move>, received_moves: &Vec<Move>) -> bool {
     if desired_moves.len() != received_moves.len() {
         return false;
