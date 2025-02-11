@@ -64,3 +64,23 @@ fn king_collision_with_friendly_pieces() {
 
     assert!(compare_moves(&desired_moves, &received_moves)); 
 }
+
+#[test]
+fn king_collision_with_opponent_pieces() {
+    let position = Position::from_fen_str("8/8/8/8/3K4/2ppp3/8/8 w - - 0 1").unwrap();
+
+    let desired_moves = vec![
+        Move::debug_new_basic("d4", "c5"),
+        Move::debug_new_basic("d4", "d5"),
+        Move::debug_new_basic("d4", "e5"),
+        Move::debug_new_basic("d4", "e4"),
+        Move::debug_new_basic("d4", "e3"),
+        Move::debug_new_basic("d4", "d3"),
+        Move::debug_new_basic("d4", "c3"),
+        Move::debug_new_basic("d4", "c4"),
+    ];
+
+    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("d4").unwrap());
+
+    assert!(compare_moves(&desired_moves, &received_moves));
+}
