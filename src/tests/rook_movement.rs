@@ -49,3 +49,18 @@ fn rook_movement_without_collision_h8() {
     let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("h8").unwrap());
     assert!(compare_moves(&desired_moves, &received_moves));
 }
+
+#[test]
+fn rook_collision_with_friendly_pieces() {
+    let position = Position::from_fen_str("8/3P4/8/1P1R2PP/8/3P4/3P4/8 w - - 0 1").unwrap();
+    let desired_moves = vec![
+        Move::debug_new_basic("d5", "c5"),
+        Move::debug_new_basic("d5", "d6"),
+        Move::debug_new_basic("d5", "d4"),
+        Move::debug_new_basic("d5", "e5"),
+        Move::debug_new_basic("d5", "f5"),
+    ];
+
+    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("d5").unwrap());
+    assert!(compare_moves(&desired_moves, &received_moves));
+}
