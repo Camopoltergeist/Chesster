@@ -195,3 +195,12 @@ fn starting_position_is_correct() {
         Some(PlayerPiece::new(Player::Black, PieceType::Rook))
     );
 }
+
+#[test]
+fn starting_position_has_correct_number_of_moves() {
+    let position = Position::default();
+
+    let legal_moves = position.get_all_legal_moves();
+
+    assert_eq!(legal_moves.len(), 20);
+}
