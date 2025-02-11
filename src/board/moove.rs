@@ -2,7 +2,7 @@ use crate::{player::Player, player_piece::PlayerPiece};
 
 use super::tile_position::TilePosition;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Move {
     Basic(BasicMove),
     Castling(CastlingMove),
@@ -83,7 +83,7 @@ impl From<PromotingMove> for Move {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BasicMove {
     from: TilePosition,
     to: TilePosition,
@@ -118,7 +118,7 @@ impl From<PromotingMove> for BasicMove {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CastlingMove {
     player: Player,
     side: CastleSide,
@@ -174,7 +174,7 @@ impl CastlingMove {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CastleSide {
     KingSide,
     QueenSide
@@ -203,7 +203,7 @@ impl CastleSide {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EnPassantMove {
     from: TilePosition,
     to: TilePosition,
@@ -232,7 +232,7 @@ impl EnPassantMove {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PromotingMove {
     from: TilePosition,
     to: TilePosition,
