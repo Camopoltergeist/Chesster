@@ -204,3 +204,10 @@ fn starting_position_has_correct_number_of_moves() {
 
     assert_eq!(legal_moves.len(), 20);
 }
+
+#[test]
+fn white_is_starting_player() {
+    let position = Position::default();
+
+    assert_eq!(position.current_player(), Player::White);
+}
