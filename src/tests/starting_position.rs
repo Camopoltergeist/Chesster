@@ -1,14 +1,14 @@
 use crate::{board::position::Position, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 #[test]
-fn starting_position_has_no_overlaps() {
+fn start_has_no_overlaps() {
     let position = Position::default();
 
     assert!(position.board().validate());
 }
 
 #[test]
-fn starting_position_is_correct() {
+fn start_has_correct_piece_placement() {
     let position = Position::default();
 
     // Rank 1
@@ -197,7 +197,7 @@ fn starting_position_is_correct() {
 }
 
 #[test]
-fn starting_position_has_correct_number_of_moves() {
+fn start_has_20_moves() {
     let position = Position::default();
 
     let legal_moves = position.get_all_legal_moves();
