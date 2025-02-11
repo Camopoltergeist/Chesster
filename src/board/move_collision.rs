@@ -1,13 +1,12 @@
-
-use crate::{piece::PieceType, pieces::{bishop::Bishop, king::King, knight::Knight, pawn::Pawn, queen::Queen, rook::Rook}, player::Player};
+use crate::{
+    piece::PieceType,
+    pieces::{bishop::Bishop, king::King, knight::Knight, pawn::Pawn, queen::Queen, rook::Rook},
+    player::Player,
+};
 
 use const_for::const_for;
 
-use super::{
-    bitboard::Bitboard,
-    board::Board,
-    tile_position::TilePosition,
-};
+use super::{bitboard::Bitboard, board::Board, tile_position::TilePosition};
 
 pub fn get_collision_mask(board: Board, tile_pos: TilePosition) -> Bitboard {
     let square_cont = board.get_piece(tile_pos);
@@ -21,8 +20,12 @@ pub fn get_collision_mask(board: Board, tile_pos: TilePosition) -> Bitboard {
     match piece.piece() {
         PieceType::Pawn => return Pawn::generate_collision_mask(&board, piece.player(), tile_pos),
         PieceType::Rook => return Rook::generate_collision_mask(&board, piece.player(), tile_pos),
-        PieceType::Bishop => return Bishop::generate_collision_mask(&board, piece.player(), tile_pos),
-        PieceType::Knight => return Knight::generate_collision_mask(&board, piece.player(), tile_pos),
+        PieceType::Bishop => {
+            return Bishop::generate_collision_mask(&board, piece.player(), tile_pos)
+        }
+        PieceType::Knight => {
+            return Knight::generate_collision_mask(&board, piece.player(), tile_pos)
+        }
         PieceType::Queen => {
             return Queen::generate_collision_mask(&board, piece.player(), tile_pos)
         }
@@ -30,47 +33,152 @@ pub fn get_collision_mask(board: Board, tile_pos: TilePosition) -> Bitboard {
     }
 }
 
-pub const fn get_cut_mask_horizontal(offset: u32, length: u32) -> u64 {
-    let tile_pos = TilePosition::from_bit_offset(offset);
+pub fn n_collision_cut_mask(board: &Board, n_collision: Bitboard, player: Player) -> Bitboard {
+    let first_collision = TilePosition::from_bit_offset(n_collision.value().trailing_zeros());
 
-    let mask_length = if length == 0 {
-        return 0u64;
+    if board
+        .get_player_bitboard(player.opposite())
+        .check_bit(first_collision.bit_offset())
+    {
+        if first_collision.rank() == 7 {
+            Bitboard(0)
+        } else {
+            Bitboard::generate_column_mask(first_collision.column())
+                << (first_collision.rank() as u64 + 1) * 8
+        }
     } else {
-        (1u64 << length) - 1
-    };
-
-    let rank_mask = mask_length << tile_pos.column();
-    rank_mask << (tile_pos.rank() * 8)
-}
-
-pub const fn get_cut_mask_vertical(offset: u32, length: u32) -> u64 {
-    let mut column_mask = 0u64;
-
-    const_for!(i in 0..length => {
-        column_mask |= 1u64 << (offset + i * 8);
-    });
-
-    column_mask
-}
-
-pub const fn get_cut_mask_asc(offset: u32, length: u32) -> u64 {
-    let mut asc_mask = 0u64;
-    
-    const_for!(i in 0..length => {
-        asc_mask |= 1u64 << (i * 9);
-    });
-
-    asc_mask << offset
-}
-
-pub fn get_cut_mask_des(offset: u32, length: u32) -> u64 {
-    let mut des_mask = 0u64;
-    for i in 0..length {
-        des_mask |= 128u64 << (i * 7)
+        Bitboard::generate_column_mask(first_collision.column())
+            << first_collision.rank() as u64 * 8
     }
+}
 
-    des_mask >>= 7;
-    des_mask << offset
+pub fn e_collision_cut_mask(board: &Board, e_collision: Bitboard, player: Player) -> Bitboard {
+    let first_collision = TilePosition::from_bit_offset(e_collision.value().trailing_zeros());
+
+    if board
+        .get_player_bitboard(player.opposite())
+        .check_bit(first_collision.bit_offset())
+    {
+        if first_collision.column() == 7 {
+            Bitboard(0)
+        } else {
+            Bitboard::generate_horizontal_line(7 - first_collision.column())
+                << first_collision.bit_offset() as u64 + 1
+        }
+    } else {
+        Bitboard::generate_horizontal_line(8 - first_collision.column())
+            << first_collision.bit_offset() as u64
+    }
+}
+
+pub fn s_collision_cut_mask(board: &Board, s_collision: Bitboard, player: Player) -> Bitboard {
+    let first_collision = TilePosition::from_bit_offset(63 - s_collision.value().leading_zeros());
+
+    if board
+        .get_player_bitboard(player.opposite())
+        .check_bit(first_collision.bit_offset())
+    {
+        if first_collision.rank() == 0 {
+            Bitboard(0)
+        } else {
+            Bitboard::generate_column_mask(first_collision.column())
+                >> (8 - first_collision.rank() as u64) * 8
+        }
+    } else {
+        Bitboard::generate_column_mask(first_collision.column())
+            >> (7 - first_collision.rank() as u64) * 8
+    }
+}
+
+pub fn w_collision_cut_mask(board: &Board, w_collision: Bitboard, player: Player) -> Bitboard {
+    let first_collision = TilePosition::from_bit_offset(63 - w_collision.value().leading_zeros());
+
+    if board
+        .get_player_bitboard(player.opposite())
+        .check_bit(first_collision.bit_offset())
+    {
+        Bitboard::generate_horizontal_line(first_collision.column())
+            << first_collision.rank() as u64 * 8
+    } else {
+        Bitboard::generate_horizontal_line(first_collision.column() + 1)
+            << first_collision.rank() as u64 * 8
+    }
+}
+
+pub fn ne_collision_cut_mask(board: &Board, ne_collision: Bitboard, player: Player) -> Bitboard {
+    let first_collision = TilePosition::from_bit_offset(ne_collision.value().trailing_zeros());
+
+    if board
+        .get_player_bitboard(player.opposite())
+        .check_bit(first_collision.bit_offset())
+    {
+        if first_collision.bit_offset() > 54 {
+            Bitboard(0)
+        } else {
+            Bitboard::get_diagonal_mask_asc(first_collision.column(), first_collision.rank())
+                & !Bitboard::generate_horizontal_line(first_collision.bit_offset() + 9)
+        }
+    } else {
+        Bitboard::get_diagonal_mask_asc(first_collision.column(), first_collision.rank())
+            & !Bitboard::generate_horizontal_line(first_collision.bit_offset())
+    }
+}
+
+pub fn nw_collision_cut_mask(board: &Board, nw_collision: Bitboard, player: Player) -> Bitboard {
+    let first_collision = TilePosition::from_bit_offset(nw_collision.value().trailing_zeros());
+
+    if board
+        .get_player_bitboard(player.opposite())
+        .check_bit(first_collision.bit_offset())
+    {
+        if first_collision.rank() == 7 {
+            Bitboard(0)
+        } else {
+            Bitboard::get_diagonal_mask_des(first_collision.column(), first_collision.rank())
+                & !Bitboard::generate_horizontal_line(first_collision.bit_offset() + 7)
+        }
+    } else {
+        Bitboard::get_diagonal_mask_des(first_collision.column(), first_collision.rank())
+            & !Bitboard::generate_horizontal_line(first_collision.bit_offset())
+    }
+}
+
+pub fn sw_collision_cut_mask(board: &Board, sw_collision: Bitboard, player: Player) -> Bitboard {
+    let first_collision = TilePosition::from_bit_offset(63 - sw_collision.value().leading_zeros());
+
+    if board
+        .get_player_bitboard(player.opposite())
+        .check_bit(first_collision.bit_offset())
+    {
+        if first_collision.bit_offset() < 9 {
+            Bitboard(0)
+        } else {
+            Bitboard::get_diagonal_mask_asc(first_collision.column(), first_collision.rank())
+                & Bitboard::generate_horizontal_line(first_collision.bit_offset())
+        }
+    } else {
+        Bitboard::get_diagonal_mask_asc(first_collision.column(), first_collision.rank())
+            & Bitboard::generate_horizontal_line(first_collision.bit_offset() + 1)
+    }
+}
+
+pub fn se_collision_cut_mask(board: &Board, se_collision: Bitboard, player: Player) -> Bitboard {
+    let first_collision = TilePosition::from_bit_offset(63 - se_collision.value().leading_zeros());
+
+    if board
+        .get_player_bitboard(player.opposite())
+        .check_bit(first_collision.bit_offset())
+    {
+        if first_collision.bit_offset() < 7 {
+            Bitboard(0)
+        } else {
+            Bitboard::get_diagonal_mask_des(first_collision.column(), first_collision.rank())
+                & Bitboard::generate_horizontal_line(first_collision.bit_offset())
+        }
+    } else {
+        Bitboard::get_diagonal_mask_des(first_collision.column(), first_collision.rank())
+            & Bitboard::generate_horizontal_line(first_collision.bit_offset() + 1)
+    }
 }
 
 pub const fn get_pawn_capture(player: Player, tile_pos: TilePosition) -> u64 {
