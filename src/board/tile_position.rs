@@ -1,6 +1,6 @@
 use crate::player::Player;
 
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug, Hash)]
 pub struct TilePosition {
     column: u32,
     rank: u32

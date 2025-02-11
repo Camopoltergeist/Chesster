@@ -1,8 +1,10 @@
+use std::hash::Hash;
+
 use crate::{board::moove::CastleSide, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 use super::{board::Board, game_state::GameState, moove::{BasicMove, CastlingMove, EnPassantMove, Move, PromotingMove}, move_collision::get_collision_mask, tile_position::TilePosition};
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Position {
     board: Board,
     current_player: Player,
@@ -13,6 +15,12 @@ pub struct Position {
     white_long_castling: bool,
     black_short_castling: bool,
     black_long_castling: bool,
+}
+
+impl Hash for Position {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.board.get_all_pieces_mask().hash(state);
+    }
 }
 
 impl Position {

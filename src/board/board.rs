@@ -11,7 +11,7 @@ use crate::{
     player_piece::PlayerPiece,
 };
 
-#[derive(Clone)]
+#[derive(Clone, Hash, PartialEq, Eq)]
 pub struct Board {
     pub white_pieces: Bitboard,
     pub black_pieces: Bitboard,

@@ -6,7 +6,7 @@ use crate::player::Player;
 
 use super::{moove::CastleSide, tile_position::TilePosition};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Hash, PartialEq, Eq)]
 
 pub struct Bitboard(pub u64);
 
