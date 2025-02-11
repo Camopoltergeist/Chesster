@@ -91,7 +91,7 @@ fn bishop_collision_with_opponent_pieces() {
         Move::debug_new_basic("d4", "f2"),
         Move::debug_new_basic("d4", "g1"),
 
-        // North West
+        // North East
         Move::debug_new_basic("d4", "e5"),
         Move::debug_new_basic("d4", "f6"),
     ];
