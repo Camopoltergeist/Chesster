@@ -11,6 +11,11 @@ pub enum Move {
 }
 
 impl Move {
+    /// Quickly construct BasicMove. Used for testing.
+    pub fn debug_new_basic(from: &str, to: &str) -> Move {
+        Move::Basic(BasicMove::new(TilePosition::from_tile_str(from).unwrap(), TilePosition::from_tile_str(to).unwrap()))
+    }
+
     pub fn get_castling_target(player: Player, side: CastleSide) -> TilePosition {
         let rank = player.castling_rank();
         let column = side.castling_king_target_column();
