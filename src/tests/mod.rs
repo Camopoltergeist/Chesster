@@ -3,6 +3,7 @@ use crate::board::moove::Move;
 #[cfg(test)]
 
 pub mod starting_position;
+#[cfg(test)]
 mod rook_movement;
 
 fn compare_moves(desired_moves: &Vec<Move>, received_moves: &Vec<Move>) -> bool {
