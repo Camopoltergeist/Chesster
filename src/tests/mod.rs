@@ -7,6 +7,8 @@ mod starting_position;
 #[cfg(test)]
 mod bishop_movement;
 #[cfg(test)]
+mod queen_movement;
+#[cfg(test)]
 mod knight_movement;
 
 #[cfg(test)]
