@@ -11,6 +11,8 @@ mod queen_movement;
 #[cfg(test)]
 mod knight_movement;
 #[cfg(test)]
+mod pawn_movement;
+#[cfg(test)]
 mod king_movement;
 
 #[cfg(test)]
