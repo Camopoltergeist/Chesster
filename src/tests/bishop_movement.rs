@@ -24,17 +24,23 @@ fn bishop_movement_without_collision_d4() {
     let position = Position::from_fen_str("8/8/8/8/3B4/8/8/8 w - - 0 1").unwrap();
 
     let desired_moves = vec![
-        Move::debug_new_basic("d4", "a1"),
-        Move::debug_new_basic("d4", "b2"),
+        // South East
         Move::debug_new_basic("d4", "c3"),
+        Move::debug_new_basic("d4", "b2"),
+        Move::debug_new_basic("d4", "a1"),
+
+        // North West
         Move::debug_new_basic("d4", "e5"),
         Move::debug_new_basic("d4", "f6"),
         Move::debug_new_basic("d4", "g7"),
         Move::debug_new_basic("d4", "h8"),
 
-        Move::debug_new_basic("d4", "a7"),
-        Move::debug_new_basic("d4", "b6"),
+        // North East 
         Move::debug_new_basic("d4", "c5"),
+        Move::debug_new_basic("d4", "b6"),
+        Move::debug_new_basic("d4", "a7"),
+
+        // South West
         Move::debug_new_basic("d4", "e3"),
         Move::debug_new_basic("d4", "f2"),
         Move::debug_new_basic("d4", "g1"),
@@ -50,11 +56,16 @@ fn bishop_collision_with_friendly_pieces() {
     let position = Position::from_fen_str("8/6P1/5P2/2P5/3B4/8/1P6/6P1 w - - 0 1").unwrap();
 
     let desired_moves = vec![
+        // North West, no moves
+
+        // South West
         Move::debug_new_basic("d4", "c3"),
 
+        // South East
         Move::debug_new_basic("d4", "e3"),
         Move::debug_new_basic("d4", "f2"),
 
+        // North East
         Move::debug_new_basic("d4", "e5"),
     ];
 
@@ -71,7 +82,7 @@ fn bishop_collision_with_opponent_pieces() {
         // North West
         Move::debug_new_basic("d4", "c5"),
 
-        // North East
+        // South West
         Move::debug_new_basic("d4", "c3"),
         Move::debug_new_basic("d4", "b2"),
 
@@ -80,7 +91,7 @@ fn bishop_collision_with_opponent_pieces() {
         Move::debug_new_basic("d4", "f2"),
         Move::debug_new_basic("d4", "g1"),
 
-        // South West
+        // North West
         Move::debug_new_basic("d4", "e5"),
         Move::debug_new_basic("d4", "f6"),
     ];
