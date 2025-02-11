@@ -367,6 +367,12 @@ impl Position {
             return Err(());
         };
 
+        self.make_move_unchecked(moove);
+
+        Ok(())
+    }
+
+    pub fn make_move_unchecked(&mut self, moove: Move) {
         self.change_castling_availability_if_needed(&moove);
 
         self.en_passant_target = self.get_en_passant_target_for_move(&moove);
@@ -379,8 +385,6 @@ impl Position {
         }
 
         self.current_player = self.current_player.opposite();
-
-        Ok(())
     }
 
     fn get_en_passant_target_for_move(&self, moove: &Move) -> Option<TilePosition> {
