@@ -1,6 +1,8 @@
 use crate::board::moove::Move;
 
 #[cfg(test)]
+mod rook_movement;
+#[cfg(test)]
 mod starting_position;
 #[cfg(test)]
 mod bishop_movement;
