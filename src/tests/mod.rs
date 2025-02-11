@@ -8,6 +8,8 @@ mod starting_position;
 mod bishop_movement;
 #[cfg(test)]
 mod knight_movement;
+#[cfg(test)]
+mod king_movement;
 
 #[cfg(test)]
 fn compare_moves(desired_moves: &Vec<Move>, received_moves: &Vec<Move>) -> bool {
