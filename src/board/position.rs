@@ -481,6 +481,29 @@ impl Position {
             return;
         }
     }
+
+    /// This function returns true if tile_position contains specified piece or nothing if None was passed.
+    pub fn debug_check_tile(&self, tile_str: &str, expected_piece: Option<(Player, PieceType)>) -> bool {
+        let expected_piece = if let Some(p) = expected_piece {
+            Some(PlayerPiece::new(p.0, p.1))
+        }
+        else {
+            None
+        };
+
+        let piece_on_board = self.get_piece(TilePosition::from_tile_str(tile_str).unwrap());
+
+        return piece_on_board == expected_piece;
+    }
+
+    pub fn get_castling_availability(&self, player: Player, side: CastleSide) -> bool {
+        match (player, side) {
+            (Player::White, CastleSide::KingSide) => self.white_short_castling,
+            (Player::White, CastleSide::QueenSide) => self.white_long_castling,
+            (Player::Black, CastleSide::KingSide) => self.black_short_castling,
+            (Player::Black, CastleSide::QueenSide) => self.black_long_castling
+        }
+    }
 }
 
 impl Position {
