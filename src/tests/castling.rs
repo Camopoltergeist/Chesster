@@ -53,3 +53,15 @@ fn castling_availability_updates_on_king_move() {
 	assert!(!position.get_castling_availability(Player::White, CastleSide::KingSide));
 	assert!(!position.get_castling_availability(Player::White, CastleSide::QueenSide));
 }
+
+#[test]
+fn castling_availability_updates_on_rook_move() {
+	let mut position = Position::from_fen_str("8/8/8/8/8/8/8/R3K2R w KQ - 2 1").unwrap();
+
+	let rook_move = Move::debug_new_basic("a1", "a2");
+
+	position.make_move(rook_move).unwrap();
+
+	assert!(position.get_castling_availability(Player::White, CastleSide::KingSide));
+	assert!(!position.get_castling_availability(Player::White, CastleSide::QueenSide));
+}
