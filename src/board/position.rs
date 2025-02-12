@@ -495,6 +495,15 @@ impl Position {
 
         return piece_on_board == expected_piece;
     }
+
+    pub fn get_castling_availability(&self, player: Player, side: CastleSide) -> bool {
+        match (player, side) {
+            (Player::White, CastleSide::KingSide) => self.white_short_castling,
+            (Player::White, CastleSide::QueenSide) => self.white_long_castling,
+            (Player::Black, CastleSide::KingSide) => self.black_short_castling,
+            (Player::Black, CastleSide::QueenSide) => self.black_long_castling
+        }
+    }
 }
 
 impl Position {

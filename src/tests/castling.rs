@@ -41,3 +41,15 @@ fn cant_castle_while_path_is_threatened() {
 
 	assert!(!position.is_legal_move(&castling_move));
 }
+
+#[test]
+fn castling_availability_updates_on_king_move() {
+	let mut position = Position::from_fen_str("8/8/8/8/8/8/8/R3K2R w KQ - 2 1").unwrap();
+
+	let king_move = Move::debug_new_basic("e1", "e2");
+
+	position.make_move(king_move).unwrap();
+
+	assert!(!position.get_castling_availability(Player::White, CastleSide::KingSide));
+	assert!(!position.get_castling_availability(Player::White, CastleSide::QueenSide));
+}
