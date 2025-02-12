@@ -32,3 +32,12 @@ fn cant_castle_while_checked() {
 
 	assert!(!position.is_legal_move(&castling_move));
 }
+
+#[test]
+fn cant_castle_while_path_is_threatened() {
+	let position = Position::from_fen_str("5r2/8/8/8/8/8/8/4K2R b K - 2 1").unwrap();
+
+	let castling_move = Move::new_castling(Player::White, CastleSide::KingSide);
+
+	assert!(!position.is_legal_move(&castling_move));
+}
