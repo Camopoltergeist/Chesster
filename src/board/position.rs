@@ -481,6 +481,20 @@ impl Position {
             return;
         }
     }
+
+    /// This function returns true if tile_position contains specified piece or nothing if None was passed.
+    pub fn debug_check_tile(&self, tile_str: &str, expected_piece: Option<(Player, PieceType)>) -> bool {
+        let expected_piece = if let Some(p) = expected_piece {
+            Some(PlayerPiece::new(p.0, p.1))
+        }
+        else {
+            None
+        };
+
+        let piece_on_board = self.get_piece(TilePosition::from_tile_str(tile_str).unwrap());
+
+        return piece_on_board == expected_piece;
+    }
 }
 
 impl Position {

@@ -1,4 +1,4 @@
-use crate::{board::{moove::{CastleSide, Move}, position::Position, tile_position::TilePosition}, piece::PieceType, player::Player, player_piece::PlayerPiece};
+use crate::{board::{moove::{CastleSide, Move}, position::Position}, piece::PieceType, player::Player};
 
 #[test]
 fn king_side_castling_move_works() {
@@ -8,5 +8,6 @@ fn king_side_castling_move_works() {
 
 	position.make_move(castling_move).unwrap();
 
-	assert_eq!(position.get_piece(TilePosition::from_tile_str("g1").unwrap()), Some(PlayerPiece::new(Player::White, PieceType::King)));
+	assert!(position.debug_check_tile("g1", Some((Player::White, PieceType::King))));
+	assert!(position.debug_check_tile("f1", Some((Player::White, PieceType::Rook))));
 }
