@@ -11,3 +11,15 @@ fn king_side_castling_move_works() {
 	assert!(position.debug_check_tile("g1", Some((Player::White, PieceType::King))));
 	assert!(position.debug_check_tile("f1", Some((Player::White, PieceType::Rook))));
 }
+
+#[test]
+fn queen_side_castling_move_works() {
+	let mut position = Position::from_fen_str("8/8/8/8/8/8/8/R3K3 w Q - 1 1").unwrap();
+
+	let castling_move = Move::new_castling(Player::White, CastleSide::QueenSide);
+
+	position.make_move(castling_move).unwrap();
+
+	assert!(position.debug_check_tile("c1", Some((Player::White, PieceType::King))));
+	assert!(position.debug_check_tile("d1", Some((Player::White, PieceType::Rook))));
+}
