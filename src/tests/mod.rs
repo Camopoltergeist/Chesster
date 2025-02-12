@@ -14,6 +14,8 @@ mod knight_movement;
 mod pawn_movement;
 #[cfg(test)]
 mod king_movement;
+#[cfg(test)]
+mod castling;
 
 #[cfg(test)]
 fn compare_moves(desired_moves: &Vec<Move>, received_moves: &Vec<Move>) -> bool {

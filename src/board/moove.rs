@@ -16,6 +16,10 @@ impl Move {
         Move::Basic(BasicMove::new(TilePosition::from_tile_str(from).unwrap(), TilePosition::from_tile_str(to).unwrap()))
     }
 
+    pub fn new_castling(player: Player, side: CastleSide) -> Move {
+        Move::Castling(CastlingMove::new(player, side))
+    }
+
     pub fn get_castling_target(player: Player, side: CastleSide) -> TilePosition {
         let rank = player.castling_rank();
         let column = side.castling_king_target_column();
