@@ -1,4 +1,4 @@
-use crate::{player::Player, player_piece::PlayerPiece};
+use crate::{piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 use super::tile_position::TilePosition;
 
@@ -22,6 +22,10 @@ impl Move {
 
     pub fn debug_new_en_passant(from: &str, to: &str, target_square: &str) -> Move {
         Move::EnPassant(EnPassantMove::new(TilePosition::from_tile_str(from).unwrap(), TilePosition::from_tile_str(to).unwrap(), TilePosition::from_tile_str(target_square).unwrap()))
+    }
+
+    pub fn debug_new_promoting(from: &str, to: &str, promotion_piece: PlayerPiece) -> Move {
+        Move::Promoting(PromotingMove::new(TilePosition::from_tile_str(from).unwrap(), TilePosition::from_tile_str(to).unwrap(), promotion_piece))
     }
 
     pub fn get_castling_target(player: Player, side: CastleSide) -> TilePosition {

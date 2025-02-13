@@ -20,6 +20,8 @@ mod castling;
 mod checks;
 #[cfg(test)]
 mod en_passant;
+#[cfg(test)]
+mod promotion;
 
 #[cfg(test)]
 fn compare_moves(desired_moves: &Vec<Move>, received_moves: &Vec<Move>) -> bool {
