@@ -1,6 +1,6 @@
 use std::hash::Hash;
 
-use crate::{board::moove::CastleSide, piece::PieceType, pieces::pawn::Pawn, player::Player, player_piece::PlayerPiece};
+use crate::{board::moove::CastleSide, piece::PieceType, pieces::{king::King, pawn::Pawn}, player::Player, player_piece::PlayerPiece};
 
 use super::{bitboard::Bitboard, board::Board, game_state::GameState, moove::{BasicMove, CastlingMove, EnPassantMove, Move, PromotingMove}, move_collision::get_collision_mask, tile_position::TilePosition};
 
@@ -192,6 +192,7 @@ impl Position {
 
         match piece.piece() {
             PieceType::Pawn => self.generate_legal_pawn_moves(tile_pos, piece.player()),
+            PieceType::King => self.generate_legal_king_moves(tile_pos, piece.player()),
             _ => unimplemented!()
         }
     }
@@ -229,6 +230,28 @@ impl Position {
 
                 continue;
             }
+
+            let basic_move: Move = BasicMove::new(tile_pos, to_pos).into();
+
+            if self.is_legal_move(&basic_move) {
+                moves.push(basic_move);
+            }
+        };
+
+        return moves;
+    }
+
+    pub fn generate_legal_king_moves(&self, tile_pos: TilePosition, player: Player) -> Vec<Move> {
+        let collision_mask = King::generate_collision_mask(&self.board, player, tile_pos);
+
+        let mut moves: Vec<Move> = self.get_legal_castling_moves();
+
+        for bit_offset in 0..64 {
+            if !collision_mask.check_bit(bit_offset) {
+                continue;
+            }
+
+            let to_pos = TilePosition::from_bit_offset(bit_offset);
 
             let basic_move: Move = BasicMove::new(tile_pos, to_pos).into();
 
