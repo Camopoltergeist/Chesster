@@ -47,7 +47,7 @@ impl Position {
         let pieces_str = split[0];
         let player_str = split[1];
         let castling_str = split[2];
-        let en_passant_target = split[3];
+        let en_passant_target_str = split[3];
         let _half_move_clock = split[4];
         let _full_move_clock = split[5];
 
@@ -108,6 +108,11 @@ impl Position {
             }
         }
 
+        let en_passant_target: Option<TilePosition> = match en_passant_target_str {
+            "-" => None,
+            _ => Some(TilePosition::from_tile_str(en_passant_target_str).unwrap())
+        };
+
         Ok(Self{
             board,
             current_player,
@@ -115,6 +120,7 @@ impl Position {
             white_long_castling,
             black_short_castling,
             black_long_castling,
+            en_passant_target,
             ..Default::default()
         })
     }
