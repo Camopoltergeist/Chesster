@@ -4,8 +4,6 @@ use crate::{
     player::Player,
 };
 
-use const_for::const_for;
-
 use super::{bitboard::Bitboard, board::Board, tile_position::TilePosition};
 
 pub fn get_collision_mask(board: Board, tile_pos: TilePosition) -> Bitboard {
