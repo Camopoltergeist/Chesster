@@ -6,7 +6,7 @@ fn en_passant_works() {
 
     let en_passant_move = Move::debug_new_en_passant("c5", "d6", "d5");
 
-    position.make_move(en_passant_move).unwrap();
+    position.make_move(en_passant_move);
 
     assert!(position.debug_check_tile("d6", Some((Player::White, PieceType::Pawn))));
     assert!(position.debug_check_tile("d5", None));

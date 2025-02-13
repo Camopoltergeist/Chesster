@@ -6,7 +6,7 @@ fn king_side_castling_move_works() {
 
 	let castling_move = Move::new_castling(Player::White, CastleSide::KingSide);
 
-	position.make_move(castling_move).unwrap();
+	position.make_move(castling_move);
 
 	assert!(position.debug_check_tile("g1", Some((Player::White, PieceType::King))));
 	assert!(position.debug_check_tile("f1", Some((Player::White, PieceType::Rook))));
@@ -18,7 +18,7 @@ fn queen_side_castling_move_works() {
 
 	let castling_move = Move::new_castling(Player::White, CastleSide::QueenSide);
 
-	position.make_move(castling_move).unwrap();
+	position.make_move(castling_move);
 
 	assert!(position.debug_check_tile("c1", Some((Player::White, PieceType::King))));
 	assert!(position.debug_check_tile("d1", Some((Player::White, PieceType::Rook))));
@@ -48,7 +48,7 @@ fn castling_availability_updates_on_king_move() {
 
 	let king_move = Move::debug_new_basic("e1", "e2");
 
-	position.make_move(king_move).unwrap();
+	position.make_move(king_move);
 
 	assert!(!position.get_castling_availability(Player::White, CastleSide::KingSide));
 	assert!(!position.get_castling_availability(Player::White, CastleSide::QueenSide));
@@ -60,7 +60,7 @@ fn castling_availability_updates_on_rook_move() {
 
 	let rook_move = Move::debug_new_basic("a1", "a2");
 
-	position.make_move(rook_move).unwrap();
+	position.make_move(rook_move);
 
 	assert!(position.get_castling_availability(Player::White, CastleSide::KingSide));
 	assert!(!position.get_castling_availability(Player::White, CastleSide::QueenSide));
@@ -72,7 +72,7 @@ fn castling_availability_updates_on_rook_capture() {
 
 	let capturing_move = Move::debug_new_basic("b2", "a1");
 
-	position.make_move(capturing_move).unwrap();
+	position.make_move(capturing_move);
 
 	assert!(position.get_castling_availability(Player::White, CastleSide::KingSide));
 	assert!(!position.get_castling_availability(Player::White, CastleSide::QueenSide));

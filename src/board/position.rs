@@ -431,14 +431,10 @@ impl Position {
         return self.is_legal_basic_move(&promoting_move.clone().into()) && promoting_move.promotion_piece().player() == self.current_player;
     }
 
-    pub fn make_move(&mut self, moove: Move) -> Result<(), ()> {
-        if !self.is_legal_move(&moove) {
-            return Err(());
-        };
+    pub fn make_move(&mut self, moove: Move) {
+        debug_assert!(self.is_legal_move(&moove));
 
         self.make_move_unchecked(moove);
-
-        Ok(())
     }
 
     pub fn make_move_unchecked(&mut self, moove: Move) {

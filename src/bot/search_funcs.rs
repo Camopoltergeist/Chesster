@@ -20,7 +20,7 @@ pub fn negamax_search(position: &Position, evaluation_fn: EvaluationFn, depth: u
 
 		for m in legal_moves {
 			let mut moved_position = position.clone();
-			moved_position.make_move(m).unwrap();
+			moved_position.make_move(m);
 
 			let score = -negamax(&moved_position, evaluation_fn, depth - 1);
 
@@ -39,7 +39,7 @@ pub fn negamax_search(position: &Position, evaluation_fn: EvaluationFn, depth: u
 
 	for m in legal_moves {
 		let mut moved_position = position.clone();
-		moved_position.make_move(m.clone()).unwrap();
+		moved_position.make_move(m.clone());
 
 		let score = -negamax(&moved_position, evaluation_fn, depth - 1);
 
@@ -71,7 +71,7 @@ pub fn negamax_with_move_chain(position: &Position, evaluation_fn: EvaluationFn,
 
 		for m in legal_moves {
 			let mut moved_position = position.clone();
-			moved_position.make_move(m.clone()).unwrap();
+			moved_position.make_move(m.clone());
 
 			let (mut eval, mut eval_move_chain) = negamax(&moved_position, evaluation_fn, depth - 1);
 			eval = -eval;
@@ -102,7 +102,7 @@ pub fn negamax_with_move_chain(position: &Position, evaluation_fn: EvaluationFn,
 
 	for m in legal_moves {
 		let mut moved_position = position.clone();
-		moved_position.make_move(m.clone()).unwrap();
+		moved_position.make_move(m.clone());
 
 		let (mut eval, mut eval_move_chain) = negamax(&moved_position, evaluation_fn, depth - 1);
 		eval = -eval;
@@ -145,7 +145,7 @@ pub fn negamax_with_move_chain_multithreaded(position: &Position, evaluation_fn:
 
 		for m in legal_moves {
 			let mut moved_position = position.clone();
-			moved_position.make_move(m.clone()).unwrap();
+			moved_position.make_move(m.clone());
 
 			let (mut eval, mut eval_move_chain) = negamax(&moved_position, evaluation_fn, depth - 1);
 			eval = -eval;
@@ -178,7 +178,7 @@ pub fn negamax_with_move_chain_multithreaded(position: &Position, evaluation_fn:
 
 	for m in legal_moves {
 		let mut moved_position = position.clone();
-		moved_position.make_move(m.clone()).unwrap();
+		moved_position.make_move(m.clone());
 
 		threads.push(thread::spawn(move || {
 
@@ -221,7 +221,7 @@ pub fn negamax_with_position_cache_multithreaded(position: &Position, evaluation
 
 		for m in legal_moves {
 			let mut moved_position = position.clone();
-			moved_position.make_move(m.clone()).unwrap();
+			moved_position.make_move(m.clone());
 
 			if let Some(cached_eval) = move_cache.lock().unwrap().get(&(depth, moved_position.clone())) {
 				if *cached_eval > best_eval {
@@ -251,7 +251,7 @@ pub fn negamax_with_position_cache_multithreaded(position: &Position, evaluation
 
 	for m in legal_moves {
 		let mut moved_position = position.clone();
-		moved_position.make_move(m.clone()).unwrap();
+		moved_position.make_move(m.clone());
 
 		let mc = move_cache.clone();
 

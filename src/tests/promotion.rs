@@ -24,7 +24,7 @@ fn promotion_to_queen_works() {
 
     let promoting_move = Move::debug_new_promoting("a7", "a8", PlayerPiece::new(Player::White, PieceType::Queen));
 
-    position.make_move(promoting_move).unwrap();
+    position.make_move(promoting_move);
 
     assert!(position.debug_check_tile("a8", Some((Player::White, PieceType::Queen))));
 }
