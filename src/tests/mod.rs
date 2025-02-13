@@ -18,6 +18,8 @@ mod king_movement;
 mod castling;
 #[cfg(test)]
 mod checks;
+#[cfg(test)]
+mod en_passant;
 
 #[cfg(test)]
 fn compare_moves(desired_moves: &Vec<Move>, received_moves: &Vec<Move>) -> bool {

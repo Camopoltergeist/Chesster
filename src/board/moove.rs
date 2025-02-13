@@ -20,6 +20,10 @@ impl Move {
         Move::Castling(CastlingMove::new(player, side))
     }
 
+    pub fn debug_new_en_passant(from: &str, to: &str, target_square: &str) -> Move {
+        Move::EnPassant(EnPassantMove::new(TilePosition::from_tile_str(from).unwrap(), TilePosition::from_tile_str(to).unwrap(), TilePosition::from_tile_str(target_square).unwrap()))
+    }
+
     pub fn get_castling_target(player: Player, side: CastleSide) -> TilePosition {
         let rank = player.castling_rank();
         let column = side.castling_king_target_column();
