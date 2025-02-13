@@ -26,7 +26,7 @@ fn queen_side_castling_move_works() {
 
 #[test]
 fn cant_castle_while_checked() {
-	let position = Position::from_fen_str("4r3/8/8/8/8/8/8/4K2R b K - 2 1").unwrap();
+	let position = Position::from_fen_str("4r3/8/8/8/8/8/8/4K2R w K - 2 1").unwrap();
 
 	let castling_move = Move::new_castling(Player::White, CastleSide::KingSide);
 

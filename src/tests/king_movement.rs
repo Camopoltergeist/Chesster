@@ -10,7 +10,7 @@ fn king_movement_without_collision_a1() {
         Move::debug_new_basic("a1", "b1"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position_old(TilePosition::from_tile_str("a1").unwrap());
+    let received_moves = position.generate_legal_moves_for_tile_position(TilePosition::from_tile_str("a1").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves)); 
 }
@@ -25,7 +25,7 @@ fn king_movement_without_collision_h8() {
         Move::debug_new_basic("h8", "h7"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position_old(TilePosition::from_tile_str("h8").unwrap());
+    let received_moves = position.generate_legal_moves_for_tile_position(TilePosition::from_tile_str("h8").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves)); 
 }
@@ -45,7 +45,7 @@ fn king_movement_without_collision_d4() {
         Move::debug_new_basic("d4", "c4"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position_old(TilePosition::from_tile_str("d4").unwrap());
+    let received_moves = position.generate_legal_moves_for_tile_position(TilePosition::from_tile_str("d4").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves)); 
 }
@@ -60,7 +60,7 @@ fn king_collision_with_friendly_pieces() {
         Move::debug_new_basic("d4", "d3"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position_old(TilePosition::from_tile_str("d4").unwrap());
+    let received_moves = position.generate_legal_moves_for_tile_position(TilePosition::from_tile_str("d4").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves)); 
 }
@@ -80,7 +80,7 @@ fn king_collision_with_opponent_pieces() {
         Move::debug_new_basic("d4", "c4"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position_old(TilePosition::from_tile_str("d4").unwrap());
+    let received_moves = position.generate_legal_moves_for_tile_position(TilePosition::from_tile_str("d4").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves));
 }
@@ -95,7 +95,7 @@ fn king_movement_blocked_by_threatened_tiles() {
         Move::debug_new_basic("d4", "d3"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position_old(TilePosition::from_tile_str("d4").unwrap());
+    let received_moves = position.generate_legal_moves_for_tile_position(TilePosition::from_tile_str("d4").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves));
 }

@@ -2,7 +2,7 @@ use std::hash::Hash;
 
 use crate::{board::moove::CastleSide, piece::PieceType, pieces::{king::King, pawn::Pawn}, player::Player, player_piece::PlayerPiece};
 
-use super::{bitboard::Bitboard, board::Board, game_state::GameState, moove::{BasicMove, CastlingMove, EnPassantMove, Move, PromotingMove}, move_collision::get_collision_mask, tile_position::TilePosition};
+use super::{board::Board, game_state::GameState, moove::{BasicMove, CastlingMove, EnPassantMove, Move, PromotingMove}, move_collision::get_collision_mask, tile_position::TilePosition};
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct Position {
@@ -175,7 +175,7 @@ impl Position {
 
             let tile_pos = TilePosition::from_bit_offset(bit_offset);
 
-            legal_moves.append(&mut self.get_legal_moves_for_tile_position_old(tile_pos));
+            legal_moves.extend(self.generate_legal_moves_for_tile_position(tile_pos));
         };
 
         return legal_moves;
@@ -211,7 +211,7 @@ impl Position {
 
             let basic_move: Move = BasicMove::new(tile_pos, to_pos).into();
 
-            if self.is_legal_move(&basic_move) {
+            if !self.does_move_leave_king_threatened(&basic_move) {
                 moves.push(basic_move);
             }
         };
@@ -228,7 +228,7 @@ impl Position {
             let target = self.en_passant_target.unwrap();
             let en_passant_move: Move = EnPassantMove::new(tile_pos, target, TilePosition::new(target.column(), tile_pos.rank())).into();
 
-            if self.is_legal_move(&en_passant_move) {
+            if !self.does_move_leave_king_threatened(&en_passant_move) {
                 moves.push(en_passant_move);
             };
         };
@@ -255,7 +255,7 @@ impl Position {
 
             let basic_move: Move = BasicMove::new(tile_pos, to_pos).into();
 
-            if self.is_legal_move(&basic_move) {
+            if !self.does_move_leave_king_threatened(&basic_move) {
                 moves.push(basic_move);
             }
         };
@@ -277,7 +277,7 @@ impl Position {
 
             let basic_move: Move = BasicMove::new(tile_pos, to_pos).into();
 
-            if self.is_legal_move(&basic_move) {
+            if !self.does_move_leave_king_threatened(&basic_move) {
                 moves.push(basic_move);
             }
         };
@@ -435,13 +435,24 @@ impl Position {
         self.board.get_piece_debug(tile_str)
     }
 
+    pub fn does_move_leave_king_threatened(&self, moove: &Move) -> bool {
+        let mut moved_position = self.clone();
+        moved_position.make_move_unchecked(moove.clone());
+
+        return moved_position.is_in_check(self.current_player);
+    }
+
     pub fn is_legal_move(&self, moove: &Move) -> bool {
-        match moove {
+        let base_legal = match moove {
             Move::Basic(basic_move) => self.is_legal_basic_move(basic_move),
             Move::Castling(castling_move) => self.is_legal_castling_move(castling_move),
             Move::EnPassant(en_passant_move) => self.is_legal_en_passant_move(en_passant_move),
             Move::Promoting(promoting_move) => self.is_legal_promoting_move(promoting_move),
-        }
+        };
+
+        let leaves_king_threatened = self.does_move_leave_king_threatened(moove);
+
+        return base_legal && !leaves_king_threatened;
     }
 
     /// Checks if a BasicMove is legal
@@ -461,6 +472,10 @@ impl Position {
     }
 
     fn is_legal_castling_move(&self, castling_move: &CastlingMove) -> bool {
+        if self.is_in_check(self.current_player) {
+            return false;
+        }
+        
         self.board.is_castling_possible(castling_move.player(), castling_move.side())
     }
 
