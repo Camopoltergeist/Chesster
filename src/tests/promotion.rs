@@ -17,3 +17,14 @@ fn can_promote_to_all_pieces() {
 
     assert!(compare_moves(&desired_moves, &received_moves));
 }
+
+#[test]
+fn promotion_to_queen_works() {
+    let mut position = Position::from_fen_str("8/P7/8/8/8/8/8/8 w - - 0 2").unwrap();
+
+    let promoting_move = Move::debug_new_promoting("a7", "a8", PlayerPiece::new(Player::White, PieceType::Queen));
+
+    position.make_move(promoting_move).unwrap();
+
+    assert!(position.debug_check_tile("a8", Some((Player::White, PieceType::Queen))));
+}
