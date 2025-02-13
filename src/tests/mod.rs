@@ -22,7 +22,7 @@ mod checks;
 mod en_passant;
 #[cfg(test)]
 mod promotion;
-// #[cfg(test)]
+#[cfg(test)]
 pub mod integrity_tests;
 
 #[cfg(test)]
