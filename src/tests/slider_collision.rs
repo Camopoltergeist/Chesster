@@ -94,3 +94,15 @@ fn queen_mask_detects_collision_in_nw() {
 
     assert!(moves_after_collision == desired_move_mask)
 }
+
+#[test]
+fn queen_mask_detects_collision_in_n() {
+    let position = Position::from_fen_str("1P6/3P4/8/P3P1P1/4Q3/7P/3P4/8 w - - 0 1").unwrap();
+    let queen_tile_position = TilePosition::from_tile_str("e4").unwrap();
+
+    // hand-written mask of queen's movement from e4 with friendly collision in b5
+    let desired_move_mask = 0b000110000010010001000010100011101111001110000101010010010010;
+    let moves_after_collision = Queen::generate_collision_mask(position.board(), position.current_player(), queen_tile_position);
+
+    assert!(moves_after_collision == desired_move_mask)
+}
