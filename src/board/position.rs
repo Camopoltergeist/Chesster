@@ -193,8 +193,30 @@ impl Position {
         match piece.piece() {
             PieceType::Pawn => self.generate_legal_pawn_moves(tile_pos, piece.player()),
             PieceType::King => self.generate_legal_king_moves(tile_pos, piece.player()),
-            _ => unimplemented!()
+            _ => self.generate_legal_basic_moves(tile_pos)
         }
+    }
+
+    pub fn generate_legal_basic_moves(&self, tile_pos: TilePosition) -> Vec<Move> {
+        let collision_mask = get_collision_mask(self.board.clone(), tile_pos);
+
+        let mut moves: Vec<Move> = Vec::new();
+
+        for bit_offset in 0..64 {
+            if !collision_mask.check_bit(bit_offset) {
+                continue;
+            }
+
+            let to_pos = TilePosition::from_bit_offset(bit_offset);
+
+            let basic_move: Move = BasicMove::new(tile_pos, to_pos).into();
+
+            if self.is_legal_move(&basic_move) {
+                moves.push(basic_move);
+            }
+        };
+
+        return moves;
     }
 
     pub fn generate_legal_pawn_moves(&self, tile_pos: TilePosition, player: Player) -> Vec<Move> {
