@@ -285,62 +285,6 @@ impl Position {
         return moves;
     }
 
-    pub fn get_legal_moves_for_tile_position_old(&self, tile_pos: TilePosition) -> Vec<Move> {
-        let mut moves = Vec::new();
-
-        if let Some(piece) = self.board.get_piece(tile_pos) {
-            let moves_bitboard = get_collision_mask(self.board.clone(), tile_pos);
-
-            if moves_bitboard.is_empty() {
-                return moves;
-            }
-
-            for bit_offset in 0..64 {
-                if moves_bitboard.check_bit(bit_offset) {
-                    let to_pos = TilePosition::from_bit_offset(bit_offset);
-
-                    if self.can_promote(tile_pos, to_pos) {
-                        moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(self.current_player, PieceType::Queen)).into());
-                        moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(self.current_player, PieceType::Knight)).into());
-                        moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(self.current_player, PieceType::Rook)).into());
-                        moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(self.current_player, PieceType::Bishop)).into());
-                    }
-                    else {
-                        moves.push(BasicMove::new(tile_pos, TilePosition::from_bit_offset(bit_offset)).into());
-                    }
-                }
-            }
-
-            match piece.piece() {
-                PieceType::King => {
-                    let castling_moves = self.get_legal_castling_moves();
-                    moves.extend(castling_moves);
-                },
-                PieceType::Pawn => {
-                    if self.can_en_passant(tile_pos) {
-                        let target = self.en_passant_target.unwrap();
-
-                        moves.push(EnPassantMove::new(tile_pos, target, TilePosition::new(target.column(), tile_pos.rank())).into());
-                    }
-                }
-                _ => ()
-            }
-        }
-
-        let mut legal_moves = Vec::new();
-
-        for m in moves {
-            let mut moved_position = self.clone();
-            moved_position.make_move(m.clone()).expect("unexpected illegal move while culling moves");
-            
-            if !moved_position.is_in_check(self.current_player) {
-                legal_moves.push(m);
-            }
-        }
-
-        return legal_moves;
-    }
-
     fn can_promote(&self, from_pos: TilePosition, to_pos: TilePosition) -> bool {
         if !self.board.check_for_pawn(from_pos) {
             return false;
