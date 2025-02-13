@@ -12,7 +12,7 @@ fn knight_movement_without_collision_a1() {
         Move::debug_new_basic("a1", "c2"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("a1").unwrap());
+    let received_moves = position.generate_legal_moves_for_tile_position(TilePosition::from_tile_str("a1").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves));
 }
@@ -26,7 +26,7 @@ fn knight_movement_without_collision_h8() {
         Move::debug_new_basic("h8", "g6"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("h8").unwrap());
+    let received_moves = position.generate_legal_moves_for_tile_position(TilePosition::from_tile_str("h8").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves));    
 }
@@ -53,7 +53,7 @@ fn knight_movement_without_collision_d4() {
         Move::debug_new_basic("d4", "b3"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("d4").unwrap());
+    let received_moves = position.generate_legal_moves_for_tile_position(TilePosition::from_tile_str("d4").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves));    
 }
@@ -76,7 +76,7 @@ fn knight_collision_with_friendly_pieces() {
         Move::debug_new_basic("d4", "c2"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("d4").unwrap());
+    let received_moves = position.generate_legal_moves_for_tile_position(TilePosition::from_tile_str("d4").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves));
 }
@@ -103,7 +103,7 @@ fn knight_collision_with_opponent_pieces() {
         Move::debug_new_basic("d4", "b3"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("d4").unwrap());
+    let received_moves = position.generate_legal_moves_for_tile_position(TilePosition::from_tile_str("d4").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves));    
 }

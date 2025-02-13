@@ -1,5 +1,5 @@
 
-use std::{collections::HashMap, sync::{Arc, Mutex}, time::Instant};
+use std::time::Instant;
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
@@ -132,13 +132,11 @@ impl UI {
 			return;
 		}
 
-		let legal_moves = self.position.get_legal_moves_for_tile_position(selected_tile);
+		let legal_moves = self.position.generate_legal_moves_for_tile_position(selected_tile);
 
 		for m in legal_moves {
 			if m.to_position() == clicked_tile {
-				let move_res = self.position.make_move(m);
-
-				debug_assert!(move_res.is_ok());
+				self.position.make_move(m);
 				
 				self.select_tile(None);
 				self.board_renderer.set_board(&self.position.board());
@@ -180,7 +178,7 @@ impl UI {
 		let tile_pos = tile_pos.unwrap();
 
 		if let Some(_) = self.position.get_piece(tile_pos) {
-			self.board_renderer.set_legal_moves(self.position.get_legal_moves_for_tile_position(tile_pos));
+			self.board_renderer.set_legal_moves(self.position.generate_legal_moves_for_tile_position(tile_pos));
 		}
 	}
 

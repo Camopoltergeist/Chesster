@@ -34,7 +34,7 @@ fn queen_movement_without_collision_a1() {
         Move::debug_new_basic("a1", "h8"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("a1").unwrap());
+    let received_moves = position.generate_legal_moves_for_tile_position(TilePosition::from_tile_str("a1").unwrap());
     assert!(compare_moves(&desired_moves, &received_moves));
 }
 
@@ -86,7 +86,7 @@ fn queen_movement_without_collision_d4() {
         Move::debug_new_basic("d4", "g1"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("d4").unwrap());
+    let received_moves = position.generate_legal_moves_for_tile_position(TilePosition::from_tile_str("d4").unwrap());
     assert!(compare_moves(&desired_moves, &received_moves));
 }
 
@@ -123,7 +123,7 @@ fn queen_collision_with_friendly_pieces() {
         Move::debug_new_basic("d4", "e5"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("d4").unwrap());
+    let received_moves = position.generate_legal_moves_for_tile_position(TilePosition::from_tile_str("d4").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves));
 }
@@ -169,7 +169,7 @@ fn queen_collision_with_opponent_pieces() {
         Move::debug_new_basic("d4", "f6"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("d4").unwrap());
+    let received_moves = position.generate_legal_moves_for_tile_position(TilePosition::from_tile_str("d4").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves));
 }
