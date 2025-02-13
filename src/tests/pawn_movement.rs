@@ -11,7 +11,7 @@ fn white_pawn_movement_without_collision_d2() {
         Move::debug_new_basic("d2", "d4"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("d2").unwrap());
+    let received_moves = position.get_legal_moves_for_tile_position_old(TilePosition::from_tile_str("d2").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves));
 }
@@ -25,7 +25,7 @@ fn black_pawn_movement_without_collision_d7() {
         Move::debug_new_basic("d7", "d5"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("d7").unwrap());
+    let received_moves = position.get_legal_moves_for_tile_position_old(TilePosition::from_tile_str("d7").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves));
 }
@@ -38,7 +38,7 @@ fn white_pawn_movement_without_collision_d3() {
         Move::debug_new_basic("d3", "d4"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("d3").unwrap());
+    let received_moves = position.get_legal_moves_for_tile_position_old(TilePosition::from_tile_str("d3").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves));
 }
@@ -51,7 +51,7 @@ fn black_pawn_movement_without_collision_d6() {
         Move::debug_new_basic("d6", "d5"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("d6").unwrap());
+    let received_moves = position.get_legal_moves_for_tile_position_old(TilePosition::from_tile_str("d6").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves));
 }
@@ -64,7 +64,7 @@ fn white_pawn_collision_with_friendly_pieces_d2d4() {
         Move::debug_new_basic("d2", "d3"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("d2").unwrap());
+    let received_moves = position.get_legal_moves_for_tile_position_old(TilePosition::from_tile_str("d2").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves));
 }
@@ -76,7 +76,7 @@ fn white_pawn_collision_with_opponent_pieces_d2d3() {
     let desired_moves = vec![
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("d2").unwrap());
+    let received_moves = position.get_legal_moves_for_tile_position_old(TilePosition::from_tile_str("d2").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves));
 }
@@ -89,7 +89,7 @@ fn black_pawn_collision_with_friendly_pieces_d7d5() {
         Move::debug_new_basic("d7", "d6"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("d7").unwrap());
+    let received_moves = position.get_legal_moves_for_tile_position_old(TilePosition::from_tile_str("d7").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves));
 }
@@ -101,7 +101,7 @@ fn white_pawn_collision_with_opponent_pieces_d7d6() {
     let desired_moves = vec![
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("d7").unwrap());
+    let received_moves = position.get_legal_moves_for_tile_position_old(TilePosition::from_tile_str("d7").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves));
 }
@@ -116,7 +116,7 @@ fn white_pawn_capture() {
         Move::debug_new_basic("d4", "e5"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("d4").unwrap());
+    let received_moves = position.get_legal_moves_for_tile_position_old(TilePosition::from_tile_str("d4").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves));
 }
@@ -131,7 +131,7 @@ fn black_pawn_capture() {
         Move::debug_new_basic("d4", "e3"),
     ];
 
-    let received_moves = position.get_legal_moves_for_tile_position(TilePosition::from_tile_str("d4").unwrap());
+    let received_moves = position.get_legal_moves_for_tile_position_old(TilePosition::from_tile_str("d4").unwrap());
 
     assert!(compare_moves(&desired_moves, &received_moves));
 }

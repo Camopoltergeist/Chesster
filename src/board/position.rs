@@ -1,8 +1,8 @@
 use std::hash::Hash;
 
-use crate::{board::moove::CastleSide, piece::PieceType, player::Player, player_piece::PlayerPiece};
+use crate::{board::moove::CastleSide, piece::PieceType, pieces::pawn::Pawn, player::Player, player_piece::PlayerPiece};
 
-use super::{board::Board, game_state::GameState, moove::{BasicMove, CastlingMove, EnPassantMove, Move, PromotingMove}, move_collision::get_collision_mask, tile_position::TilePosition};
+use super::{bitboard::Bitboard, board::Board, game_state::GameState, moove::{BasicMove, CastlingMove, EnPassantMove, Move, PromotingMove}, move_collision::get_collision_mask, tile_position::TilePosition};
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct Position {
@@ -175,13 +175,72 @@ impl Position {
 
             let tile_pos = TilePosition::from_bit_offset(bit_offset);
 
-            legal_moves.append(&mut self.get_legal_moves_for_tile_position(tile_pos));
+            legal_moves.append(&mut self.get_legal_moves_for_tile_position_old(tile_pos));
         };
 
         return legal_moves;
     }
 
-    pub fn get_legal_moves_for_tile_position(&self, tile_pos: TilePosition) -> Vec<Move> {
+    pub fn generate_legal_moves_for_tile_position(&self, tile_pos: TilePosition) -> Vec<Move> {
+        let piece = self.get_piece(tile_pos);
+
+        if piece.is_none() {
+            return Vec::new();
+        };
+
+        let piece = piece.unwrap();
+
+        match piece.piece() {
+            PieceType::Pawn => self.generate_legal_pawn_moves(tile_pos, piece.player()),
+            _ => unimplemented!()
+        }
+    }
+
+    pub fn generate_legal_pawn_moves(&self, tile_pos: TilePosition, player: Player) -> Vec<Move> {
+        let collision_mask = Pawn::generate_collision_mask(&self.board, player, tile_pos);
+
+        let mut moves: Vec<Move> = Vec::new();
+
+        if self.can_en_passant(tile_pos) {
+            let target = self.en_passant_target.unwrap();
+            let en_passant_move: Move = EnPassantMove::new(tile_pos, target, TilePosition::new(target.column(), tile_pos.rank())).into();
+
+            if self.is_legal_move(&en_passant_move) {
+                moves.push(en_passant_move);
+            };
+        };
+
+        for bit_offset in 0..64 {
+            if !collision_mask.check_bit(bit_offset) {
+                continue;
+            }
+
+            let to_pos = TilePosition::from_bit_offset(bit_offset);
+
+            if self.can_promote(tile_pos, to_pos) {
+                let queen_promoting_move: Move = PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(player, PieceType::Queen)).into();
+
+                if self.is_legal_move(&queen_promoting_move) {
+                    moves.push(queen_promoting_move);
+                    moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(player, PieceType::Knight)).into());
+                    moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(player, PieceType::Rook)).into());
+                    moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(player, PieceType::Bishop)).into());
+                }
+
+                continue;
+            }
+
+            let basic_move: Move = BasicMove::new(tile_pos, to_pos).into();
+
+            if self.is_legal_move(&basic_move) {
+                moves.push(basic_move);
+            }
+        };
+
+        return moves;
+    }
+
+    pub fn get_legal_moves_for_tile_position_old(&self, tile_pos: TilePosition) -> Vec<Move> {
         let mut moves = Vec::new();
 
         if let Some(piece) = self.board.get_piece(tile_pos) {

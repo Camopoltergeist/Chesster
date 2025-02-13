@@ -128,5 +128,22 @@ impl TilePosition {
 
         return Some(TilePosition::new(self.column + 1, rank));
     }
+
+    pub fn get_pawn_advance_position(&self, player: Player) -> Self {
+        let new_rank = match player {
+            Player::White => {
+                debug_assert!(self.rank < 7);
+
+                self.rank + 1
+            },
+            Player::Black => {
+                debug_assert!(self.rank > 0);
+
+                self.rank - 1
+            }
+        };
+
+        Self::new(self.column, new_rank)
+    }
 }
 

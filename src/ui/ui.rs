@@ -132,7 +132,7 @@ impl UI {
 			return;
 		}
 
-		let legal_moves = self.position.get_legal_moves_for_tile_position(selected_tile);
+		let legal_moves = self.position.get_legal_moves_for_tile_position_old(selected_tile);
 
 		for m in legal_moves {
 			if m.to_position() == clicked_tile {
@@ -180,7 +180,7 @@ impl UI {
 		let tile_pos = tile_pos.unwrap();
 
 		if let Some(_) = self.position.get_piece(tile_pos) {
-			self.board_renderer.set_legal_moves(self.position.get_legal_moves_for_tile_position(tile_pos));
+			self.board_renderer.set_legal_moves(self.position.get_legal_moves_for_tile_position_old(tile_pos));
 		}
 	}
 
