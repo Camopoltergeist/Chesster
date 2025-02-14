@@ -3,7 +3,7 @@ use std::time::Instant;
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{game_state::GameState, position::Position, tile_position::TilePosition}, bot::{evaluation_funcs::evaluate_material_and_mobility, search_funcs::{negamax_with_move_chain_multithreaded, print_move_chain}}, player::Player};
+use crate::{board::{game_state::GameState, position::Position, tile_position::TilePosition}, bot::{evaluation_funcs::{evaluate_material_and_checkmates, evaluate_material_and_mobility}, search_funcs::{alpha_beta_search, negamax_with_move_chain_multithreaded, print_move_chain}}, player::Player};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::{load_circle_texture, load_piece_textures}};
 
@@ -142,12 +142,17 @@ impl UI {
 				self.board_renderer.set_board(&self.position.board());
 
 				if let GameState::Ongoing = self.position.get_game_state() {
+					let (eval, move_chain) = negamax_with_move_chain_multithreaded(&self.position, evaluate_material_and_checkmates, 4);
+
+					println!("WWWWWWWWWWW");
+					print_move_chain(&move_chain, eval);
+
 					let start_time_cacheless = Instant::now();
-					let (evaluation, move_chain) = negamax_with_move_chain_multithreaded(&self.position, evaluate_material_and_mobility, 4);
+					let (evaluation, moove) = alpha_beta_search(&self.position, 4);
 					let end_time_cacheless = Instant::now();
 
 					println!("WWWWWWWWWWW");
-					print_move_chain(&move_chain, evaluation);
+					println!("{} | {}", moove.debug_string(), evaluation);
 
 					println!("Search took {} seconds", end_time_cacheless.duration_since(start_time_cacheless).as_secs_f32());
 				}
