@@ -67,3 +67,17 @@ pub fn integrity_test_depth_5() {
 
     assert_eq!(positions_searched, 89941194);
 }
+
+#[ignore]
+#[test]
+pub fn integrity_test_depth_6() {
+    let position = Position::from_fen_str("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8").unwrap();
+
+    let positions_searched = perft(&position, 6)
+        .iter()
+        .map(|e| e.1)
+        .reduce(|acc, e| acc + e)
+        .unwrap_or(0);
+
+    assert_eq!(positions_searched, 3048196529);
+}
