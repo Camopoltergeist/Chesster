@@ -25,6 +25,15 @@ fn queen_side_castling_move_works() {
 }
 
 #[test]
+fn cant_castle_queen_side_when_path_is_blocked() {
+	let position = Position::from_fen_str("8/8/8/8/8/8/8/RN2K3 w Q - 0 1").unwrap();
+
+	let castling_move = Move::new_castling(Player::White, CastleSide::QueenSide);
+
+	assert!(!position.is_legal_move(&castling_move));
+}
+
+#[test]
 fn cant_castle_while_checked() {
 	let position = Position::from_fen_str("4r3/8/8/8/8/8/8/4K2R w K - 2 1").unwrap();
 
@@ -34,12 +43,21 @@ fn cant_castle_while_checked() {
 }
 
 #[test]
-fn cant_castle_while_path_is_threatened() {
+fn cant_castle_king_side_while_path_is_threatened() {
 	let position = Position::from_fen_str("5r2/8/8/8/8/8/8/4K2R b K - 2 1").unwrap();
 
 	let castling_move = Move::new_castling(Player::White, CastleSide::KingSide);
 
 	assert!(!position.is_legal_move(&castling_move));
+}
+
+#[test]
+fn can_castle_queen_side_while_b_file_is_threatened() {
+	let position = Position::from_fen_str("1r6/8/8/8/8/8/8/R3K3 b Q - 2 1").unwrap();
+
+	let castling_move = Move::new_castling(Player::White, CastleSide::QueenSide);
+
+	assert!(position.is_legal_move(&castling_move));
 }
 
 #[test]
