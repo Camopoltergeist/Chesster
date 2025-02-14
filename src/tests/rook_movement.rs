@@ -1,4 +1,4 @@
-use crate::board::{moove::{BasicMove, Move}, position::Position, tile_position::TilePosition};
+use crate::board::{moove::Move, position::Position, tile_position::TilePosition};
 
 use super::compare_moves;
 
