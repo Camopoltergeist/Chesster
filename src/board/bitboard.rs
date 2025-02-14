@@ -221,6 +221,15 @@ impl Bitboard {
     pub fn generate_castling_block_mask(player: Player, side: CastleSide) -> Bitboard {
         match (player, side) {
             (Player::White, CastleSide::KingSide) => Bitboard::from(0b01100000),
+            (Player::White, CastleSide::QueenSide) => Bitboard::from(0b00001110),
+            (Player::Black, CastleSide::KingSide) => Bitboard::from(0b01100000 << (8 * 7)),
+            (Player::Black, CastleSide::QueenSide) => Bitboard::from(0b00001110 << (8 * 7))
+        }
+    }
+
+    pub fn generate_castling_threat_mask(player: Player, side: CastleSide) -> Bitboard {
+        match (player, side) {
+            (Player::White, CastleSide::KingSide) => Bitboard::from(0b01100000),
             (Player::White, CastleSide::QueenSide) => Bitboard::from(0b00001100),
             (Player::Black, CastleSide::KingSide) => Bitboard::from(0b01100000 << (8 * 7)),
             (Player::Black, CastleSide::QueenSide) => Bitboard::from(0b00001100 << (8 * 7))
