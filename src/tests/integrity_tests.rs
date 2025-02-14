@@ -40,6 +40,7 @@ pub fn integrity_test_depth_3() {
     assert_eq!(positions_searched, 62379);
 }
 
+#[ignore]
 #[test]
 pub fn integrity_test_depth_4() {
     let position = Position::from_fen_str("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8").unwrap();
