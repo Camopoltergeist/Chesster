@@ -54,15 +54,17 @@ pub fn negamax_search(position: &Position, evaluation_fn: EvaluationFn, depth: u
 	return (best_move.unwrap(), max);
 }
 
-pub fn negamax_with_move_chain(position: &Position, evaluation_fn: EvaluationFn, depth: u32) -> (Evaluation, Vec<Move>) {
-	fn negamax(position: &Position, evaluation_fn: EvaluationFn, depth: u32) -> (Evaluation, Vec<Move>) {
+pub fn negamax_with_move_chain(position: &Position, evaluation_fn: EvaluationFn, depth: u32) -> (Evaluation, Vec<Move>, u64) {
+	fn negamax(position: &Position, evaluation_fn: EvaluationFn, depth: u32, searched_positions: &mut u64) -> (Evaluation, Vec<Move>) {
 		if depth < 1 {
+			*searched_positions += 1;
 			return (evaluation_fn(position), Vec::new());
 		};
 
 		let legal_moves = position.get_all_legal_moves();
 
 		if legal_moves.len() < 1 {
+			*searched_positions += 1;
 			return (evaluation_fn(position), Vec::new());
 		}
 
@@ -73,7 +75,7 @@ pub fn negamax_with_move_chain(position: &Position, evaluation_fn: EvaluationFn,
 			let mut moved_position = position.clone();
 			moved_position.make_move(m.clone());
 
-			let (mut eval, mut eval_move_chain) = negamax(&moved_position, evaluation_fn, depth - 1);
+			let (mut eval, mut eval_move_chain) = negamax(&moved_position, evaluation_fn, depth - 1, searched_positions);
 			eval = -eval;
 
 			eval_move_chain.push(m);
@@ -88,28 +90,34 @@ pub fn negamax_with_move_chain(position: &Position, evaluation_fn: EvaluationFn,
 	}
 
 	if depth < 1 {
-		return (evaluation_fn(position), Vec::new());
+		return (evaluation_fn(position), Vec::new(), 0);
 	};
 
 	let legal_moves = position.get_all_legal_moves();
 
 	if legal_moves.len() < 1 {
-		return (evaluation_fn(position), Vec::new());
+		return (evaluation_fn(position), Vec::new(), 0);
 	};
 
 	let mut best_eval = Evaluation::Initial;
 	let mut best_move_chain = Vec::new();
 
+	let mut total_searched = 0; 
+
+	
 	for m in legal_moves {
 		let mut moved_position = position.clone();
 		moved_position.make_move(m.clone());
-
-		let (mut eval, mut eval_move_chain) = negamax(&moved_position, evaluation_fn, depth - 1);
+		
+		let mut searched_positions = 0;
+		let (mut eval, mut eval_move_chain) = negamax(&moved_position, evaluation_fn, depth - 1, &mut searched_positions);
 		eval = -eval;
 		
 		eval_move_chain.push(m);
 
 		print_move_chain(&eval_move_chain, eval.clone());
+		println!("Searched {}", searched_positions);
+		total_searched += searched_positions;
 
 		if eval > best_eval {
 			best_eval = eval.clone();
@@ -117,7 +125,7 @@ pub fn negamax_with_move_chain(position: &Position, evaluation_fn: EvaluationFn,
 		}
 	};
 
-	return (best_eval, best_move_chain);
+	return (best_eval, best_move_chain, total_searched);
 }
 
 pub fn print_move_chain(move_chain: &Vec<Move>, evaluation: Evaluation) {

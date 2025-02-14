@@ -182,10 +182,6 @@ impl UI {
 		}
 	}
 
-	pub fn position(&self) -> &Position {
-		&self.position
-	}
-
 	pub fn set_position(&mut self, position: Position) {
 		self.position = position;
 		self.board_renderer.set_board(self.position.board());

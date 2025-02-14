@@ -7,6 +7,7 @@ pub mod piece;
 pub mod player_piece;
 pub mod pieces;
 pub mod bot;
+pub mod perft;
 
 #[cfg(test)]
 pub mod tests;
