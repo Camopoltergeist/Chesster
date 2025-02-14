@@ -103,6 +103,7 @@ impl BoardRenderer {
     }
 
     /// Sets bitboard used to draw overlay. None disables overlay.
+    #[allow(dead_code)]
     pub fn set_bitboard_overlay(&mut self, bitboard: Option<Bitboard>) {
         self.bitboard = bitboard;
     }
@@ -128,11 +129,6 @@ impl BoardRenderer {
                 draw_handle.draw_rectangle(pos.0, pos.1, tile_size, tile_size, color);
             }
         }
-    }
-
-    /// Sets the perspective to the specified player
-    pub fn set_player(&mut self, player: Player) {
-        self.player = player;
     }
 
     pub fn size(&self) -> i32 {
@@ -196,10 +192,6 @@ impl BoardRenderer {
     /// Sets the current board to be drawn. Set to None to disable pieces.
     pub fn set_board(&mut self, board: &Board) {
         self.board = board.clone();
-    }
-
-    pub fn board(&self) -> &Board {
-        &self.board
     }
 
     fn draw_board_pieces(&self, draw_handle: &mut RaylibDrawHandle) {

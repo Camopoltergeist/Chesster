@@ -1,6 +1,6 @@
 use std::hash::Hash;
 
-use crate::{board::moove::CastleSide, piece::PieceType, player::Player, player_piece::PlayerPiece};
+use crate::{board::moove::CastleSide, piece::PieceType, pieces::{king::King, pawn::Pawn}, player::Player, player_piece::PlayerPiece};
 
 use super::{board::Board, game_state::GameState, moove::{BasicMove, CastlingMove, EnPassantMove, Move, PromotingMove}, move_collision::get_collision_mask, tile_position::TilePosition};
 
@@ -175,66 +175,114 @@ impl Position {
 
             let tile_pos = TilePosition::from_bit_offset(bit_offset);
 
-            legal_moves.append(&mut self.get_legal_moves_for_tile_position(tile_pos));
+            legal_moves.extend(self.generate_legal_moves_for_tile_position(tile_pos));
         };
 
         return legal_moves;
     }
 
-    pub fn get_legal_moves_for_tile_position(&self, tile_pos: TilePosition) -> Vec<Move> {
-        let mut moves = Vec::new();
+    pub fn generate_legal_moves_for_tile_position(&self, tile_pos: TilePosition) -> Vec<Move> {
+        let piece = self.get_piece(tile_pos);
 
-        if let Some(piece) = self.board.get_piece(tile_pos) {
-            let moves_bitboard = get_collision_mask(self.board.clone(), tile_pos);
+        if piece.is_none() {
+            return Vec::new();
+        };
 
-            if moves_bitboard.is_empty() {
-                return moves;
-            }
+        let piece = piece.unwrap();
 
-            for bit_offset in 0..64 {
-                if moves_bitboard.check_bit(bit_offset) {
-                    let to_pos = TilePosition::from_bit_offset(bit_offset);
-
-                    if self.can_promote(tile_pos, to_pos) {
-                        moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(self.current_player, PieceType::Queen)).into());
-                        moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(self.current_player, PieceType::Knight)).into());
-                        moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(self.current_player, PieceType::Rook)).into());
-                        moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(self.current_player, PieceType::Bishop)).into());
-                    }
-                    else {
-                        moves.push(BasicMove::new(tile_pos, TilePosition::from_bit_offset(bit_offset)).into());
-                    }
-                }
-            }
-
-            match piece.piece() {
-                PieceType::King => {
-                    let castling_moves = self.get_legal_castling_moves();
-                    moves.extend(castling_moves);
-                },
-                PieceType::Pawn => {
-                    if self.can_en_passant(tile_pos) {
-                        let target = self.en_passant_target.unwrap();
-
-                        moves.push(EnPassantMove::new(tile_pos, target, TilePosition::new(target.column(), tile_pos.rank())).into());
-                    }
-                }
-                _ => ()
-            }
+        match piece.piece() {
+            PieceType::Pawn => self.generate_legal_pawn_moves(tile_pos, piece.player()),
+            PieceType::King => self.generate_legal_king_moves(tile_pos, piece.player()),
+            _ => self.generate_legal_basic_moves(tile_pos)
         }
+    }
 
-        let mut legal_moves = Vec::new();
+    pub fn generate_legal_basic_moves(&self, tile_pos: TilePosition) -> Vec<Move> {
+        let collision_mask = get_collision_mask(self.board.clone(), tile_pos);
 
-        for m in moves {
-            let mut moved_position = self.clone();
-            moved_position.make_move(m.clone()).expect("unexpected illegal move while culling moves");
-            
-            if !moved_position.is_in_check(self.current_player) {
-                legal_moves.push(m);
+        let mut moves: Vec<Move> = Vec::new();
+
+        for bit_offset in 0..64 {
+            if !collision_mask.check_bit(bit_offset) {
+                continue;
             }
-        }
 
-        return legal_moves;
+            let to_pos = TilePosition::from_bit_offset(bit_offset);
+
+            let basic_move: Move = BasicMove::new(tile_pos, to_pos).into();
+
+            if !self.does_move_leave_king_threatened(&basic_move) {
+                moves.push(basic_move);
+            }
+        };
+
+        return moves;
+    }
+
+    pub fn generate_legal_pawn_moves(&self, tile_pos: TilePosition, player: Player) -> Vec<Move> {
+        let collision_mask = Pawn::generate_collision_mask(&self.board, player, tile_pos);
+
+        let mut moves: Vec<Move> = Vec::new();
+
+        if self.can_en_passant(tile_pos) {
+            let target = self.en_passant_target.unwrap();
+            let en_passant_move: Move = EnPassantMove::new(tile_pos, target, TilePosition::new(target.column(), tile_pos.rank())).into();
+
+            if !self.does_move_leave_king_threatened(&en_passant_move) {
+                moves.push(en_passant_move);
+            };
+        };
+
+        for bit_offset in 0..64 {
+            if !collision_mask.check_bit(bit_offset) {
+                continue;
+            }
+
+            let to_pos = TilePosition::from_bit_offset(bit_offset);
+
+            if self.can_promote(tile_pos, to_pos) {
+                let queen_promoting_move: Move = PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(player, PieceType::Queen)).into();
+
+                if self.is_legal_move(&queen_promoting_move) {
+                    moves.push(queen_promoting_move);
+                    moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(player, PieceType::Knight)).into());
+                    moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(player, PieceType::Rook)).into());
+                    moves.push(PromotingMove::new(tile_pos, to_pos, PlayerPiece::new(player, PieceType::Bishop)).into());
+                }
+
+                continue;
+            }
+
+            let basic_move: Move = BasicMove::new(tile_pos, to_pos).into();
+
+            if !self.does_move_leave_king_threatened(&basic_move) {
+                moves.push(basic_move);
+            }
+        };
+
+        return moves;
+    }
+
+    pub fn generate_legal_king_moves(&self, tile_pos: TilePosition, player: Player) -> Vec<Move> {
+        let collision_mask = King::generate_collision_mask(&self.board, player, tile_pos);
+
+        let mut moves: Vec<Move> = self.get_legal_castling_moves();
+
+        for bit_offset in 0..64 {
+            if !collision_mask.check_bit(bit_offset) {
+                continue;
+            }
+
+            let to_pos = TilePosition::from_bit_offset(bit_offset);
+
+            let basic_move: Move = BasicMove::new(tile_pos, to_pos).into();
+
+            if !self.does_move_leave_king_threatened(&basic_move) {
+                moves.push(basic_move);
+            }
+        };
+
+        return moves;
     }
 
     fn can_promote(&self, from_pos: TilePosition, to_pos: TilePosition) -> bool {
@@ -331,13 +379,24 @@ impl Position {
         self.board.get_piece_debug(tile_str)
     }
 
+    pub fn does_move_leave_king_threatened(&self, moove: &Move) -> bool {
+        let mut moved_position = self.clone();
+        moved_position.make_move_unchecked(moove.clone());
+
+        return moved_position.is_in_check(self.current_player);
+    }
+
     pub fn is_legal_move(&self, moove: &Move) -> bool {
-        match moove {
+        let base_legal = match moove {
             Move::Basic(basic_move) => self.is_legal_basic_move(basic_move),
             Move::Castling(castling_move) => self.is_legal_castling_move(castling_move),
             Move::EnPassant(en_passant_move) => self.is_legal_en_passant_move(en_passant_move),
             Move::Promoting(promoting_move) => self.is_legal_promoting_move(promoting_move),
-        }
+        };
+
+        let leaves_king_threatened = self.does_move_leave_king_threatened(moove);
+
+        return base_legal && !leaves_king_threatened;
     }
 
     /// Checks if a BasicMove is legal
@@ -357,6 +416,10 @@ impl Position {
     }
 
     fn is_legal_castling_move(&self, castling_move: &CastlingMove) -> bool {
+        if self.is_in_check(self.current_player) {
+            return false;
+        }
+        
         self.board.is_castling_possible(castling_move.player(), castling_move.side())
     }
 
@@ -368,14 +431,10 @@ impl Position {
         return self.is_legal_basic_move(&promoting_move.clone().into()) && promoting_move.promotion_piece().player() == self.current_player;
     }
 
-    pub fn make_move(&mut self, moove: Move) -> Result<(), ()> {
-        if !self.is_legal_move(&moove) {
-            return Err(());
-        };
+    pub fn make_move(&mut self, moove: Move) {
+        debug_assert!(self.is_legal_move(&moove));
 
         self.make_move_unchecked(moove);
-
-        Ok(())
     }
 
     pub fn make_move_unchecked(&mut self, moove: Move) {

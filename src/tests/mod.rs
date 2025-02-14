@@ -24,6 +24,9 @@ mod en_passant;
 mod promotion;
 #[cfg(test)]
 mod slider_collision;
+#[cfg(test)]
+mod integrity_tests;
+
 
 #[cfg(test)]
 fn compare_moves(desired_moves: &Vec<Move>, received_moves: &Vec<Move>) -> bool {
