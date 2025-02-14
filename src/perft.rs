@@ -1,7 +1,7 @@
 use crate::board::{moove::Move, position::Position};
 
 pub fn perft(position: &Position, depth: u32) -> Vec<(Move, u64)> {
-	fn negamax(position: &Position, depth: u32) -> u64 {
+	fn perft_inner(position: &Position, depth: u32) -> u64 {
 		if depth < 1 {
 			return 1;
 		};
@@ -18,7 +18,7 @@ pub fn perft(position: &Position, depth: u32) -> Vec<(Move, u64)> {
 			let mut moved_position = position.clone();
 			moved_position.make_move(m.clone());
 
-			searched_positions += negamax(&moved_position, depth - 1);
+			searched_positions += perft_inner(&moved_position, depth - 1);
 		};
 
         return searched_positions;
@@ -40,7 +40,7 @@ pub fn perft(position: &Position, depth: u32) -> Vec<(Move, u64)> {
 		let mut moved_position = position.clone();
 		moved_position.make_move(m.clone());
 		
-		let searched_positions = negamax(&moved_position, depth - 1);
+		let searched_positions = perft_inner(&moved_position, depth - 1);
 		
         moves.push((m, searched_positions));
 	};
