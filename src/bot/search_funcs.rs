@@ -284,10 +284,10 @@ pub fn negamax_with_position_cache_multithreaded(position: &Position, evaluation
 	return (best_eval, best_move.unwrap());
 }
 
-pub fn alpha_beta_search(position: &Position, depth: u32) -> (i32, Move) {
-	fn alpha_beta(position: &Position, mut alpha: i32, beta: i32, depth: u32) -> i32 {
+pub fn alpha_beta_search(position: &Position, evaluation_fn: fn(&Position) -> i32, depth: u32) -> (i32, Move) {
+	fn alpha_beta(position: &Position, evaluation_fn: fn(&Position) -> i32, mut alpha: i32, beta: i32, depth: u32) -> i32 {
 		if depth == 0 {
-			return position.board().get_material_for_player(position.current_player()) as i32 - position.board().get_material_for_player(position.current_player().opposite()) as i32;
+			return evaluation_fn(position);
 		};
 
 		let legal_moves = position.get_all_legal_moves();
@@ -302,7 +302,7 @@ pub fn alpha_beta_search(position: &Position, depth: u32) -> (i32, Move) {
 			let mut moved_position = position.clone();
 			moved_position.make_move(m);
 
-			let eval = -alpha_beta(&moved_position, -beta, -alpha, depth - 1);
+			let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1);
 
 			if eval >= beta {
 				return beta;
@@ -323,7 +323,7 @@ pub fn alpha_beta_search(position: &Position, depth: u32) -> (i32, Move) {
 		let mut moved_position = position.clone();
 		moved_position.make_move(m.clone());
 
-		let eval = -alpha_beta(&moved_position, -beta, -alpha, depth - 1);
+		let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1);
 
 		if eval > alpha {
 			alpha = eval;
