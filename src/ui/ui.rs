@@ -141,9 +141,9 @@ impl UI {
 				self.select_tile(None);
 				self.board_renderer.set_board(&self.position.board());
 
-				if let GameState::Ongoing = self.position.get_game_state() {
+				if let GameState::Ongoing = self.position.get_game_state() { 
 					let start_time_cacheless = Instant::now();
-					let (evaluation, moove) = alpha_beta_search(&self.position, evaluate_material_and_mobility_i32, 4);
+					let (evaluation, moove) = alpha_beta_search(&self.position, evaluate_material_and_mobility_i32, 6);
 					let end_time_cacheless = Instant::now();
 
 					println!("WWWWWWWWWWW");
