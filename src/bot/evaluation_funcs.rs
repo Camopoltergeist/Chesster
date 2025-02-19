@@ -45,3 +45,21 @@ pub fn evaluate_material_and_mobility_i32(position: &Position) -> i32 {
 
 	return (own_material - opponent_material) * 100 + mobility_score;
 }
+
+pub fn evaluate_material_and_positioning(position: &Position) -> i32 {
+	let own_material = position.board().get_material_for_player(position.current_player()) as i32;
+	let opponent_material = position.board().get_material_for_player(position.current_player().opposite()) as i32;
+
+	let positioning_score = position.get_positioning_score_for_player(position.current_player()) - position.get_positioning_score_for_player(position.current_player().opposite());
+
+	return (own_material - opponent_material) * 100 + positioning_score;
+}
+
+pub fn evaluate_material_and_positioning_debug(position: &Position) -> (i32, i32, i32) {
+	let own_material = position.board().get_material_for_player(position.current_player()) as i32;
+	let opponent_material = position.board().get_material_for_player(position.current_player().opposite()) as i32;
+
+	let positioning_score = position.get_positioning_score_for_player(position.current_player()) - position.get_positioning_score_for_player(position.current_player().opposite());
+
+	return ((own_material - opponent_material) * 100 + positioning_score, own_material - opponent_material, positioning_score);
+}
