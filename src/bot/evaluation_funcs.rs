@@ -36,3 +36,12 @@ pub fn evaluate_material_and_mobility(position: &Position) -> Evaluation {
 		}
 	}
 }
+
+pub fn evaluate_material_and_mobility_i32(position: &Position) -> i32 {
+	let own_material = position.board().get_material_for_player(position.current_player()) as i32;
+	let opponent_material = position.board().get_material_for_player(position.current_player().opposite()) as i32;
+
+	let mobility_score = position.get_all_legal_moves().len() as i32;
+
+	return (own_material - opponent_material) * 100 + mobility_score;
+}
