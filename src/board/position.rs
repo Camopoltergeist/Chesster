@@ -1,6 +1,6 @@
 use std::hash::Hash;
 
-use crate::{board::moove::CastleSide, piece::PieceType, pieces::{king::King, pawn::Pawn}, player::Player, player_piece::PlayerPiece};
+use crate::{board::moove::CastleSide, bot::positioning::get_score_for_piece, piece::PieceType, pieces::{king::King, pawn::Pawn}, player::Player, player_piece::PlayerPiece};
 
 use super::{board::Board, game_state::GameState, moove::{BasicMove, CastlingMove, EnPassantMove, Move, PromotingMove}, move_collision::get_collision_mask, tile_position::TilePosition};
 
@@ -568,6 +568,26 @@ impl Position {
             (Player::Black, CastleSide::KingSide) => self.black_short_castling,
             (Player::Black, CastleSide::QueenSide) => self.black_long_castling
         }
+    }
+
+    pub fn get_positioning_score_for_player(&self, player: Player) -> i32 {
+        let player_pieces_mask = self.board.get_player_bitboard(player);
+
+        let mut positioning_score = 0;
+
+        for bit_offset in 0..64 {
+            if !player_pieces_mask.check_bit(bit_offset) {
+                continue;
+            }
+
+            let tile_position = TilePosition::from_bit_offset(bit_offset);
+
+            let piece = self.get_piece(tile_position).unwrap();
+
+            positioning_score += get_score_for_piece(piece, tile_position);
+        };
+
+        return positioning_score;
     }
 }
 

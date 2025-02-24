@@ -3,7 +3,7 @@ use std::time::Instant;
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{game_state::GameState, position::Position, tile_position::TilePosition}, bot::{evaluation_funcs::{evaluate_material_and_checkmates, evaluate_material_and_mobility, evaluate_material_and_mobility_i32}, search_funcs::{alpha_beta_search, negamax_with_move_chain_multithreaded, print_move_chain}}, player::Player};
+use crate::{board::{game_state::GameState, position::Position, tile_position::TilePosition}, bot::{evaluation_funcs::{evaluate_material_and_checkmates, evaluate_material_and_mobility, evaluate_material_and_mobility_i32, evaluate_material_and_positioning, evaluate_material_and_positioning_debug}, search_funcs::{alpha_beta_search, negamax_with_move_chain_multithreaded, print_move_chain}}, player::Player};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::{load_circle_texture, load_piece_textures}};
 
@@ -143,13 +143,19 @@ impl UI {
 
 				if let GameState::Ongoing = self.position.get_game_state() { 
 					let start_time_cacheless = Instant::now();
-					let (evaluation, moove) = alpha_beta_search(&self.position, evaluate_material_and_mobility_i32, 6);
+					let (evaluation, moove) = alpha_beta_search(&self.position, evaluate_material_and_positioning, 6);
 					let end_time_cacheless = Instant::now();
 
 					println!("WWWWWWWWWWW");
 					println!("{} | {}", moove.debug_string(), evaluation);
 
 					println!("Search took {} seconds", end_time_cacheless.duration_since(start_time_cacheless).as_secs_f32());
+
+					let (eval, material, positioning) = evaluate_material_and_positioning_debug(&self.position);
+
+					println!("Current eval: {}, {}, {}", eval, material, positioning);
+					println!("Positioning White: {}", self.position.get_positioning_score_for_player(Player::White));
+					println!("Positioning Black: {}", self.position.get_positioning_score_for_player(Player::Black));
 				}
 
 				return;
