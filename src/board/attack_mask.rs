@@ -9,15 +9,14 @@ use super::{
 
 ///Returns a bitboard of every tile the opposite player can move to on their next turn
 pub fn get_opposite_attack_mask(position: Position) -> Bitboard {
-    let enemy_board: Bitboard = *position
+    let mut opponent_pieces_mask: Bitboard = *position
         .board()
         .get_player_bitboard(position.current_player().opposite().clone());
 
     let mut attack_mask: Bitboard = Bitboard(0);
-    for bit_offset in 0..64 {
-        if !enemy_board.check_bit(bit_offset) {
-            continue;
-        }
+
+    while !opponent_pieces_mask.is_empty() {
+        let bit_offset = opponent_pieces_mask.0.trailing_zeros();
 
         let tile_pos = TilePosition::from_bit_offset(bit_offset);
         if let Some(player_piece) = position.get_piece(tile_pos) {
@@ -26,6 +25,8 @@ pub fn get_opposite_attack_mask(position: Position) -> Bitboard {
                 _ => get_collision_mask(position.board().clone(), tile_pos),
             };
         }
+
+        opponent_pieces_mask.unset_bit(bit_offset);
     }
 
     attack_mask

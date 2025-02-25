@@ -198,14 +198,12 @@ impl Position {
     }
 
     pub fn generate_legal_basic_moves(&self, tile_pos: TilePosition) -> Vec<Move> {
-        let collision_mask = get_collision_mask(self.board.clone(), tile_pos);
+        let mut collision_mask = get_collision_mask(self.board.clone(), tile_pos);
 
         let mut moves: Vec<Move> = Vec::new();
 
-        for bit_offset in 0..64 {
-            if !collision_mask.check_bit(bit_offset) {
-                continue;
-            }
+        while !collision_mask.is_empty() {
+            let bit_offset = collision_mask.0.trailing_zeros();
 
             let to_pos = TilePosition::from_bit_offset(bit_offset);
 
@@ -214,7 +212,9 @@ impl Position {
             if !self.does_move_leave_king_threatened(&basic_move) {
                 moves.push(basic_move);
             }
-        };
+
+            collision_mask.unset_bit(bit_offset);
+        }
 
         return moves;
     }
@@ -571,21 +571,20 @@ impl Position {
     }
 
     pub fn get_positioning_score_for_player(&self, player: Player) -> i32 {
-        let player_pieces_mask = self.board.get_player_bitboard(player);
+        let mut player_pieces_mask = self.board.get_player_bitboard(player).clone();
 
         let mut positioning_score = 0;
 
-        for bit_offset in 0..64 {
-            if !player_pieces_mask.check_bit(bit_offset) {
-                continue;
-            }
+        while !player_pieces_mask.is_empty() {
+            let bit_offset = player_pieces_mask.0.trailing_zeros();
 
             let tile_position = TilePosition::from_bit_offset(bit_offset);
-
             let piece = self.get_piece(tile_position).unwrap();
 
             positioning_score += get_score_for_piece(piece, tile_position);
-        };
+
+            player_pieces_mask.unset_bit(bit_offset);
+        }
 
         return positioning_score;
     }
