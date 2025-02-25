@@ -26,6 +26,8 @@ mod promotion;
 mod slider_collision;
 #[cfg(test)]
 mod integrity_tests;
+#[cfg(test)]
+mod mailbox_integrity;
 
 
 #[cfg(test)]
