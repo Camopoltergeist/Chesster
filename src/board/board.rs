@@ -267,7 +267,7 @@ impl Board {
     }
 
     pub fn get_piece(&self, tile_pos: TilePosition) -> Option<PlayerPiece> {
-        return self.get_piece_from_offset_bitboard(tile_pos.bit_offset());
+        return self.get_piece_from_offset(tile_pos.bit_offset());
     }
 
     pub fn remove_piece(&mut self, tile_pos: TilePosition) {
@@ -304,7 +304,7 @@ impl Board {
 
             let tile_pos = TilePosition::from_bit_offset(bit_offset);
 
-            if let Some(player_piece) = self.get_piece_from_offset_bitboard(bit_offset) {
+            if let Some(player_piece) = self.get_piece_from_offset(bit_offset) {
                 attack_mask |= match player_piece.piece() {
                     PieceType::Pawn => Bitboard(get_pawn_capture(player_piece.player(), tile_pos)),
                     _ => get_collision_mask(self.clone(), tile_pos),
