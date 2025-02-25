@@ -256,7 +256,7 @@ impl Board {
 
             let tile_pos = TilePosition::from_bit_offset(bit_offset);
 
-            if let Some(player_piece) = self.get_piece(tile_pos) {
+            if let Some(player_piece) = self.get_piece_from_offset(bit_offset) {
                 attack_mask |= match player_piece.piece() {
                     PieceType::Pawn => Bitboard(get_pawn_capture(player_piece.player(), tile_pos)),
                     _ => get_collision_mask(self.clone(), tile_pos),
