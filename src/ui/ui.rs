@@ -3,7 +3,7 @@ use std::time::Instant;
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{game_state::GameState, position::Position, tile_position::TilePosition}, bot::{evaluation_funcs::{evaluate_material_and_checkmates, evaluate_material_and_mobility, evaluate_material_and_mobility_i32, evaluate_material_and_positioning, evaluate_material_and_positioning_debug}, search_funcs::{alpha_beta_search, negamax_with_move_chain_multithreaded, print_move_chain}}, player::Player};
+use crate::{board::{game_state::GameState, moove::{Move, PromotingMove}, position::Position, tile_position::TilePosition}, bot::{evaluation_funcs::{evaluate_material_and_checkmates, evaluate_material_and_mobility, evaluate_material_and_mobility_i32, evaluate_material_and_positioning, evaluate_material_and_positioning_debug}, search_funcs::{alpha_beta_search, negamax_with_move_chain_multithreaded, print_move_chain}}, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::{load_circle_texture, load_piece_textures}};
 
@@ -18,6 +18,10 @@ pub struct UI {
 	selected_tile: Option<TilePosition>,
 
 	background_color: Color,
+
+	promotion_menu_open: bool,
+	promoting_move: Option<PromotingMove>,
+	selected_promotion_piece: Option<PieceType>,
 }
 
 impl UI {
@@ -39,6 +43,9 @@ impl UI {
 			hovered_tile: None,
 			selected_tile: None,
 			background_color: Color { r: 0, g: 65, b: 119, a: 255 },
+			promotion_menu_open: false,
+			promoting_move: None,
+			selected_promotion_piece: None,
 		}
 	}
 
@@ -96,7 +103,46 @@ impl UI {
 			self.toggle_board_perspective();
 		}
 
+		self.handle_promotion_menu(rl);
+
 		self.handle_mouse_input(rl);
+	}
+
+	fn handle_promotion_menu(&mut self, rl: &RaylibHandle) {
+		if !self.promotion_menu_open {
+			return;
+		}
+
+		let promoting_move = self.promoting_move.clone().unwrap();
+		let p = promoting_move.promotion_piece();
+
+		if rl.is_key_pressed(KeyboardKey::KEY_ONE) {
+			self.play_move(Move::Promoting(PromotingMove::new(promoting_move.from_position(), promoting_move.to_position(), PlayerPiece::new(p.player(), PieceType::Queen))));
+			self.promotion_menu_open = false;
+			self.promoting_move = None;
+			return;
+		}
+
+		if rl.is_key_pressed(KeyboardKey::KEY_TWO) {
+			self.play_move(Move::Promoting(PromotingMove::new(promoting_move.from_position(), promoting_move.to_position(), PlayerPiece::new(p.player(), PieceType::Rook))));
+			self.promotion_menu_open = false;
+			self.promoting_move = None;
+			return;
+		}
+
+		if rl.is_key_pressed(KeyboardKey::KEY_THREE) {
+			self.play_move(Move::Promoting(PromotingMove::new(promoting_move.from_position(), promoting_move.to_position(), PlayerPiece::new(p.player(), PieceType::Knight))));
+			self.promotion_menu_open = false;
+			self.promoting_move = None;
+			return;
+		}
+
+		if rl.is_key_pressed(KeyboardKey::KEY_FOUR) {
+			self.play_move(Move::Promoting(PromotingMove::new(promoting_move.from_position(), promoting_move.to_position(), PlayerPiece::new(p.player(), PieceType::Bishop))));
+			self.promotion_menu_open = false;
+			self.promoting_move = None;
+			return;
+		}
 	}
 	
 	fn handle_mouse_input(&mut self, rl: &RaylibHandle) {
@@ -113,6 +159,10 @@ impl UI {
 	}
 
 	fn handle_click_play_mode(&mut self, clicked_tile: TilePosition) {
+		if self.promotion_menu_open {
+			return;
+		}
+
 		if self.selected_tile.is_none() {
 			if let Some(piece) = self.position.get_piece(clicked_tile) {
 				if piece.player() != self.position.current_player() {
@@ -136,27 +186,14 @@ impl UI {
 
 		for m in legal_moves {
 			if m.to_position() == clicked_tile {
-				self.position.make_move(m);
+				if let Move::Promoting(promoting_move) = &m {
+					self.promoting_move = Some(promoting_move.clone());
+					self.promotion_menu_open = true;
+					return;
+				}
 				
 				self.select_tile(None);
-				self.board_renderer.set_board(&self.position.board());
-
-				if let GameState::Ongoing = self.position.get_game_state() { 
-					let start_time_cacheless = Instant::now();
-					let (evaluation, moove) = alpha_beta_search(&self.position, evaluate_material_and_positioning, 6);
-					let end_time_cacheless = Instant::now();
-
-					println!("WWWWWWWWWWW");
-					println!("{} | {}", moove.debug_string(), evaluation);
-
-					println!("Search took {} seconds", end_time_cacheless.duration_since(start_time_cacheless).as_secs_f32());
-
-					let (eval, material, positioning) = evaluate_material_and_positioning_debug(&self.position);
-
-					println!("Current eval: {}, {}, {}", eval, material, positioning);
-					println!("Positioning White: {}", self.position.get_positioning_score_for_player(Player::White));
-					println!("Positioning Black: {}", self.position.get_positioning_score_for_player(Player::Black));
-				}
+				self.play_move(m);
 
 				return;
 			}
@@ -170,6 +207,28 @@ impl UI {
 		}
 
 		self.select_tile(None);
+	}
+
+	fn play_move(&mut self, m: Move) {
+		self.position.make_move(m);
+		self.board_renderer.set_board(&self.position.board());
+
+		if let GameState::Ongoing = self.position.get_game_state() { 
+			let start_time_cacheless = Instant::now();
+			let (evaluation, moove) = alpha_beta_search(&self.position, evaluate_material_and_positioning, 2);
+			let end_time_cacheless = Instant::now();
+
+			println!("WWWWWWWWWWW");
+			println!("{} | {}", moove.debug_string(), evaluation);
+
+			println!("Search took {} seconds", end_time_cacheless.duration_since(start_time_cacheless).as_secs_f32());
+
+			let (eval, material, positioning) = evaluate_material_and_positioning_debug(&self.position);
+
+			println!("Current eval: {}, {}, {}", eval, material, positioning);
+			println!("Positioning White: {}", self.position.get_positioning_score_for_player(Player::White));
+			println!("Positioning Black: {}", self.position.get_positioning_score_for_player(Player::Black));
+		}
 	}
 
 	fn select_tile(&mut self, tile_pos: Option<TilePosition>) {
