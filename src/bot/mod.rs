@@ -6,6 +6,7 @@ pub mod evaluation;
 pub mod evaluation_funcs;
 pub mod search_funcs;
 pub mod positioning;
+pub mod utils;
 
 pub type EvaluationFn = fn(&Position) -> Evaluation;
 pub type SearchFn = fn(&Position, EvaluationFn, u32) -> (Move, Evaluation);
