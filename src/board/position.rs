@@ -198,14 +198,12 @@ impl Position {
     }
 
     pub fn generate_legal_basic_moves(&self, tile_pos: TilePosition) -> Vec<Move> {
-        let collision_mask = get_collision_mask(self.board.clone(), tile_pos);
+        let mut collision_mask = get_collision_mask(self.board.clone(), tile_pos);
 
         let mut moves: Vec<Move> = Vec::new();
 
-        for bit_offset in 0..64 {
-            if !collision_mask.check_bit(bit_offset) {
-                continue;
-            }
+        while !collision_mask.is_empty() {
+            let bit_offset = collision_mask.0.trailing_zeros();
 
             let to_pos = TilePosition::from_bit_offset(bit_offset);
 
@@ -214,7 +212,9 @@ impl Position {
             if !self.does_move_leave_king_threatened(&basic_move) {
                 moves.push(basic_move);
             }
-        };
+
+            collision_mask.unset_bit(bit_offset);
+        }
 
         return moves;
     }

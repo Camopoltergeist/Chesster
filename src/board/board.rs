@@ -127,12 +127,12 @@ impl Board {
         };
 
         let piece = match () {
-            _ if Bitboard::check_bit(&self.pawns, bit_offset) => PieceType::Pawn,
-            _ if Bitboard::check_bit(&self.rooks, bit_offset) => PieceType::Rook,
-            _ if Bitboard::check_bit(&self.knights, bit_offset) => PieceType::Knight,
-            _ if Bitboard::check_bit(&self.bishops, bit_offset) => PieceType::Bishop,
-            _ if Bitboard::check_bit(&self.queens, bit_offset) => PieceType::Queen,
-            _ if Bitboard::check_bit(&self.kings, bit_offset) => PieceType::King,
+            _ if self.pawns.check_bit(bit_offset) => PieceType::Pawn,
+            _ if self.rooks.check_bit(bit_offset) => PieceType::Rook,
+            _ if self.knights.check_bit(bit_offset) => PieceType::Knight,
+            _ if self.bishops.check_bit(bit_offset) => PieceType::Bishop,
+            _ if self.queens.check_bit(bit_offset) => PieceType::Queen,
+            _ if self.kings.check_bit(bit_offset) => PieceType::King,
             _ => return None,
         };
 
@@ -255,6 +255,7 @@ impl Board {
             let bit_offset = player_board.0.trailing_zeros();
 
             let tile_pos = TilePosition::from_bit_offset(bit_offset);
+
             if let Some(player_piece) = self.get_piece(tile_pos) {
                 attack_mask |= match player_piece.piece() {
                     PieceType::Pawn => Bitboard(get_pawn_capture(player_piece.player(), tile_pos)),
