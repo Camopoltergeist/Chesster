@@ -24,7 +24,8 @@ impl Mailbox {
     }
 
     pub fn move_piece(&mut self, from_offset: u32, to_offset: u32) {
-        self.piece_array[to_offset as usize] = self.piece_array[from_offset as usize]
+        self.piece_array[to_offset as usize] = self.piece_array[from_offset as usize];
+        self.remove_piece(from_offset)
     }
     
 }
