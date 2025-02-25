@@ -3,7 +3,7 @@ use std::time::Instant;
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{game_state::GameState, moove::{Move, PromotingMove}, position::Position, tile_position::TilePosition}, bot::{evaluation_funcs::{evaluate_material_and_checkmates, evaluate_material_and_mobility, evaluate_material_and_mobility_i32, evaluate_material_and_positioning, evaluate_material_and_positioning_debug}, search_funcs::{alpha_beta_search, negamax_with_move_chain_multithreaded, print_move_chain}}, piece::PieceType, player::Player, player_piece::PlayerPiece};
+use crate::{board::{game_state::GameState, moove::{Move, PromotingMove}, position::Position, tile_position::TilePosition}, bot::{evaluation_funcs::{evaluate_material_and_positioning, evaluate_material_and_positioning_debug}, search_funcs::alpha_beta_search}, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::{load_circle_texture, load_piece_textures}};
 
@@ -21,7 +21,6 @@ pub struct UI {
 
 	promotion_menu_open: bool,
 	promoting_move: Option<PromotingMove>,
-	selected_promotion_piece: Option<PieceType>,
 }
 
 impl UI {
@@ -45,7 +44,6 @@ impl UI {
 			background_color: Color { r: 0, g: 65, b: 119, a: 255 },
 			promotion_menu_open: false,
 			promoting_move: None,
-			selected_promotion_piece: None,
 		}
 	}
 
@@ -93,6 +91,14 @@ impl UI {
 			GameState::Ongoing => self.text_area.skip_line(),
 			GameState::Checkmate(winner) => self.text_area.draw_line(draw_handle, &format!("{} wins!", winner.as_str())),
 			GameState::Stalemate => self.text_area.draw_line(draw_handle, "Draw: Stalemate!"),
+		}
+
+		if self.promotion_menu_open {
+			self.text_area.draw_line(draw_handle, "Promotion:");
+			self.text_area.draw_line(draw_handle, "1: Queen");
+			self.text_area.draw_line(draw_handle, "2: Rook");
+			self.text_area.draw_line(draw_handle, "3: Knight");
+			self.text_area.draw_line(draw_handle, "4: Bishop");
 		}
 
 		self.text_area.reset();
@@ -192,7 +198,6 @@ impl UI {
 					return;
 				}
 				
-				self.select_tile(None);
 				self.play_move(m);
 
 				return;
@@ -212,6 +217,7 @@ impl UI {
 	fn play_move(&mut self, m: Move) {
 		self.position.make_move(m);
 		self.board_renderer.set_board(&self.position.board());
+		self.select_tile(None);
 
 		if let GameState::Ongoing = self.position.get_game_state() { 
 			let start_time_cacheless = Instant::now();
