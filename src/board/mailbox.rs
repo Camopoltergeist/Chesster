@@ -1,7 +1,8 @@
 use crate::player_piece::PlayerPiece;
 
+#[derive(Clone, PartialEq, Eq)]
 pub struct Mailbox {
-    piece_array: [Option<PlayerPiece>; 64],
+    pub piece_array: [Option<PlayerPiece>; 64],
 }
 
 impl Mailbox {
