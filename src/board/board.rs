@@ -247,13 +247,12 @@ impl Board {
     }
 
     pub fn get_attack_mask(&self, player: Player) -> Bitboard {
-        let player_board = self.get_player_bitboard(player);
+        let mut player_board = self.get_player_bitboard(player).clone();
 
         let mut attack_mask: Bitboard = Bitboard(0);
-        for bit_offset in 0..64 {
-            if !player_board.check_bit(bit_offset) {
-                continue;
-            }
+
+        while !player_board.is_empty() {
+            let bit_offset = player_board.0.trailing_zeros();
 
             let tile_pos = TilePosition::from_bit_offset(bit_offset);
             if let Some(player_piece) = self.get_piece(tile_pos) {
@@ -262,6 +261,8 @@ impl Board {
                     _ => get_collision_mask(self.clone(), tile_pos),
                 };
             }
+
+            player_board.unset_bit(bit_offset);
         }
 
         attack_mask
