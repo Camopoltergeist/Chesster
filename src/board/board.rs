@@ -1,8 +1,5 @@
 use super::{
-    bitboard::Bitboard,
-    moove::{BasicMove, CastleSide, CastlingMove, EnPassantMove, PromotingMove},
-    move_collision::{get_collision_mask, get_pawn_capture},
-    tile_position::TilePosition,
+    bitboard::Bitboard, mailbox::Mailbox, moove::{BasicMove, CastleSide, CastlingMove, EnPassantMove, PromotingMove}, move_collision::{get_collision_mask, get_pawn_capture}, tile_position::TilePosition
 };
 use crate::{
     piece::PieceType,
@@ -11,7 +8,7 @@ use crate::{
     player_piece::PlayerPiece,
 };
 
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Board {
     pub white_pieces: Bitboard,
     pub black_pieces: Bitboard,
@@ -21,6 +18,8 @@ pub struct Board {
     pub bishops: Bitboard,
     pub queens: Bitboard,
     pub kings: Bitboard,
+
+    mailbox: Mailbox,
 }
 
 impl Default for Board {
@@ -50,6 +49,46 @@ impl Default for Board {
             kings: Bitboard(
                 0b_00010000_00000000_00000000_00000000_00000000_00000000_00000000_00010000,
             ),
+            mailbox: Mailbox {
+                piece_array: [
+                    Some(PlayerPiece::new(Player::White, PieceType::Rook)),
+                    Some(PlayerPiece::new(Player::White, PieceType::Knight)),
+                    Some(PlayerPiece::new(Player::White, PieceType::Bishop)),
+                    Some(PlayerPiece::new(Player::White, PieceType::Queen)),
+                    Some(PlayerPiece::new(Player::White, PieceType::King)),
+                    Some(PlayerPiece::new(Player::White, PieceType::Bishop)),
+                    Some(PlayerPiece::new(Player::White, PieceType::Knight)),
+                    Some(PlayerPiece::new(Player::White, PieceType::Rook)),
+                    Some(PlayerPiece::new(Player::White, PieceType::Pawn)),
+                    Some(PlayerPiece::new(Player::White, PieceType::Pawn)),
+                    Some(PlayerPiece::new(Player::White, PieceType::Pawn)),
+                    Some(PlayerPiece::new(Player::White, PieceType::Pawn)),
+                    Some(PlayerPiece::new(Player::White, PieceType::Pawn)),
+                    Some(PlayerPiece::new(Player::White, PieceType::Pawn)),
+                    Some(PlayerPiece::new(Player::White, PieceType::Pawn)),
+                    Some(PlayerPiece::new(Player::White, PieceType::Pawn)),
+                    None, None, None, None, None, None, None, None,
+                    None, None, None, None, None, None, None, None,
+                    None, None, None, None, None, None, None, None,
+                    None, None, None, None, None, None, None, None,
+                    Some(PlayerPiece::new(Player::Black, PieceType::Pawn)),
+                    Some(PlayerPiece::new(Player::Black, PieceType::Pawn)),
+                    Some(PlayerPiece::new(Player::Black, PieceType::Pawn)),
+                    Some(PlayerPiece::new(Player::Black, PieceType::Pawn)),
+                    Some(PlayerPiece::new(Player::Black, PieceType::Pawn)),
+                    Some(PlayerPiece::new(Player::Black, PieceType::Pawn)),
+                    Some(PlayerPiece::new(Player::Black, PieceType::Pawn)),
+                    Some(PlayerPiece::new(Player::Black, PieceType::Pawn)),
+                    Some(PlayerPiece::new(Player::Black, PieceType::Rook)),
+                    Some(PlayerPiece::new(Player::Black, PieceType::Knight)),
+                    Some(PlayerPiece::new(Player::Black, PieceType::Bishop)),
+                    Some(PlayerPiece::new(Player::Black, PieceType::Queen)),
+                    Some(PlayerPiece::new(Player::Black, PieceType::King)),
+                    Some(PlayerPiece::new(Player::Black, PieceType::Bishop)),
+                    Some(PlayerPiece::new(Player::Black, PieceType::Knight)),
+                    Some(PlayerPiece::new(Player::Black, PieceType::Rook)),
+                ]
+            }
         }
     }
 }
@@ -65,6 +104,7 @@ impl Board {
             knights: Bitboard(0),
             bishops: Bitboard(0),
             queens: Bitboard(0),
+            mailbox: Mailbox::empty(),
         }
     }
 
@@ -118,6 +158,10 @@ impl Board {
     }
 
     pub fn get_piece_from_offset(&self, bit_offset: u32) -> Option<PlayerPiece> {
+        self.mailbox.get_piece(bit_offset)
+    }
+
+    pub fn get_piece_from_offset_bitboard(&self, bit_offset: u32) -> Option<PlayerPiece> {
         let player = if Bitboard::check_bit(&self.white_pieces, bit_offset) {
             Player::White
         } else if Bitboard::check_bit(&self.black_pieces, bit_offset) {
@@ -189,6 +233,8 @@ impl Board {
         self.bishops.unset_bit(bit_offset);
         self.queens.unset_bit(bit_offset);
         self.kings.unset_bit(bit_offset);
+
+        self.mailbox.remove_piece(bit_offset);
     }
 
     pub fn set_piece_to_offset(&mut self, piece: PlayerPiece, bit_offset: u32) {
@@ -198,6 +244,8 @@ impl Board {
             .set_bit(bit_offset);
         self.get_piece_bitboard_mut(piece.piece())
             .set_bit(bit_offset);
+
+        self.mailbox.set_piece(piece, bit_offset);
     }
 
     pub const fn get_all_pieces_mask(&self) -> Bitboard {
@@ -219,7 +267,7 @@ impl Board {
     }
 
     pub fn get_piece(&self, tile_pos: TilePosition) -> Option<PlayerPiece> {
-        return self.get_piece_from_offset(tile_pos.bit_offset());
+        return self.get_piece_from_offset_bitboard(tile_pos.bit_offset());
     }
 
     pub fn remove_piece(&mut self, tile_pos: TilePosition) {
@@ -256,7 +304,7 @@ impl Board {
 
             let tile_pos = TilePosition::from_bit_offset(bit_offset);
 
-            if let Some(player_piece) = self.get_piece_from_offset(bit_offset) {
+            if let Some(player_piece) = self.get_piece_from_offset_bitboard(bit_offset) {
                 attack_mask |= match player_piece.piece() {
                     PieceType::Pawn => Bitboard(get_pawn_capture(player_piece.player(), tile_pos)),
                     _ => get_collision_mask(self.clone(), tile_pos),

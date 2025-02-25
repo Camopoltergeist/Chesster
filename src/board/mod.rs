@@ -6,3 +6,4 @@ pub mod tile_position;
 pub mod moove;
 pub mod attack_mask;
 pub mod game_state;
+pub mod mailbox;
