@@ -233,6 +233,8 @@ impl Board {
         self.bishops.unset_bit(bit_offset);
         self.queens.unset_bit(bit_offset);
         self.kings.unset_bit(bit_offset);
+
+        self.mailbox.remove_piece(bit_offset);
     }
 
     pub fn set_piece_to_offset(&mut self, piece: PlayerPiece, bit_offset: u32) {
@@ -242,6 +244,8 @@ impl Board {
             .set_bit(bit_offset);
         self.get_piece_bitboard_mut(piece.piece())
             .set_bit(bit_offset);
+
+        self.mailbox.set_piece(piece, bit_offset);
     }
 
     pub const fn get_all_pieces_mask(&self) -> Bitboard {
