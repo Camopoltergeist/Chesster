@@ -7,7 +7,7 @@ pub fn bishop_pair_bonus(position: &Position) -> i32 {
     let bishop_board = &position.board().bishops;
 
     if (player_board.value() & bishop_board.value()).count_ones() == 2 {
-        return 50;
+        return 35;
     } else {
         return 0;
     }
@@ -32,6 +32,19 @@ pub fn rook_pair_penalty(position: &Position) -> i32 {
         } else {
             return -20 / rank_diff;
         }
+    } else {
+        return 0;
+    }
+}
+
+pub fn no_pawn_penalty(position: &Position) -> i32 {
+    let player_pawn_board = *position
+        .board()
+        .get_player_bitboard(position.current_player())
+        & position.board().pawns;
+
+    if player_pawn_board == 0 {
+        return -50;
     } else {
         return 0;
     }
