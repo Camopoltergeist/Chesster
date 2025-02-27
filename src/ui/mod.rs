@@ -5,7 +5,7 @@ pub mod ui;
 
 use ui::UI;
 
-use crate::board::position::Position;
+use crate::board::position::{self, Position};
 
 const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;
@@ -20,7 +20,8 @@ pub fn start_ui() {
 
 	let mut ui = UI::new(&mut rl, &thread);
 
-	let position = Position::default();
+	let position = Position::from_fen_str("NNNNNRNk/PPPPPPN1/PPPPPPN1/PPPPPPP1/PPPPPPP1/PPPPPPP1/PPPPPPP1/KPPPPPR1 b - - 0 1").unwrap();
+	// let position = Position::default();
 
 	ui.set_position(position);
 

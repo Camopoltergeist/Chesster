@@ -294,8 +294,10 @@ pub fn alpha_beta_search(position: &Position, evaluation_fn: fn(&Position) -> i3
 
 		if legal_moves.len() == 0 {
 			if position.is_in_check(position.current_player()) {
-				return i32::MIN + 1;
+				return -1000000 * (depth as i32 + 1);
 			};
+			
+			return 0;
 		};
 
 		for m in legal_moves {
@@ -305,7 +307,7 @@ pub fn alpha_beta_search(position: &Position, evaluation_fn: fn(&Position) -> i3
 			let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1);
 
 			if eval >= beta {
-				return beta;
+				return eval;
 			}
 
 			alpha = eval.max(alpha);
@@ -324,6 +326,8 @@ pub fn alpha_beta_search(position: &Position, evaluation_fn: fn(&Position) -> i3
 		moved_position.make_move(m.clone());
 
 		let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1);
+
+		println!("{} | {}", m.debug_string(), eval);
 
 		if eval > alpha {
 			alpha = eval;
@@ -344,8 +348,10 @@ pub fn alpha_beta_search_multithreaded(position: &Position, evaluation_fn: fn(&P
 
 		if legal_moves.len() == 0 {
 			if position.is_in_check(position.current_player()) {
-				return i32::MIN + 1;
+				return -1000000 * (depth as i32 + 1);
 			};
+
+			return 0;
 		};
 
 		for m in legal_moves {
@@ -355,7 +361,7 @@ pub fn alpha_beta_search_multithreaded(position: &Position, evaluation_fn: fn(&P
 			let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1);
 
 			if eval >= beta {
-				return beta;
+				return eval;
 			}
 
 			alpha = eval.max(alpha);
