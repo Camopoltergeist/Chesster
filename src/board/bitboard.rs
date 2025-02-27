@@ -51,6 +51,12 @@ impl Bitboard {
         self.0 &= mask;
     }
 
+    pub fn pop_lsb(&mut self) -> u32 {
+        let lsb_offset = self.0.trailing_zeros();
+        self.0 &= self.0 - 1;
+        lsb_offset
+    }
+
     pub const fn is_empty(&self) -> bool {
         self.0 == 0
     }
