@@ -221,7 +221,7 @@ impl UI {
 
 		if let GameState::Ongoing = self.position.get_game_state() { 
 			let start_time_cacheless = Instant::now();
-			let (evaluation, moove) = alpha_beta_search(&self.position, evaluate_material_and_positioning, 2);
+			let (evaluation, moove) = alpha_beta_search_multithreaded(&self.position, evaluate_material_and_positioning, 6);
 			let end_time_cacheless = Instant::now();
 
 			println!("WWWWWWWWWWW");

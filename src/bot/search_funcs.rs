@@ -327,8 +327,6 @@ pub fn alpha_beta_search(position: &Position, evaluation_fn: fn(&Position) -> i3
 
 		let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1);
 
-		println!("{} | {}", m.debug_string(), eval);
-
 		if eval > alpha {
 			alpha = eval;
 			best_move = Some(m);
