@@ -5,7 +5,7 @@ pub mod ui;
 
 use ui::UI;
 
-use crate::board::position::Position;
+use crate::board::position::{self, Position};
 
 const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;

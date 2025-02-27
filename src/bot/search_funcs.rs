@@ -294,8 +294,10 @@ pub fn alpha_beta_search(position: &Position, evaluation_fn: fn(&Position) -> i3
 
 		if legal_moves.len() == 0 {
 			if position.is_in_check(position.current_player()) {
-				return i32::MIN + 1;
+				return -1000000 * (depth as i32 + 1);
 			};
+			
+			return 0;
 		};
 
 		for m in legal_moves {
@@ -305,7 +307,7 @@ pub fn alpha_beta_search(position: &Position, evaluation_fn: fn(&Position) -> i3
 			let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1);
 
 			if eval >= beta {
-				return beta;
+				return eval;
 			}
 
 			alpha = eval.max(alpha);
@@ -332,4 +334,66 @@ pub fn alpha_beta_search(position: &Position, evaluation_fn: fn(&Position) -> i3
 	};
 
 	return (alpha, best_move.unwrap());
+}
+
+pub fn alpha_beta_search_multithreaded(position: &Position, evaluation_fn: fn(&Position) -> i32, depth: u32) -> (i32, Move) {
+	fn alpha_beta(position: &Position, evaluation_fn: fn(&Position) -> i32, mut alpha: i32, beta: i32, depth: u32) -> i32 {
+		if depth == 0 {
+			return evaluation_fn(position);
+		};
+
+		let legal_moves = position.get_all_legal_moves();
+
+		if legal_moves.len() == 0 {
+			if position.is_in_check(position.current_player()) {
+				return -1000000 * (depth as i32 + 1);
+			};
+
+			return 0;
+		};
+
+		for m in legal_moves {
+			let mut moved_position = position.clone();
+			moved_position.make_move(m);
+
+			let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1);
+
+			if eval >= beta {
+				return eval;
+			}
+
+			alpha = eval.max(alpha);
+		};
+
+		return alpha;
+	}
+
+	let alpha = i32::MIN + 1;
+	let beta = i32::MAX;
+
+	let mut threads = Vec::new();
+	let legal_moves = position.get_all_legal_moves();
+	
+	for m in &legal_moves {
+		let mut moved_position = position.clone();
+		moved_position.make_move(m.clone());
+		
+		threads.push(thread::spawn(move || {
+			return -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1);
+		}));
+	};
+	
+	let mut best_move: Option<Move> = None; 
+	let mut best_eval = i32::MIN;
+
+	for (i, thread) in threads.into_iter().enumerate() {
+		let eval = thread.join().unwrap();
+
+		if eval > best_eval {
+			best_eval = eval;
+			best_move = Some(legal_moves[i].clone());
+		}
+	}
+
+	return (best_eval, best_move.unwrap());
 }
