@@ -536,7 +536,7 @@ impl Position {
 
                     if self.black_long_castling {
                         self.black_long_castling = false;
-                        self.zobrist_hash.update_castling_availability(Player::White, CastleSide::QueenSide);
+                        self.zobrist_hash.update_castling_availability(Player::Black, CastleSide::QueenSide);
                     }
                 }
             }
@@ -568,7 +568,7 @@ impl Position {
                     if from_pos == TilePosition::new(0, 7) {
                         if self.black_long_castling {
                             self.black_long_castling = false;
-                            self.zobrist_hash.update_castling_availability(Player::White, CastleSide::QueenSide);
+                            self.zobrist_hash.update_castling_availability(Player::Black, CastleSide::QueenSide);
                         }
                         return;
                     }
@@ -608,7 +608,7 @@ impl Position {
         if to_pos == TilePosition::new(0, 7) {
             if self.black_long_castling {
                 self.black_long_castling = false;
-                self.zobrist_hash.update_castling_availability(Player::White, CastleSide::QueenSide);
+                self.zobrist_hash.update_castling_availability(Player::Black, CastleSide::QueenSide);
             }
             return;
         }
