@@ -222,6 +222,10 @@ impl UI {
 		self.board_renderer.set_board(&self.position.board());
 		self.select_tile(None);
 
+		if self.position.current_player() != Player::Black {
+			return;
+		}
+
 		if let GameState::Ongoing = self.position.get_game_state() { 
 			let start_time_cacheless = Instant::now();
 			let (evaluation, moove) = iterative_deepening(&self.position, evaluate_material_and_positioning, Duration::from_secs(2), self.transposition_table.clone());
@@ -232,8 +236,12 @@ impl UI {
 
 			println!("Search took {} seconds", end_time_cacheless.duration_since(start_time_cacheless).as_secs_f32());
 
-			let rwlock = self.transposition_table.read().unwrap();
-			println!("TP table entries: {}", rwlock.len());
+			if let Ok(mut rwlock) = self.transposition_table.write() {
+				println!("TP table entries: {}", rwlock.len());
+				println!("TP table lookups: {}", rwlock.lookups());
+				println!("TP table hit %: {}", rwlock.hit_percent() * 100.0);
+				rwlock.reset_stats();
+			}
 		}
 	}
 
