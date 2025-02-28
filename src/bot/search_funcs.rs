@@ -1,8 +1,8 @@
-use std::{collections::HashMap, sync::{Arc, Mutex}, thread, time::{Duration, Instant}};
+use std::{collections::HashMap, sync::{Arc, Mutex, RwLock}, thread, time::{Duration, Instant}};
 
-use crate::{board::{moove::Move, position::Position}, bot::evaluation::Evaluation};
+use crate::{board::{moove::Move, position::Position}, bot::{evaluation::Evaluation, transposition_table::Transposition}};
 
-use super::EvaluationFn;
+use super::{transposition_table::TranspositionTable, EvaluationFn};
 
 pub fn negamax_search(position: &Position, evaluation_fn: EvaluationFn, depth: u32) -> (Move, Evaluation) {
 	fn negamax(position: &Position, evaluation_fn: EvaluationFn, depth: u32) -> Evaluation {
@@ -398,11 +398,21 @@ pub fn alpha_beta_search_multithreaded(position: &Position, evaluation_fn: fn(&P
 	return (best_eval, best_move.unwrap());
 }
 
-pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> i32, search_time: Duration) -> (i32, Move) {
-	fn alpha_beta(position: &Position, evaluation_fn: fn(&Position) -> i32, mut alpha: i32, beta: i32, depth: u32) -> i32 {
+pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> i32, search_time: Duration, transposition_table: Arc<RwLock<TranspositionTable>>) -> (i32, Move) {
+	fn alpha_beta(position: &Position, evaluation_fn: fn(&Position) -> i32, mut alpha: i32, beta: i32, depth: u32, transposition_table: Arc<RwLock<TranspositionTable>>) -> i32 {
 		if depth == 0 {
 			return evaluation_fn(position);
 		};
+
+		if let Ok(rwlock) = transposition_table.read() {
+			let transposition = rwlock.get(position.board().get_all_pieces_mask().into());
+			
+			if let Some(tp) = transposition {
+				if tp.depth() >= depth as u16 {
+					return tp.evaluation();
+				}
+			}
+		}
 
 		let legal_moves = position.get_all_legal_moves();
 
@@ -418,7 +428,11 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 			let mut moved_position = position.clone();
 			moved_position.make_move(m);
 
-			let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1);
+			let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1, transposition_table.clone());
+
+			if let Ok(mut rwlock) = transposition_table.write() {
+				rwlock.set(position.board().get_all_pieces_mask().into(), Transposition::new(depth as u16, eval));
+			} 
 
 			if eval >= beta {
 				return eval;
@@ -444,7 +458,7 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 			let mut moved_position = position.clone();
 			moved_position.make_move(m.clone());
 
-			let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth);
+			let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth, transposition_table.clone());
 
 			if eval > alpha {
 				alpha = eval;

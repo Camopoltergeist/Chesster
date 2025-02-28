@@ -1,9 +1,9 @@
 
-use std::time::{Duration, Instant};
+use std::{sync::{Arc, RwLock}, time::{Duration, Instant}};
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{game_state::GameState, moove::{Move, PromotingMove}, position::Position, tile_position::TilePosition}, bot::{evaluation_funcs::{evaluate_material_and_positioning, evaluate_material_and_positioning_debug}, search_funcs::{alpha_beta_search, alpha_beta_search_multithreaded, iterative_deepening}}, piece::PieceType, player::Player, player_piece::PlayerPiece};
+use crate::{board::{game_state::GameState, moove::{Move, PromotingMove}, position::Position, tile_position::TilePosition}, bot::{evaluation_funcs::{evaluate_material_and_positioning, evaluate_material_and_positioning_debug}, search_funcs::{alpha_beta_search, alpha_beta_search_multithreaded, iterative_deepening}, transposition_table::TranspositionTable}, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::{load_circle_texture, load_piece_textures}};
 
@@ -21,6 +21,8 @@ pub struct UI {
 
 	promotion_menu_open: bool,
 	promoting_move: Option<PromotingMove>,
+
+	transposition_table: Arc<RwLock<TranspositionTable>>,
 }
 
 impl UI {
@@ -44,6 +46,7 @@ impl UI {
 			background_color: Color { r: 0, g: 65, b: 119, a: 255 },
 			promotion_menu_open: false,
 			promoting_move: None,
+			transposition_table: Arc::new(RwLock::new(TranspositionTable::new(10000000)))
 		}
 	}
 
@@ -221,7 +224,7 @@ impl UI {
 
 		if let GameState::Ongoing = self.position.get_game_state() { 
 			let start_time_cacheless = Instant::now();
-			let (evaluation, moove) = iterative_deepening(&self.position, evaluate_material_and_positioning, Duration::from_secs(2));
+			let (evaluation, moove) = iterative_deepening(&self.position, evaluate_material_and_positioning, Duration::from_secs(2), self.transposition_table.clone());
 			let end_time_cacheless = Instant::now();
 
 			println!("WWWWWWWWWWW");
@@ -229,11 +232,8 @@ impl UI {
 
 			println!("Search took {} seconds", end_time_cacheless.duration_since(start_time_cacheless).as_secs_f32());
 
-			let (eval, material, positioning) = evaluate_material_and_positioning_debug(&self.position);
-
-			println!("Current eval: {}, {}, {}", eval, material, positioning);
-			println!("Positioning White: {}", self.position.get_positioning_score_for_player(Player::White));
-			println!("Positioning Black: {}", self.position.get_positioning_score_for_player(Player::Black));
+			let rwlock = self.transposition_table.read().unwrap();
+			println!("TP table entries: {}", rwlock.len());
 		}
 	}
 

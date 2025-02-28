@@ -1,38 +1,48 @@
-use std::{collections::HashMap, sync::RwLock};
+use std::collections::HashMap;
 
 pub struct TranspositionTable {
-	map: RwLock<HashMap<u64, Transposition>>,
+	map: HashMap<u64, Transposition>,
 }
 
 impl TranspositionTable {
 	pub fn new(capacity: usize) -> Self {
 		Self {
-			map: RwLock::new(HashMap::with_capacity(capacity))
+			map: HashMap::with_capacity(capacity)
 		}
 	}
 
-	pub fn get(&mut self, hash: u64) -> Option<i32> {
-		let rwguard = self.map.read().unwrap();
-		let tp = rwguard.get(&hash).cloned();
-		drop(rwguard);
-
-		if tp.is_none() {
-			return None;
-		};
-
-		let tp = tp.unwrap();
-
-		return Some(tp.evaluation);
+	pub fn get(&self, hash: u64) -> Option<&Transposition> {
+		self.map.get(&hash)
 	}
 
 	pub fn set(&mut self, hash: u64, transposition: Transposition) {
-		let mut rwguard = self.map.write().unwrap();
-		rwguard.insert(hash, transposition);
+		self.map.insert(hash, transposition);
+	}
+
+	pub fn len(&self) -> usize {
+		self.map.len()
 	}
 }
 
 #[derive(Clone)]
 pub struct Transposition {
-	age: u16,
+	depth: u16,
 	evaluation: i32
+}
+
+impl Transposition {
+	pub fn new(depth: u16, evaluation: i32) -> Self {
+		Self {
+			depth,
+			evaluation
+		}
+	}
+
+	pub fn depth(&self) -> u16 {
+		self.depth
+	}
+
+	pub fn evaluation(&self) -> i32 {
+		self.evaluation
+	}
 }
