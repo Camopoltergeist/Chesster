@@ -471,6 +471,10 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 		depth += 1;
 	};
 
+	for (eval, m) in &evaled_moves {
+		println!("{} | {}", m.debug_string(), eval);
+	}
+
 	println!("Depth: {}", depth);
 
 	return evaled_moves[0].clone();
