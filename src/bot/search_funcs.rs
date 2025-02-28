@@ -405,7 +405,7 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 		};
 
 		if let Ok(rwlock) = transposition_table.read() {
-			let transposition = rwlock.get(position.board().get_all_pieces_mask().into());
+			let transposition = rwlock.get(position.hash().value());
 			
 			if let Some(tp) = transposition {
 				if tp.depth() >= depth as u16 {
@@ -431,7 +431,7 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 			let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1, transposition_table.clone());
 
 			if let Ok(mut rwlock) = transposition_table.write() {
-				rwlock.set(position.board().get_all_pieces_mask().into(), Transposition::new(depth as u16, eval));
+				rwlock.set(position.hash().value(), Transposition::new(depth as u16, eval));
 			} 
 
 			if eval >= beta {

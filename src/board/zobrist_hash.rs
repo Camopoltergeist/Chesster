@@ -5,11 +5,18 @@ use crate::{piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 use super::{moove::{BasicMove, CastleSide, CastlingMove, EnPassantMove, PromotingMove}, position::Position, tile_position::TilePosition};
 
+#[derive(Clone, PartialEq, Eq)]
 pub struct ZobristHash {
 	value: u64
 }
 
 impl ZobristHash {
+	pub fn zero() -> Self {
+		Self {
+			value: 0
+		}
+	}
+
 	pub fn from_position(position: &Position) -> Self {
 		let mut value = 0;
 

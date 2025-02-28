@@ -2,7 +2,7 @@ use std::hash::Hash;
 
 use crate::{board::moove::CastleSide, bot::positioning::get_score_for_piece, piece::PieceType, pieces::{king::King, pawn::Pawn}, player::Player, player_piece::PlayerPiece};
 
-use super::{board::Board, game_state::GameState, moove::{BasicMove, CastlingMove, EnPassantMove, Move, PromotingMove}, move_collision::get_collision_mask, tile_position::TilePosition};
+use super::{board::Board, game_state::GameState, moove::{BasicMove, CastlingMove, EnPassantMove, Move, PromotingMove}, move_collision::get_collision_mask, tile_position::TilePosition, zobrist_hash::ZobristHash};
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct Position {
@@ -15,6 +15,8 @@ pub struct Position {
     white_long_castling: bool,
     black_short_castling: bool,
     black_long_castling: bool,
+
+    zobrist_hash: ZobristHash,
 }
 
 impl Hash for Position {
@@ -440,16 +442,51 @@ impl Position {
     pub fn make_move_unchecked(&mut self, moove: Move) {
         self.change_castling_availability_if_needed(&moove);
 
+        if let Some(en_passant_tile) = self.en_passant_target.clone() {
+            self.zobrist_hash.update_en_passant_column(en_passant_tile);
+        }
+
         self.en_passant_target = self.get_en_passant_target_for_move(&moove);
 
+        if let Some(en_passant_tile) = self.en_passant_target.clone() {
+            self.zobrist_hash.update_en_passant_column(en_passant_tile);
+        }
+
         match moove {
-            Move::Basic(basic_move) => self.board.move_piece_basic(basic_move),
-            Move::Castling(castling_move) => self.board.move_piece_castling(castling_move),
-            Move::EnPassant(en_passant_move) => self.board.move_piece_en_passant(en_passant_move),
-            Move::Promoting(promoting_move) => self.board.move_piece_promoting(promoting_move),
+            Move::Basic(basic_move) => {
+                let moved_piece = self.get_piece(basic_move.from_position()).unwrap();
+                let captured_piece = self.get_piece(basic_move.to_position());
+
+                self.zobrist_hash.update_basic_move(basic_move.clone(), moved_piece, captured_piece);
+                self.board.move_piece_basic(basic_move);
+            },
+            Move::Castling(castling_move) => {
+                let moved_piece = self.get_piece(castling_move.from_position()).unwrap();
+
+                self.zobrist_hash.update_castling_move(castling_move.clone(), moved_piece);
+                self.board.move_piece_castling(castling_move);
+            },
+            Move::EnPassant(en_passant_move) => {
+                let moved_piece = self.get_piece(en_passant_move.from_position()).unwrap();
+                let captured_piece = self.get_piece(en_passant_move.captured_tile()).unwrap();
+
+                self.zobrist_hash.update_en_passant_move(en_passant_move.clone(), moved_piece, captured_piece);
+                self.board.move_piece_en_passant(en_passant_move)
+            },
+            Move::Promoting(promoting_move) => {
+                let moved_piece = self.get_piece(promoting_move.from_position()).unwrap();
+                let captured_piece = self.get_piece(promoting_move.to_position());
+
+                self.zobrist_hash.update_promoting_move(promoting_move.clone(), moved_piece, captured_piece);
+                self.board.move_piece_promoting(promoting_move);
+            },
         }
 
         self.current_player = self.current_player.opposite();
+    }
+
+    pub fn hash(&self) -> &ZobristHash {
+        &self.zobrist_hash
     }
 
     fn get_en_passant_target_for_move(&self, moove: &Move) -> Option<TilePosition> {
@@ -481,12 +518,26 @@ impl Position {
         if PieceType::King == piece.piece() {
             match self.current_player {
                 Player::White => {
-                    self.white_short_castling = false;
-                    self.white_long_castling = false;
+                    if self.white_short_castling {
+                        self.white_short_castling = false;
+                        self.zobrist_hash.update_castling_availability(Player::White, CastleSide::KingSide);
+                    }
+
+                    if self.white_long_castling {
+                        self.white_long_castling = false;
+                        self.zobrist_hash.update_castling_availability(Player::White, CastleSide::QueenSide);
+                    }
                 },
                 Player::Black => {
-                    self.black_short_castling = false;
-                    self.black_long_castling = false;
+                    if self.black_short_castling {
+                       self.black_short_castling = false;
+                       self.zobrist_hash.update_castling_availability(Player::Black, CastleSide::KingSide);
+                    }
+
+                    if self.black_long_castling {
+                        self.black_long_castling = false;
+                        self.zobrist_hash.update_castling_availability(Player::White, CastleSide::QueenSide);
+                    }
                 }
             }
 
@@ -498,23 +549,35 @@ impl Position {
             match piece.player() {
                 Player::White => {
                     if from_pos == TilePosition::new(0, 0) {
-                        self.white_long_castling = false;
+                        if self.white_long_castling {
+                            self.white_long_castling = false;
+                            self.zobrist_hash.update_castling_availability(Player::White, CastleSide::QueenSide);
+                        }
                         return;
                     }
 
                     if from_pos == TilePosition::new(7, 0) {
-                        self.white_short_castling = false;
+                        if self.white_short_castling {
+                            self.white_short_castling = false;
+                            self.zobrist_hash.update_castling_availability(Player::White, CastleSide::KingSide);
+                        }
                         return;
                     }
                 },
                 Player::Black => {
                     if from_pos == TilePosition::new(0, 7) {
-                        self.black_long_castling = false;
+                        if self.black_long_castling {
+                            self.black_long_castling = false;
+                            self.zobrist_hash.update_castling_availability(Player::White, CastleSide::QueenSide);
+                        }
                         return;
                     }
 
                     if from_pos == TilePosition::new(7, 7) {
-                        self.black_short_castling = false;
+                        if self.black_short_castling {
+                            self.black_short_castling = false;
+                            self.zobrist_hash.update_castling_availability(Player::Black, CastleSide::KingSide);
+                        }
                         return;
                     }
                 }
@@ -527,22 +590,34 @@ impl Position {
         let to_pos = moove.to_position();
 
         if to_pos == TilePosition::new(0, 0) {
-            self.white_long_castling = false;
+            if self.white_long_castling {
+                self.white_long_castling = false;
+                self.zobrist_hash.update_castling_availability(Player::White, CastleSide::QueenSide);
+            }
             return;
         }
 
         if to_pos == TilePosition::new(7, 0) {
-            self.white_short_castling = false;
+            if self.white_short_castling {
+                self.white_short_castling = false;
+                self.zobrist_hash.update_castling_availability(Player::White, CastleSide::KingSide);
+            }
             return;
         }
 
         if to_pos == TilePosition::new(0, 7) {
-            self.black_long_castling = false;
+            if self.black_long_castling {
+                self.black_long_castling = false;
+                self.zobrist_hash.update_castling_availability(Player::White, CastleSide::QueenSide);
+            }
             return;
         }
 
         if to_pos == TilePosition::new(7, 7) {
-            self.black_short_castling = false;
+            if self.black_short_castling {
+                self.black_short_castling = false;
+                self.zobrist_hash.update_castling_availability(Player::Black, CastleSide::KingSide);
+            }
             return;
         }
     }
@@ -588,6 +663,10 @@ impl Position {
 
         return positioning_score;
     }
+
+    pub fn generate_zobrist_hash(&mut self) {
+        self.zobrist_hash = ZobristHash::from_position(&self);
+    }
 }
 
 impl Position {
@@ -613,7 +692,7 @@ impl Position {
 
 impl Default for Position {
     fn default() -> Self {
-        Self {
+        let mut s = Self {
             board: Board::default(),
             current_player: Player::White,
 
@@ -622,7 +701,13 @@ impl Default for Position {
             white_long_castling: true,
             black_short_castling: true,
             black_long_castling: true,
-        }
+
+            zobrist_hash: ZobristHash::zero()
+        };
+
+        s.generate_zobrist_hash();
+
+        s
     }
 }
 
