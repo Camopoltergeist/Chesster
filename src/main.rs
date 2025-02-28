@@ -1,5 +1,6 @@
 use std::env;
 
+use board::zobrist_hash::generate_zobrist_numbers;
 use performance_test::performance_test;
 use ui::start_ui;
 
@@ -17,6 +18,8 @@ pub mod tests;
 mod performance_test;
 
 fn main() {
+    generate_zobrist_numbers();
+
     let args: Vec<String> = env::args().collect();
 
     if args.contains(&"--performance-test".to_owned()) {
