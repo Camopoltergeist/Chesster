@@ -3,7 +3,7 @@ use rand_chacha::ChaCha20Rng;
 
 use crate::{piece::PieceType, player::Player, player_piece::PlayerPiece};
 
-use super::{moove::CastleSide, position::Position, tile_position::TilePosition};
+use super::{moove::{BasicMove, CastleSide, CastlingMove, EnPassantMove, PromotingMove}, position::Position, tile_position::TilePosition};
 
 pub struct ZobristHash {
 	value: u64
@@ -56,6 +56,115 @@ impl ZobristHash {
 		Self {
 			value
 		}
+	}
+
+	pub fn update_basic_move(&mut self, basic_move: BasicMove, moved_piece: PlayerPiece, captured_piece: Option<PlayerPiece>) {
+		let mut value = self.value;
+
+		unsafe {
+			value = value ^ get_zobrist_piece_number(moved_piece, basic_move.from_position());
+
+			if let Some(p) = captured_piece {
+				value = value ^ get_zobrist_piece_number(p, basic_move.to_position());
+			};
+
+			value = value ^ get_zobrist_piece_number(moved_piece, basic_move.to_position());
+			value = value ^ BLACK_TO_MOVE;
+		}
+
+		self.value = value;
+	}
+
+	pub fn update_castling_move(&mut self, castling_move: CastlingMove, king_piece: PlayerPiece) {
+		let mut value = self.value;
+
+		let rook_piece = PlayerPiece::new(king_piece.player(), PieceType::Rook);
+
+		unsafe {
+			value = value ^ get_zobrist_piece_number(king_piece, castling_move.from_position());
+			value = value ^ get_zobrist_piece_number(rook_piece, castling_move.rook_from_position());
+
+			value = value ^ get_zobrist_piece_number(king_piece, castling_move.to_position());
+			value = value ^ get_zobrist_piece_number(rook_piece, castling_move.rook_to_position());
+
+			value = value ^ BLACK_TO_MOVE;
+		}
+
+		self.value = value;
+	}
+
+	pub fn update_en_passant_move(&mut self, en_passant_move: EnPassantMove, moved_piece: PlayerPiece, captured_piece: PlayerPiece) {
+		let mut value = self.value;
+
+		unsafe {
+			value = value ^ get_zobrist_piece_number(moved_piece, en_passant_move.from_position());
+			value = value ^ get_zobrist_piece_number(captured_piece, en_passant_move.captured_tile());
+
+			value = value ^ get_zobrist_piece_number(moved_piece, en_passant_move.to_position());
+
+			value = value ^ BLACK_TO_MOVE;
+		}
+
+		self.value = value;
+	}
+
+	pub fn update_promoting_move(&mut self, promoting_move: PromotingMove, moved_piece: PlayerPiece, captured_piece: Option<PlayerPiece>) {
+		let mut value = self.value;
+
+		unsafe {
+			value = value ^ get_zobrist_piece_number(moved_piece, promoting_move.from_position());
+			
+			if let Some(p) = captured_piece {
+				value = value ^ get_zobrist_piece_number(p, promoting_move.to_position());
+			};
+
+			value = value ^ get_zobrist_piece_number(promoting_move.promotion_piece(), promoting_move.to_position());
+
+			value = value ^ BLACK_TO_MOVE;
+		}
+
+		self.value = value;
+	}
+
+	pub fn update_castling_availability(&mut self, player: Player, side: CastleSide) {
+		let mut value = self.value;
+
+		unsafe {
+			match player {
+				Player::White => {
+					match side {
+						CastleSide::KingSide => {
+							value = value ^ WHITE_SHORT_CASTLE_NUMBER;
+						},
+						CastleSide::QueenSide => {
+							value = value ^ WHITE_LONG_CASTLE_NUMBER;
+						}
+					}
+				},
+				Player::Black => {
+					match side {
+						CastleSide::KingSide => {
+							value = value ^ BLACK_SHORT_CASTLE_NUMBER;
+						},
+						CastleSide::QueenSide => {
+							value = value ^ BLACK_LONG_CASTLE_NUMBER;
+						}
+					}
+				}
+			}
+		}
+
+		self.value = value;
+	}
+
+	pub fn update_en_passant_column(&mut self, en_passant_tile: TilePosition) {
+		let mut value = self.value;
+
+		unsafe {
+			value = value ^ EN_PASSANT_COLUMN_NUMBERS[en_passant_tile.column() as usize];
+		}
+
+		self.value = value;
 	}
 
 	pub fn value(&self) -> u64 {
