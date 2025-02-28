@@ -1,6 +1,6 @@
 use crate::player_piece::PlayerPiece;
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Mailbox {
     pub piece_array: [Option<PlayerPiece>; 64],
 }
