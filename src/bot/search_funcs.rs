@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::{Arc, Mutex, RwLock}, thread, time::{Duration, Instant}};
 
-use crate::{board::{moove::Move, position::Position}, bot::{evaluation::Evaluation, transposition_table::Transposition}};
+use crate::{board::{moove::{CastleSide, Move}, position::Position}, bot::{evaluation::Evaluation, transposition_table::Transposition}, player::Player};
 
 use super::{transposition_table::TranspositionTable, EvaluationFn};
 
@@ -404,7 +404,7 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 			return evaluation_fn(position);
 		};
 
-		if let Ok(rwlock) = transposition_table.read() {
+		if let Ok(mut rwlock) = transposition_table.write() {
 			let transposition = rwlock.get(position.hash().value());
 			
 			if let Some(tp) = transposition {
@@ -431,7 +431,7 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 			let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1, transposition_table.clone());
 
 			if let Ok(mut rwlock) = transposition_table.write() {
-				rwlock.set(position.hash().value(), Transposition::new(depth as u16, eval));
+				rwlock.set(position.hash().value(), Transposition::new(depth as u16, eval, position.clone()));
 			} 
 
 			if eval >= beta {
