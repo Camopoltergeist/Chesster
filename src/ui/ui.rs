@@ -39,7 +39,7 @@ impl UI {
 		Self {
 			text_area: TextArea::new(board_renderer.size(), board_renderer.margin(), 20),
 			board_renderer,
-			game_match: Match::new(),
+			game_match: Match::new(None, None, Duration::from_secs(2)),
 			is_debug: false,
 			hovered_tile: None,
 			selected_tile: None,
