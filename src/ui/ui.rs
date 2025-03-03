@@ -1,9 +1,9 @@
 
-use std::{sync::{Arc, RwLock}, time::{Duration, Instant}};
+use std::time::Duration;
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{game_state::GameState, moove::{Move, PromotingMove}, position::{self, Position}, tile_position::TilePosition}, bot::{evaluation_funcs::{evaluate_material_and_positioning, evaluate_material_and_positioning_debug}, search_funcs::{alpha_beta_search, alpha_beta_search_multithreaded, iterative_deepening}, transposition_table::TranspositionTable}, r#match::Match, piece::PieceType, player::Player, player_piece::PlayerPiece};
+use crate::{board::{game_state::GameState, moove::{Move, PromotingMove}, position::Position, tile_position::TilePosition}, bot::iterative_deepening_search::IterativeDeepeningSearch, r#match::Match, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::{load_circle_texture, load_piece_textures}};
 
@@ -21,8 +21,6 @@ pub struct UI {
 
 	promotion_menu_open: bool,
 	promoting_move: Option<PromotingMove>,
-
-	transposition_table: Arc<RwLock<TranspositionTable>>,
 }
 
 impl UI {
@@ -39,14 +37,13 @@ impl UI {
 		Self {
 			text_area: TextArea::new(board_renderer.size(), board_renderer.margin(), 20),
 			board_renderer,
-			game_match: Match::new(None, None, Duration::from_secs(2)),
+			game_match: Match::new(None, Some(Box::new(IterativeDeepeningSearch::new())), Duration::from_secs(2)),
 			is_debug: false,
 			hovered_tile: None,
 			selected_tile: None,
 			background_color: Color { r: 0, g: 65, b: 119, a: 255 },
 			promotion_menu_open: false,
 			promoting_move: None,
-			transposition_table: Arc::new(RwLock::new(TranspositionTable::new(10000000)))
 		}
 	}
 
@@ -57,6 +54,16 @@ impl UI {
 
 		self.draw_board(&mut draw_handle);
 		self.draw_text(&mut draw_handle);
+	}
+
+	pub fn make_bot_move_if_ready(&mut self) {
+		if self.game_match.bot_move_available() {
+			let moove = self.game_match.get_searched_move();
+
+			println!("{} | {}", moove.1.debug_string(), moove.0);
+
+			self.play_move(moove.1);
+		}
 	}
 
 	fn draw_board(&mut self, draw_handle: &mut RaylibDrawHandle) {
@@ -94,6 +101,11 @@ impl UI {
 			GameState::Ongoing => self.text_area.skip_line(),
 			GameState::Checkmate(winner) => self.text_area.draw_line(draw_handle, &format!("{} wins!", winner.as_str())),
 			GameState::Stalemate => self.text_area.draw_line(draw_handle, "Draw: Stalemate!"),
+		}
+
+		if !self.game_match.move_can_be_made() {
+			let player_str = self.game_match.position().current_player().as_str();
+			self.text_area.draw_line(draw_handle, &format!("{} is thinking...", player_str));
 		}
 
 		if self.promotion_menu_open {
@@ -168,6 +180,10 @@ impl UI {
 	}
 
 	fn handle_click_play_mode(&mut self, clicked_tile: TilePosition) {
+		if !self.game_match.move_can_be_made() {
+			return;
+		}
+
 		if self.promotion_menu_open {
 			return;
 		}
@@ -224,40 +240,40 @@ impl UI {
 
 		// println!("Eval: {}", evaluate_material_and_positioning(&self.position));
 
-		if self.game_match.position().current_player() != Player::Black {
-			return;
-		}
+		// if self.game_match.position().current_player() != Player::Black {
+		// 	return;
+		// }
 
-		if let GameState::Ongoing = self.game_match.position().get_game_state() {
-			let start_time_cacheless = Instant::now();
-			let (evaluation, moove) = iterative_deepening(&self.game_match.position(), evaluate_material_and_positioning, Duration::from_secs(2), self.transposition_table.clone());
-			let end_time_cacheless = Instant::now();
+		// if let GameState::Ongoing = self.game_match.position().get_game_state() {
+		// 	let start_time_cacheless = Instant::now();
+		// 	let (evaluation, moove) = iterative_deepening(&self.game_match.position(), evaluate_material_and_positioning, Duration::from_secs(2), self.transposition_table.clone());
+		// 	let end_time_cacheless = Instant::now();
 
-			println!("WWWWWWWWWWW");
-			println!("{} | {}", moove.debug_string(), evaluation);
+		// 	println!("WWWWWWWWWWW");
+		// 	println!("{} | {}", moove.debug_string(), evaluation);
 
-			println!("Search took {} seconds", end_time_cacheless.duration_since(start_time_cacheless).as_secs_f32());
+		// 	println!("Search took {} seconds", end_time_cacheless.duration_since(start_time_cacheless).as_secs_f32());
 
-			if let Ok(mut rwlock) = self.transposition_table.write() {
-				println!("TP table entries: {}", rwlock.len());
-				// println!("TP table lookups: {}", rwlock.lookups());
-				// println!("TP table hit %: {}", rwlock.hit_percent() * 100.0);
+		// 	if let Ok(mut rwlock) = self.transposition_table.write() {
+		// 		println!("TP table entries: {}", rwlock.len());
+		// 		// println!("TP table lookups: {}", rwlock.lookups());
+		// 		// println!("TP table hit %: {}", rwlock.hit_percent() * 100.0);
 
-				let mut next_pos = self.game_match.position().clone();
-				next_pos.make_move(moove);
+		// 		let mut next_pos = self.game_match.position().clone();
+		// 		next_pos.make_move(moove);
 
-				let tp = rwlock.get(next_pos.hash().value());
+		// 		let tp = rwlock.get(next_pos.hash().value());
 
-				if let Some(tp) = tp {
-					println!("Current transposition from table: {}, {}", tp.depth(), tp.evaluation());
-				}
+		// 		if let Some(tp) = tp {
+		// 			println!("Current transposition from table: {}, {}", tp.depth(), tp.evaluation());
+		// 		}
 
-				rwlock.reset_stats();
-			}
+		// 		rwlock.reset_stats();
+		// 	}
 
-			// let (ab_eval, ab_move) = alpha_beta_search_multithreaded(&self.position, evaluate_material_and_positioning, 7);
-			// println!("Alpha beta: {} | {}", ab_move.debug_string(), ab_eval);
-		}
+		// 	// let (ab_eval, ab_move) = alpha_beta_search_multithreaded(&self.position, evaluate_material_and_positioning, 7);
+		// 	// println!("Alpha beta: {} | {}", ab_move.debug_string(), ab_eval);
+		// }
 	}
 
 	fn select_tile(&mut self, tile_pos: Option<TilePosition>) {

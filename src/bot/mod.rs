@@ -11,6 +11,7 @@ pub mod search_funcs;
 pub mod positioning;
 pub mod utils;
 pub mod transposition_table;
+pub mod iterative_deepening_search;
 
 pub type EvaluationFn = fn(&Position) -> Evaluation;
 pub type SearchFn = fn(&Position, EvaluationFn, u32) -> (Move, Evaluation);

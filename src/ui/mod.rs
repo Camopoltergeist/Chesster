@@ -5,7 +5,7 @@ pub mod ui;
 
 use ui::UI;
 
-use crate::board::position::{self, Position};
+use crate::board::position::Position;
 
 const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;
@@ -26,6 +26,7 @@ pub fn start_ui() {
 
 	while !rl.window_should_close() {
 		ui.handle_input(&rl);
+		ui.make_bot_move_if_ready();
 		ui.draw(&mut rl, &thread);
 	}
 }

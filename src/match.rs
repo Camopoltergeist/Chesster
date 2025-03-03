@@ -66,12 +66,21 @@ impl Match {
         }));
     }
 
-    pub fn is_ready(&self) -> bool {
+    pub fn move_can_be_made(&self) -> bool {
         if let Some(thread_handle) = &self.search_thread {
             thread_handle.is_finished()
         }
         else {
             true
+        }
+    }
+
+    pub fn bot_move_available(&self) -> bool {
+        if let Some(thread_handle) = &self.search_thread {
+            thread_handle.is_finished()
+        }
+        else {
+            false
         }
     }
 
