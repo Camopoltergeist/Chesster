@@ -17,14 +17,14 @@ impl TranspositionTable {
 		}
 	}
 
-	pub fn get(&mut self, hash: u64) -> Option<&Transposition> {
+	pub fn get(&self, hash: u64) -> Option<&Transposition> {
 		let res = self.map.get(&hash);
 
-		self.lookups += 1;
+		// self.lookups += 1;
 
-		if res.is_some() {
-			self.hits += 1;
-		}
+		// if res.is_some() {
+		// 	self.hits += 1;
+		// }
 
 		return res;
 	}
@@ -59,15 +59,15 @@ impl TranspositionTable {
 pub struct Transposition {
 	depth: u16,
 	evaluation: i32,
-	position: Position
+	// position: Position
 }
 
 impl Transposition {
-	pub fn new(depth: u16, evaluation: i32, position: Position) -> Self {
+	pub fn new(depth: u16, evaluation: i32) -> Self {
 		Self {
 			depth,
 			evaluation,
-			position
+			// position
 		}
 	}
 
@@ -79,7 +79,7 @@ impl Transposition {
 		self.evaluation
 	}
 
-	pub fn position(&self) -> &Position {
-		&self.position
-	}
+	// pub fn position(&self) -> &Position {
+	// 	&self.position
+	// }
 }

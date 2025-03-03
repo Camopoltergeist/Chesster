@@ -404,12 +404,14 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 			return evaluation_fn(position);
 		};
 
-		if let Ok(mut rwlock) = transposition_table.write() {
+		if let Ok(rwlock) = transposition_table.read() {
 			let transposition = rwlock.get(position.hash().value());
 			
 			if let Some(tp) = transposition {
 				if tp.depth() >= depth as u16 {
-					return tp.evaluation();
+					if tp.evaluation().abs() < 1000000 {
+						return tp.evaluation();
+					}
 				}
 			}
 		}
@@ -431,7 +433,7 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 			let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1, transposition_table.clone());
 
 			if let Ok(mut rwlock) = transposition_table.write() {
-				rwlock.set(position.hash().value(), Transposition::new(depth as u16 - 1, eval, position.clone()));
+				rwlock.set(position.hash().value(), Transposition::new(depth as u16 - 1, eval));
 			} 
 
 			if eval >= beta {
@@ -451,27 +453,34 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 	let mut evaled_moves: Vec<(i32, Move)> = legal_moves.iter().map(|e| (0, e.clone())).collect();
 
 	while Instant::now() - start_time < search_time {
-		let mut alpha = i32::MIN + 1;
+		let alpha = i32::MIN + 1;
 		let beta = i32::MAX;
 
-		for (i, m) in legal_moves.iter().enumerate() {
+		let mut threads = Vec::new();
+
+		for m in &legal_moves {
 			let mut moved_position = position.clone();
 			moved_position.make_move(m.clone());
 
-			let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth, transposition_table.clone());
+			let tp = transposition_table.clone();
+			let m = m.clone();
 
-			if eval > alpha {
-				alpha = eval;
-			}
-
-			evaled_moves[i] = (eval, m.clone());
+			threads.push(thread::spawn(move || {
+				return (-alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth, tp), m);
+			}));
 		};
 
+		for (i, t) in threads.into_iter().enumerate() {
+			let (eval, m) = t.join().unwrap();
+
+			evaled_moves[i] = (eval, m.clone());
+		}
+		
 		evaled_moves.sort_by(|a, b| b.0.cmp(&a.0));
 		depth += 1;
 	};
 
-	for (eval, m) in &evaled_moves {
+	for (eval, m) in evaled_moves.iter() {
 		println!("{} | {}", m.debug_string(), eval);
 	}
 

@@ -20,7 +20,7 @@ pub fn start_ui() {
 
 	let mut ui = UI::new(&mut rl, &thread);
 
-	let position = Position::default();
+	let position = Position::from_fen_str("7k/8/r7/1r6/7K/8/8/8 w - - 0 1").unwrap();
 
 	ui.set_position(position);
 
