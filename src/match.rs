@@ -1,19 +1,19 @@
 use std::{thread::{self, JoinHandle}, time::Duration};
 
-use crate::{board::{moove::Move, position::Position}, player::Player};
+use crate::{board::{moove::Move, position::Position}, bot::Bot, player::Player};
 
 pub struct Match {
     position: Position,
     
-    white_bot: Option<fn(position: &Position, search_time: Duration) -> (i32, Move)>,
-    black_bot: Option<fn(position: &Position, search_time: Duration) -> (i32, Move)>,
+    white_bot: Option<Box<dyn Bot>>,
+    black_bot: Option<Box<dyn Bot>>,
 
     search_thread: Option<JoinHandle<(i32, Move)>>,
     search_time: Duration,
 }
 
 impl Match {
-    pub fn new(white_bot: Option<fn(position: &Position, search_time: Duration) -> (i32, Move)>, black_bot: Option<fn(position: &Position, search_time: Duration) -> (i32, Move)>, search_time: Duration) -> Self {
+    pub fn new(white_bot: Option<Box<dyn Bot>>, black_bot: Option<Box<dyn Bot>>, search_time: Duration) -> Self {
         Self {
             position: Position::default(),
             white_bot,
@@ -55,7 +55,7 @@ impl Match {
 
         let pos = self.position.clone();
         let st = self.search_time.clone();
-        let f = bot.clone();
+        let f = bot.search_func();
 
         self.search_thread = Some(thread::spawn(move || {
             f(&pos, st)
