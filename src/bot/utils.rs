@@ -57,62 +57,62 @@ pub fn passed_pawns_bonus(position: &Position) -> i32 {
 
     let pawn_board = position.board().pawns;
 
-    let player_board = *position
-        .board()
-        .get_player_bitboard(position.current_player());
+    let white_player_board = *position.board().get_player_bitboard(Player::White);
 
-    let mut player_pawn_board = pawn_board & player_board;
+    let black_player_board = *position.board().get_player_bitboard(Player::Black);
 
-    match position.current_player() {
-        Player::White => {
-            while player_pawn_board != 0 {
-                let bit_offset = player_pawn_board.pop_lsb();
-                let pawn_position = TilePosition::from_bit_offset(bit_offset);
+    let mut white_pawn_board = pawn_board & white_player_board;
+    let mut black_pawn_board = pawn_board & black_player_board;
 
-                let mut passed_check_mask = Bitboard::generate_column_mask(pawn_position.column())
-                    << (pawn_position.rank() + 1) as u64 * 8;
+    while white_pawn_board != 0 {
+        let bit_offset = white_pawn_board.pop_lsb();
+        let pawn_position = TilePosition::from_bit_offset(bit_offset);
 
-                if pawn_position.column() != 0 {
-                    passed_check_mask |= Bitboard::generate_column_mask(pawn_position.column() - 1)
-                        << (pawn_position.rank() + 1) as u64 * 8
-                }
+        let mut passed_check_mask = Bitboard::generate_column_mask(pawn_position.column())
+            << (pawn_position.rank() + 1) as u64 * 8;
 
-                if pawn_position.column() != 7 {
-                    passed_check_mask |= Bitboard::generate_column_mask(pawn_position.column() + 1)
-                        << (pawn_position.rank() + 1) as u64 * 8
-                }
-
-                if passed_check_mask & pawn_board == 0 {
-                    score += PASSED_PAWN_BONUS;
-                }
-            }
+        if pawn_position.column() != 0 {
+            passed_check_mask |= Bitboard::generate_column_mask(pawn_position.column() - 1)
+                << (pawn_position.rank() + 1) as u64 * 8
         }
-        Player::Black => {
-            while player_pawn_board != 0 {
-                let bit_offset = player_pawn_board.pop_lsb();
-                let pawn_position = TilePosition::from_bit_offset(bit_offset);
 
-                let mut passed_check_mask = Bitboard::generate_column_mask(pawn_position.column())
-                    >> (pawn_position.rank() + 1) as u64 * 8;
+        if pawn_position.column() != 7 {
+            passed_check_mask |= Bitboard::generate_column_mask(pawn_position.column() + 1)
+                << (pawn_position.rank() + 1) as u64 * 8
+        }
 
-                if pawn_position.column() != 0 {
-                    passed_check_mask |= Bitboard::generate_column_mask(pawn_position.column() - 1)
-                        >> (pawn_position.rank() + 1) as u64 * 8
-                }
-
-                if pawn_position.column() != 7 {
-                    passed_check_mask |= Bitboard::generate_column_mask(pawn_position.column() + 1)
-                        >> (pawn_position.rank() + 1) as u64 * 8
-                }
-
-                if passed_check_mask & pawn_board == 0 {
-                    score += PASSED_PAWN_BONUS;
-                }
-            }
+        if passed_check_mask & pawn_board == 0 {
+            score += PASSED_PAWN_BONUS;
         }
     }
 
-    score
+    while black_pawn_board != 0 {
+        let bit_offset = black_pawn_board.pop_lsb();
+        let pawn_position = TilePosition::from_bit_offset(bit_offset);
+
+        let mut passed_check_mask = Bitboard::generate_column_mask(pawn_position.column())
+            << (pawn_position.rank() + 1) as u64 * 8;
+
+        if pawn_position.column() != 0 {
+            passed_check_mask |= Bitboard::generate_column_mask(pawn_position.column() - 1)
+                << (pawn_position.rank() + 1) as u64 * 8
+        }
+
+        if pawn_position.column() != 7 {
+            passed_check_mask |= Bitboard::generate_column_mask(pawn_position.column() + 1)
+                << (pawn_position.rank() + 1) as u64 * 8
+        }
+
+        if passed_check_mask & pawn_board == 0 {
+            score -= PASSED_PAWN_BONUS;
+        }
+    }
+
+    if position.current_player() == Player::White {
+        score
+    } else {
+        -score
+    }
 }
 
 pub fn no_pawn_penalty(position: &Position) -> i32 {
