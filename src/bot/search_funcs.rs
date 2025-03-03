@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::{Arc, Mutex, RwLock}, thread, time::{Duration, Instant}};
 
-use crate::{board::{moove::{CastleSide, Move}, position::Position}, bot::{evaluation::Evaluation, transposition_table::Transposition}, player::Player};
+use crate::{board::{moove::Move, position::Position}, bot::{evaluation::Evaluation, transposition_table::Transposition}};
 
 use super::{transposition_table::TranspositionTable, EvaluationFn};
 
