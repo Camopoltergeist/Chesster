@@ -34,6 +34,10 @@ impl Match {
     pub fn make_move(&mut self, moove: Move) {
         self.position.make_move(moove);
 
+        self.calculate_bot_move();        
+    }
+
+    fn calculate_bot_move(&mut self) {
         let bot = match self.position.current_player() {
             Player::White => {
                 if let Some(bot) = &self.white_bot {
@@ -55,10 +59,10 @@ impl Match {
 
         let pos = self.position.clone();
         let st = self.search_time.clone();
-        let f = bot.search_func();
+        let b = dyn_clone::clone_box(&(**bot));
 
         self.search_thread = Some(thread::spawn(move || {
-            f(&pos, st)
+            return b.search_best_move(&pos, st);
         }));
     }
 
