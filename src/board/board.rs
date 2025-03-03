@@ -130,6 +130,10 @@ impl Board {
             || Board::check_overlaps(self.queens, self.kings))
     }
 
+    pub fn mailbox(&self) -> &Mailbox {
+        &self.mailbox
+    }
+
     pub fn move_piece_basic(&mut self, basic_move: BasicMove) {
         let piece = self
             .get_piece(basic_move.from_position())
