@@ -16,6 +16,7 @@ pub mod perft;
 #[cfg(test)]
 pub mod tests;
 mod performance_test;
+pub mod r#match;
 
 fn main() {
     generate_zobrist_numbers();
