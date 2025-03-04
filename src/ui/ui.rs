@@ -24,20 +24,21 @@ pub struct UI {
 }
 
 impl UI {
-	pub fn new(rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
+	pub fn new(rl: &mut RaylibHandle, thread: &RaylibThread, mut game_match: Match) -> Self {
 		let piece_textures = load_piece_textures(rl, thread);
 		let circle_texture = load_circle_texture(rl, thread);
 		let mut board_renderer = BoardRenderer::new(0, 0, rl.get_screen_height(), 32, Player::White, piece_textures, circle_texture);
 
-		let position = Position::default();
-		board_renderer.set_board(position.board());
+		board_renderer.set_board(game_match.position().board());
 
 		rl.gui_load_style_default();
+
+		game_match.calculate_bot_move();
 
 		Self {
 			text_area: TextArea::new(board_renderer.size(), board_renderer.margin(), 20),
 			board_renderer,
-			game_match: Match::new(None, Some(Box::new(IterativeDeepeningSearch::new())), Duration::from_secs(2)),
+			game_match,
 			is_debug: false,
 			hovered_tile: None,
 			selected_tile: None,

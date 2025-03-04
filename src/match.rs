@@ -1,6 +1,6 @@
 use std::{thread::{self, JoinHandle}, time::Duration};
 
-use crate::{board::{moove::Move, position::Position}, bot::Bot, player::Player};
+use crate::{board::{game_state::GameState, moove::Move, position::Position}, bot::Bot, player::Player};
 
 pub struct Match {
     position: Position,
@@ -13,9 +13,9 @@ pub struct Match {
 }
 
 impl Match {
-    pub fn new(white_bot: Option<Box<dyn Bot>>, black_bot: Option<Box<dyn Bot>>, search_time: Duration) -> Self {
+    pub fn new(position: &Position, white_bot: Option<Box<dyn Bot>>, black_bot: Option<Box<dyn Bot>>, search_time: Duration) -> Self {
         Self {
-            position: Position::default(),
+            position: position.clone(),
             white_bot,
             black_bot,
             search_thread: None,
@@ -34,10 +34,14 @@ impl Match {
     pub fn make_move(&mut self, moove: Move) {
         self.position.make_move(moove);
 
-        self.calculate_bot_move();        
+        self.calculate_bot_move();
     }
 
-    fn calculate_bot_move(&mut self) {
+    pub fn calculate_bot_move(&mut self) {
+        if self.position.get_game_state() != GameState::Ongoing {
+            return;
+        }
+
         let bot = match self.position.current_player() {
             Player::White => {
                 if let Some(bot) = &self.white_bot {

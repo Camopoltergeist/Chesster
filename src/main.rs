@@ -30,5 +30,8 @@ fn main() {
         return;
     }
 
-    start_ui();
+    let white_bot = args.contains(&"--white_bot".to_owned());
+    let black_bot = args.contains(&"--black_bot".to_owned());
+
+    start_ui(white_bot, black_bot);
 }
