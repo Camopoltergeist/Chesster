@@ -3,6 +3,21 @@ use crate::{
     player::Player,
 };
 
+pub fn calculate_game_phase(position: &Position) -> (i32, i32) {
+    let mut position_materials = 0;
+    let full_board = 24;
+
+    position_materials += position.board().queens.value().count_ones() * 4;
+    position_materials += position.board().rooks.value().count_ones() * 2;
+    position_materials += position.board().bishops.value().count_ones();
+    position_materials += position.board().knights.value().count_ones();
+
+    let midgame_percentage = (position_materials * 100 / full_board) as i32;
+    let endgame_percentage = 100 - midgame_percentage;
+
+    (midgame_percentage, endgame_percentage)
+}
+
 pub fn bishop_pair_bonus(position: &Position) -> i32 {
     const BISHOP_PAIR_BONUS: i32 = 35;
     let mut score = 0;
