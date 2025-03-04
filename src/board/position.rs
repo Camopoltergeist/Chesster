@@ -1,6 +1,6 @@
 use std::hash::Hash;
 
-use crate::{board::moove::CastleSide, bot::positioning::get_score_for_piece, piece::PieceType, pieces::{king::King, pawn::Pawn}, player::Player, player_piece::PlayerPiece};
+use crate::{board::moove::CastleSide, bot::{positioning::get_score_for_piece, utils::calculate_game_phase}, piece::PieceType, pieces::{king::King, pawn::Pawn}, player::Player, player_piece::PlayerPiece};
 
 use super::{board::Board, game_state::GameState, moove::{BasicMove, CastlingMove, EnPassantMove, Move, PromotingMove}, move_collision::get_collision_mask, tile_position::TilePosition};
 
@@ -575,13 +575,15 @@ impl Position {
 
         let mut positioning_score = 0;
 
+        let game_phase = calculate_game_phase(self);
+
         while !player_pieces_mask.is_empty() {
             let bit_offset = player_pieces_mask.0.trailing_zeros();
 
             let tile_position = TilePosition::from_bit_offset(bit_offset);
             let piece = self.get_piece(tile_position).unwrap();
 
-            positioning_score += get_score_for_piece(piece, tile_position);
+            positioning_score += get_score_for_piece(piece, tile_position, game_phase);
 
             player_pieces_mask.unset_bit(bit_offset);
         }
