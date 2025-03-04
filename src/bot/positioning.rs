@@ -99,14 +99,14 @@ pub const KNIGHT_PIECE_SQUARE_TABLE: [i32; 64] = [
     -50,-40,-30,-30,-30,-30,-40,-50,
 ];
 
-pub fn get_score_for_piece(piece: PlayerPiece, tile_position: TilePosition) -> i32 {
+pub fn get_score_for_piece(piece: PlayerPiece, tile_position: TilePosition, game_phase: (i32, i32)) -> i32 {
     let index = tile_position.bit_offset() as usize;
 
     match piece.player() {
         Player::White => {
             match piece.piece() {
-                PieceType::King => WHITE_KING_PIECE_SQUARE_TABLE[index],
-                PieceType::Pawn => WHITE_PAWN_PIECE_SQUARE_TABLE[index],
+                PieceType::King => calculate_score_for_white_king(index, game_phase),
+                PieceType::Pawn => calculate_score_for_white_pawn(index, game_phase),
                 PieceType::Rook => WHITE_ROOK_PIECE_SQUARE_TABLE[index],
                 PieceType::Bishop => BISHOP_PIECE_SQUARE_TABLE[index],
                 PieceType::Knight => KNIGHT_PIECE_SQUARE_TABLE[index],
@@ -115,8 +115,8 @@ pub fn get_score_for_piece(piece: PlayerPiece, tile_position: TilePosition) -> i
         },
         Player::Black => {
             match piece.piece() {
-                PieceType::King => BLACK_KING_PIECE_SQUARE_TABLE[index],
-                PieceType::Pawn => BLACK_PAWN_PIECE_SQUARE_TABLE[index],
+                PieceType::King => calculate_score_for_black_king(index, game_phase),
+                PieceType::Pawn => calculate_score_for_black_pawn(index, game_phase),
                 PieceType::Rook => BLACK_ROOK_PIECE_SQUARE_TABLE[index],
                 PieceType::Bishop => BISHOP_PIECE_SQUARE_TABLE[index],
                 PieceType::Knight => KNIGHT_PIECE_SQUARE_TABLE[index],
@@ -124,4 +124,29 @@ pub fn get_score_for_piece(piece: PlayerPiece, tile_position: TilePosition) -> i
             }
         }
     }
+}
+
+pub fn calculate_score_for_white_king(index: usize, game_phase: (i32, i32)) -> i32 {
+    let square_values = WHITE_KING_PIECE_SQUARE_TABLE[index];
+    let total_value = game_phase.0 * square_values.0 + game_phase.1 * square_values.1;
+
+    total_value / 100
+}
+
+pub fn calculate_score_for_black_king(index: usize, game_phase: (i32, i32)) -> i32 {
+    let square_values = BLACK_KING_PIECE_SQUARE_TABLE[index];
+    let total_value = game_phase.0 * square_values.0 + game_phase.1 * square_values.1;
+    total_value / 100
+}
+
+pub fn calculate_score_for_white_pawn(index: usize, game_phase: (i32, i32)) -> i32 {
+    let square_values = WHITE_PAWN_PIECE_SQUARE_TABLE[index];
+    let total_value = game_phase.0 * square_values.0 + game_phase.1 * square_values.1;
+    total_value / 100
+}
+
+pub fn calculate_score_for_black_pawn(index: usize, game_phase: (i32, i32)) -> i32 {
+    let square_values = BLACK_PAWN_PIECE_SQUARE_TABLE[index];
+    let total_value = game_phase.0 * square_values.0 + game_phase.1 * square_values.1;
+    total_value / 100
 }
