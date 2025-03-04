@@ -1,16 +1,14 @@
 
-use std::{sync::{Arc, RwLock}, time::{Duration, Instant}};
-
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{game_state::GameState, moove::{Move, PromotingMove}, position::{self, Position}, tile_position::TilePosition}, bot::{evaluation_funcs::{evaluate_material_and_positioning, evaluate_material_and_positioning_debug}, search_funcs::{alpha_beta_search, alpha_beta_search_multithreaded, iterative_deepening}, transposition_table::TranspositionTable}, piece::PieceType, player::Player, player_piece::PlayerPiece};
+use crate::{board::{game_state::GameState, moove::{Move, PromotingMove}, position::Position, tile_position::TilePosition}, r#match::Match, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::{load_circle_texture, load_piece_textures}};
 
 pub struct UI {
 	board_renderer: BoardRenderer,
 	text_area: TextArea,
-	position: Position,
+	game_match: Match,
 
 	is_debug: bool,
 
@@ -21,32 +19,30 @@ pub struct UI {
 
 	promotion_menu_open: bool,
 	promoting_move: Option<PromotingMove>,
-
-	transposition_table: Arc<RwLock<TranspositionTable>>,
 }
 
 impl UI {
-	pub fn new(rl: &mut RaylibHandle, thread: &RaylibThread) -> Self {
+	pub fn new(rl: &mut RaylibHandle, thread: &RaylibThread, mut game_match: Match) -> Self {
 		let piece_textures = load_piece_textures(rl, thread);
 		let circle_texture = load_circle_texture(rl, thread);
 		let mut board_renderer = BoardRenderer::new(0, 0, rl.get_screen_height(), 32, Player::White, piece_textures, circle_texture);
 
-		let position = Position::default();
-		board_renderer.set_board(position.board());
+		board_renderer.set_board(game_match.position().board());
 
 		rl.gui_load_style_default();
+
+		game_match.calculate_bot_move();
 
 		Self {
 			text_area: TextArea::new(board_renderer.size(), board_renderer.margin(), 20),
 			board_renderer,
-			position,
+			game_match,
 			is_debug: false,
 			hovered_tile: None,
 			selected_tile: None,
 			background_color: Color { r: 0, g: 65, b: 119, a: 255 },
 			promotion_menu_open: false,
 			promoting_move: None,
-			transposition_table: Arc::new(RwLock::new(TranspositionTable::new(10000000)))
 		}
 	}
 
@@ -57,6 +53,16 @@ impl UI {
 
 		self.draw_board(&mut draw_handle);
 		self.draw_text(&mut draw_handle);
+	}
+
+	pub fn make_bot_move_if_ready(&mut self) {
+		if self.game_match.bot_move_available() {
+			let moove = self.game_match.get_searched_move();
+
+			println!("{} | {}", moove.1.debug_string(), moove.0);
+
+			self.play_move(moove.1);
+		}
 	}
 
 	fn draw_board(&mut self, draw_handle: &mut RaylibDrawHandle) {
@@ -71,7 +77,7 @@ impl UI {
 			self.text_area.draw_line(draw_handle, "Debug Board");
 		}
 
-		let player_str = self.position.current_player().as_str();
+		let player_str = self.game_match.position().current_player().as_str();
 
 		self.text_area.draw_line(draw_handle, format!("Current player: {}", &player_str).as_str());
 
@@ -90,10 +96,15 @@ impl UI {
 			self.text_area.skip_line();
 		}
 
-		match self.position.get_game_state() {
+		match self.game_match.position().get_game_state() {
 			GameState::Ongoing => self.text_area.skip_line(),
 			GameState::Checkmate(winner) => self.text_area.draw_line(draw_handle, &format!("{} wins!", winner.as_str())),
 			GameState::Stalemate => self.text_area.draw_line(draw_handle, "Draw: Stalemate!"),
+		}
+
+		if !self.game_match.move_can_be_made() {
+			let player_str = self.game_match.position().current_player().as_str();
+			self.text_area.draw_line(draw_handle, &format!("{} is thinking...", player_str));
 		}
 
 		if self.promotion_menu_open {
@@ -168,13 +179,17 @@ impl UI {
 	}
 
 	fn handle_click_play_mode(&mut self, clicked_tile: TilePosition) {
+		if !self.game_match.move_can_be_made() {
+			return;
+		}
+
 		if self.promotion_menu_open {
 			return;
 		}
 
 		if self.selected_tile.is_none() {
-			if let Some(piece) = self.position.get_piece(clicked_tile) {
-				if piece.player() != self.position.current_player() {
+			if let Some(piece) = self.game_match.position().get_piece(clicked_tile) {
+				if piece.player() != self.game_match.position().current_player() {
 					return;
 				}
 
@@ -191,7 +206,7 @@ impl UI {
 			return;
 		}
 
-		let legal_moves = self.position.generate_legal_moves_for_tile_position(selected_tile);
+		let legal_moves = self.game_match.position().generate_legal_moves_for_tile_position(selected_tile);
 
 		for m in legal_moves {
 			if m.to_position() == clicked_tile {
@@ -207,8 +222,8 @@ impl UI {
 			}
 		}
 
-		if let Some(piece) = self.position.get_piece(clicked_tile) {
-			if piece.player() == self.position.current_player() {
+		if let Some(piece) = self.game_match.position().get_piece(clicked_tile) {
+			if piece.player() == self.game_match.position().current_player() {
 				self.select_tile(Some(clicked_tile));
 				return;
 			}
@@ -218,46 +233,47 @@ impl UI {
 	}
 
 	fn play_move(&mut self, m: Move) {
-		self.position.make_move(m);
-		self.board_renderer.set_board(&self.position.board());
+		self.game_match.make_move(m.clone());
+		self.board_renderer.set_last_move(Some(m));
+		self.board_renderer.set_board(&self.game_match.position().board());
 		self.select_tile(None);
 
 		// println!("Eval: {}", evaluate_material_and_positioning(&self.position));
 
-		if self.position.current_player() != Player::Black {
-			return;
-		}
+		// if self.game_match.position().current_player() != Player::Black {
+		// 	return;
+		// }
 
-		if let GameState::Ongoing = self.position.get_game_state() {
-			let start_time_cacheless = Instant::now();
-			let (evaluation, moove) = iterative_deepening(&self.position, evaluate_material_and_positioning, Duration::from_secs(2), self.transposition_table.clone());
-			let end_time_cacheless = Instant::now();
+		// if let GameState::Ongoing = self.game_match.position().get_game_state() {
+		// 	let start_time_cacheless = Instant::now();
+		// 	let (evaluation, moove) = iterative_deepening(&self.game_match.position(), evaluate_material_and_positioning, Duration::from_secs(2), self.transposition_table.clone());
+		// 	let end_time_cacheless = Instant::now();
 
-			println!("WWWWWWWWWWW");
-			println!("{} | {}", moove.debug_string(), evaluation);
+		// 	println!("WWWWWWWWWWW");
+		// 	println!("{} | {}", moove.debug_string(), evaluation);
 
-			println!("Search took {} seconds", end_time_cacheless.duration_since(start_time_cacheless).as_secs_f32());
+		// 	println!("Search took {} seconds", end_time_cacheless.duration_since(start_time_cacheless).as_secs_f32());
 
-			if let Ok(mut rwlock) = self.transposition_table.write() {
-				println!("TP table entries: {}", rwlock.len());
-				// println!("TP table lookups: {}", rwlock.lookups());
-				// println!("TP table hit %: {}", rwlock.hit_percent() * 100.0);
+		// 	if let Ok(mut rwlock) = self.transposition_table.write() {
+		// 		println!("TP table entries: {}", rwlock.len());
+		// 		// println!("TP table lookups: {}", rwlock.lookups());
+		// 		// println!("TP table hit %: {}", rwlock.hit_percent() * 100.0);
 
-				let mut next_pos = self.position.clone();
-				next_pos.make_move(moove);
+		// 		let mut next_pos = self.game_match.position().clone();
+		// 		next_pos.make_move(moove);
 
-				let tp = rwlock.get(next_pos.hash().value());
+		// 		let tp = rwlock.get(next_pos.hash().value());
 
-				if let Some(tp) = tp {
-					println!("Current transposition from table: {}, {}", tp.depth(), tp.evaluation());
-				}
+		// 		if let Some(tp) = tp {
+		// 			println!("Current transposition from table: {}, {}", tp.depth(), tp.evaluation());
+		// 		}
 
-				rwlock.reset_stats();
-			}
+		// 		rwlock.reset_stats();
+		// 	}
 
-			// let (ab_eval, ab_move) = alpha_beta_search_multithreaded(&self.position, evaluate_material_and_positioning, 7);
-			// println!("Alpha beta: {} | {}", ab_move.debug_string(), ab_eval);
-		}
+		// 	// let (ab_eval, ab_move) = alpha_beta_search_multithreaded(&self.position, evaluate_material_and_positioning, 7);
+		// 	// println!("Alpha beta: {} | {}", ab_move.debug_string(), ab_eval);
+		// }
 	}
 
 	fn select_tile(&mut self, tile_pos: Option<TilePosition>) {
@@ -271,14 +287,9 @@ impl UI {
 
 		let tile_pos = tile_pos.unwrap();
 
-		if let Some(_) = self.position.get_piece(tile_pos) {
-			self.board_renderer.set_legal_moves(self.position.generate_legal_moves_for_tile_position(tile_pos));
+		if let Some(_) = self.game_match.position().get_piece(tile_pos) {
+			self.board_renderer.set_legal_moves(self.game_match.position().generate_legal_moves_for_tile_position(tile_pos));
 		}
-	}
-
-	pub fn set_position(&mut self, position: Position) {
-		self.position = position;
-		self.board_renderer.set_board(self.position.board());
 	}
 
 	fn toggle_board_perspective(&mut self) {

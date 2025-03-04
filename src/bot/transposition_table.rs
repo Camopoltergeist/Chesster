@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use crate::board::position::Position;
-
 pub struct TranspositionTable {
 	map: HashMap<u64, Transposition>,
 	lookups: u64,
