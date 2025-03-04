@@ -1,9 +1,7 @@
 
-use std::time::Duration;
-
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{game_state::GameState, moove::{Move, PromotingMove}, position::Position, tile_position::TilePosition}, bot::iterative_deepening_search::IterativeDeepeningSearch, r#match::Match, piece::PieceType, player::Player, player_piece::PlayerPiece};
+use crate::{board::{game_state::GameState, moove::{Move, PromotingMove}, position::Position, tile_position::TilePosition}, r#match::Match, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::{load_circle_texture, load_piece_textures}};
 
@@ -292,11 +290,6 @@ impl UI {
 		if let Some(_) = self.game_match.position().get_piece(tile_pos) {
 			self.board_renderer.set_legal_moves(self.game_match.position().generate_legal_moves_for_tile_position(tile_pos));
 		}
-	}
-
-	pub fn set_position(&mut self, position: Position) {
-		self.game_match.set_position(&position);
-		self.board_renderer.set_board(self.game_match.position().board());
 	}
 
 	fn toggle_board_perspective(&mut self) {
