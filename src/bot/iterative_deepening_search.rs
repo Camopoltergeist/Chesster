@@ -6,13 +6,13 @@ use super::{evaluation_funcs::evaluate_material_and_positioning, search_funcs::i
 
 #[derive(Clone)]
 pub struct IterativeDeepeningSearch {
-	transposition_table: Arc<RwLock<TranspositionTable>>
+	transposition_table: Arc<TranspositionTable>
 }
 
 impl IterativeDeepeningSearch {
 	pub fn new() -> Self {
 		Self {
-			transposition_table: Arc::new(RwLock::new(TranspositionTable::new(10000000)))
+			transposition_table: Arc::new(TranspositionTable::new())
 		}
 	}
 }

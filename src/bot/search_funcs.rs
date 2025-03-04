@@ -398,22 +398,23 @@ pub fn alpha_beta_search_multithreaded(position: &Position, evaluation_fn: fn(&P
 	return (best_eval, best_move.unwrap());
 }
 
-pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> i32, search_time: Duration, transposition_table: Arc<RwLock<TranspositionTable>>) -> (i32, Move) {
-	fn alpha_beta(position: &Position, evaluation_fn: fn(&Position) -> i32, mut alpha: i32, beta: i32, depth: u32, transposition_table: Arc<RwLock<TranspositionTable>>) -> i32 {
+pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> i32, search_time: Duration, transposition_table: Arc<TranspositionTable>) -> (i32, Move) {
+	fn alpha_beta(position: &Position, evaluation_fn: fn(&Position) -> i32, mut alpha: i32, beta: i32, depth: u32, transposition_table: Arc<TranspositionTable>) -> i32 {
 		if depth == 0 {
 			return evaluation_fn(position);
 		};
 
-		if let Ok(rwlock) = transposition_table.read() {
-			let transposition = rwlock.get(position.hash().value());
-			
-			if let Some(tp) = transposition {
+		let tp_mutex = transposition_table.get(position.hash().value());
+
+		if let Ok(tp_opt) = tp_mutex.lock() {
+			if let Some(tp) = tp_opt.clone() {
 				if tp.depth() >= depth as u16 {
 					if tp.evaluation().abs() < 1000000 {
 						return tp.evaluation();
 					}
 				}
-			}
+		}
+
 		}
 
 		let legal_moves = position.get_all_legal_moves();
@@ -432,9 +433,11 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 
 			let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1, transposition_table.clone());
 
-			if let Ok(mut rwlock) = transposition_table.write() {
-				rwlock.set(position.hash().value(), Transposition::new(depth as u16 - 1, eval));
-			} 
+			let tp_mutex = transposition_table.get(position.hash().value());
+
+			if let Ok(mut tp_opt) = tp_mutex.lock() {
+				*tp_opt = Some(Transposition::new(depth as u16 - 1, eval));
+			}
 
 			if eval >= beta {
 				return eval;
@@ -478,6 +481,10 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 		
 		evaled_moves.sort_by(|a, b| b.0.cmp(&a.0));
 		depth += 1;
+
+		if evaled_moves[0].0.abs() > 100000 {
+			break;
+		}
 	};
 
 	for (eval, m) in evaled_moves.iter() {

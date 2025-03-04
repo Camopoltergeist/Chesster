@@ -1,22 +1,31 @@
-use std::collections::HashMap;
+use std::{array, collections::HashMap, sync::Mutex};
+
+const TABLE_SIZE: usize = 400000000;
 
 pub struct TranspositionTable {
-	map: HashMap<u64, Transposition>,
+	map: Vec<Mutex<Option<Transposition>>>,
 	lookups: u64,
 	hits: u64
 }
 
 impl TranspositionTable {
-	pub fn new(capacity: usize) -> Self {
+	pub fn new() -> Self {
+		let mut map = Vec::with_capacity(TABLE_SIZE);
+
+		for _ in 0..TABLE_SIZE {
+			map.push(Mutex::new(None));
+		}
+
 		Self {
-			map: HashMap::with_capacity(capacity),
+			map,
 			lookups: 0,
 			hits: 0
 		}
 	}
 
-	pub fn get(&self, hash: u64) -> Option<&Transposition> {
-		let res = self.map.get(&hash);
+	pub fn get(&self, hash: u64) -> &Mutex<Option<Transposition>> {
+		let index = hash as usize % TABLE_SIZE;
+		let res = &self.map[index];
 
 		// self.lookups += 1;
 
@@ -27,9 +36,9 @@ impl TranspositionTable {
 		return res;
 	}
 
-	pub fn set(&mut self, hash: u64, transposition: Transposition) {
-		self.map.insert(hash, transposition);
-	}
+	// pub fn set(&mut self, hash: u64, transposition: Transposition) {
+	// 	self.map.insert(hash, transposition);
+	// }
 
 	pub fn len(&self) -> usize {
 		self.map.len()

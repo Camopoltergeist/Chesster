@@ -88,6 +88,12 @@ impl Match {
         }
     }
 
+    pub fn wait_until_calculation_finished(&self) {
+        if let Some(t) = &self.search_thread {
+            while !t.is_finished() { }
+        }
+    }
+
     pub fn get_searched_move(&mut self) -> (i32, Move) {
         if let Some(t) = self.search_thread.take() {
             return t.join().unwrap().clone();

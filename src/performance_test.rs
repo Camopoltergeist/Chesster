@@ -1,17 +1,17 @@
-use std::{hint::black_box, time::{Duration, Instant}};
+use std::time::{Duration, Instant};
 
-use crate::{board::{moove::Move, position::Position}, bot::{evaluation_funcs::evaluate_material_and_positioning, search_funcs::alpha_beta_search}};
+use crate::{board::{moove::Move, position::Position}, bot::iterative_deepening_search::IterativeDeepeningSearch, r#match::Match};
 
 pub fn performance_test() -> Duration {
-    let mut position = Position::default();
+    let mut match_ = Match::new(&Position::default(), Some(Box::new(IterativeDeepeningSearch::new())), Some(Box::new(IterativeDeepeningSearch::new())), Duration::from_secs(10000));
 
     let start_time = Instant::now();
 
-    position.make_move(Move::debug_new_basic("e2", "e4"));
-    black_box(alpha_beta_search(&position, evaluate_material_and_positioning, 6));
+    match_.make_move(Move::debug_new_basic("e2", "e4"));
+    match_.wait_until_calculation_finished();
 
-    position.make_move(Move::debug_new_basic("e7", "e5"));
-    black_box(alpha_beta_search(&position, evaluate_material_and_positioning, 6));
+    match_.make_move(Move::debug_new_basic("e7", "e5"));
+    match_.wait_until_calculation_finished();
 
     let end_time = Instant::now();
 
