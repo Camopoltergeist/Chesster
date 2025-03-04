@@ -481,6 +481,10 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 		
 		evaled_moves.sort_by(|a, b| b.0.cmp(&a.0));
 		depth += 1;
+
+		if evaled_moves[0].0.abs() > 100000 {
+			break;
+		}
 	};
 
 	for (eval, m) in evaled_moves.iter() {
