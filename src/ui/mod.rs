@@ -20,7 +20,7 @@ pub fn start_ui(white_bot: bool, black_bot: bool) {
 		.title("Chesster")
 		.build();
 
-	let position = Position::from_fen_str("7k/8/r7/1r6/7K/8/8/8 w - - 0 1").unwrap();
+	let position = Position::default();
 
 	let white_bot: Option<Box<dyn Bot>> = if white_bot { Some(Box::new(IterativeDeepeningSearch::new())) } else { None };
 	let black_bot: Option<Box<dyn Bot>> = if black_bot { Some(Box::new(IterativeDeepeningSearch::new())) } else { None };
