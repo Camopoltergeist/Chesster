@@ -131,14 +131,25 @@ pub fn passed_pawns_bonus(position: &Position) -> i32 {
 }
 
 pub fn no_pawn_penalty(position: &Position) -> i32 {
-    let player_pawn_board = *position
-        .board()
-        .get_player_bitboard(position.current_player())
-        & position.board().pawns;
+    const NO_PAWN_PENALTY: i32 = -50;
+    let mut score = 0;
 
-    if player_pawn_board == 0 {
-        return -50;
+    let white_pawn_board =
+        *position.board().get_player_bitboard(Player::White) & position.board().pawns;
+
+    let black_pawn_board =
+        *position.board().get_player_bitboard(Player::Black) & position.board().pawns;
+
+    if white_pawn_board == 0 {
+        score += NO_PAWN_PENALTY;
+    }
+    if black_pawn_board == 0 {
+        score -= NO_PAWN_PENALTY
+    }
+
+    if position.current_player() == Player::White {
+        score
     } else {
-        return 0;
+        -score
     }
 }
