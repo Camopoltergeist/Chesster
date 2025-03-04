@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, f32::consts::E};
 
 use raylib::{color::Color, math::Vector2, prelude::{RaylibDraw, RaylibDrawHandle}, texture::Texture2D};
 
@@ -56,7 +56,9 @@ pub struct BoardRenderer {
     move_color: Color,
 
     /// Color of capturing moves
-    capturing_move_color: Color
+    capturing_move_color: Color,
+
+    last_move: Option<Move>,
 }
 
 impl BoardRenderer {
@@ -79,7 +81,8 @@ impl BoardRenderer {
             highlighted_tile: None,
             moves: Vec::new(),
             move_color: Color { r: 0, g: 0, b: 0, a: 127 },
-            capturing_move_color: Color { r: 255, g: 0, b: 0, a: 127 }
+            capturing_move_color: Color { r: 255, g: 0, b: 0, a: 127 },
+            last_move: None,
         }
     }
 
@@ -180,6 +183,7 @@ impl BoardRenderer {
     /// Draws the board on screen
     pub fn draw(&self, draw_handle: &mut RaylibDrawHandle) {
         self.draw_tiles(draw_handle);
+        self.draw_last_move(draw_handle);
         self.draw_highlighted_tile(draw_handle);
         self.draw_ranks(draw_handle);
         self.draw_columns(draw_handle);
@@ -187,6 +191,22 @@ impl BoardRenderer {
         self.draw_legal_moves(draw_handle);
 
         self.draw_bitboard_overlay(draw_handle);
+    }
+
+    fn draw_last_move(&self, draw_handle: &mut RaylibDrawHandle) {
+        let tile_size = self.tile_size();
+
+        if let Some(last_move) = &self.last_move {
+            let from_pos = self.get_tile_pixel_pos(last_move.from_position());
+            let to_pos = self.get_tile_pixel_pos(last_move.to_position());
+
+            draw_handle.draw_rectangle(from_pos.0, from_pos.1, tile_size, tile_size, Color::ROSYBROWN);
+            draw_handle.draw_rectangle(to_pos.0, to_pos.1, tile_size, tile_size, Color::ROSYBROWN);
+        }
+    }
+
+    pub fn set_last_move(&mut self, last_move: Option<Move>) {
+        self.last_move = last_move;
     }
 
     /// Sets the current board to be drawn. Set to None to disable pieces.

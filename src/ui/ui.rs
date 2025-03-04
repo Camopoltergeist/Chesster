@@ -235,7 +235,8 @@ impl UI {
 	}
 
 	fn play_move(&mut self, m: Move) {
-		self.game_match.make_move(m);
+		self.game_match.make_move(m.clone());
+		self.board_renderer.set_last_move(Some(m));
 		self.board_renderer.set_board(&self.game_match.position().board());
 		self.select_tile(None);
 
