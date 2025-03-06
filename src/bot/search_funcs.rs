@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::{Arc, Mutex, RwLock}, thread, time::{Duration, Instant}};
+use std::{collections::HashMap, ptr, sync::{Arc, Mutex}, thread, time::{Duration, Instant}};
 
 use crate::{board::{moove::Move, position::Position}, bot::{evaluation::Evaluation, transposition_table::Transposition}};
 
@@ -399,22 +399,22 @@ pub fn alpha_beta_search_multithreaded(position: &Position, evaluation_fn: fn(&P
 }
 
 pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> i32, search_time: Duration, transposition_table: Arc<TranspositionTable>) -> (i32, Move) {
-	fn alpha_beta(position: &Position, evaluation_fn: fn(&Position) -> i32, mut alpha: i32, beta: i32, depth: u32, transposition_table: Arc<TranspositionTable>) -> i32 {
+	fn alpha_beta(position: &Position, evaluation_fn: fn(&Position) -> i32, mut alpha: i32, beta: i32, depth: u32, transposition_table: *mut TranspositionTable) -> i32 {
 		if depth == 0 {
 			return evaluation_fn(position);
 		};
 
-		let tp_mutex = transposition_table.get(position.hash().value());
+		unsafe {
+			let tp = (*transposition_table).get(position.hash().value());
 
-		if let Ok(tp_opt) = tp_mutex.lock() {
-			if let Some(tp) = tp_opt.clone() {
-				if tp.depth() >= depth as u16 {
-					if tp.evaluation().abs() < 1000000 {
-						return tp.evaluation();
+			if tp.hash_matches(position.hash().value()) {
+				if tp.depth() >= depth {
+					let eval = tp.evaluation();
+					if eval.abs() < 1000000 {
+						return eval;
 					}
 				}
-		}
-
+			}
 		}
 
 		let legal_moves = position.get_all_legal_moves();
@@ -431,13 +431,11 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 			let mut moved_position = position.clone();
 			moved_position.make_move(m);
 
-			let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1, transposition_table.clone());
+			let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1, transposition_table);
 
-			let tp_mutex = transposition_table.get(position.hash().value());
-
-			if let Ok(mut tp_opt) = tp_mutex.lock() {
-				*tp_opt = Some(Transposition::new(depth as u16 - 1, eval));
-			}
+			let hash = position.hash().value();
+			// Transposition::new(hash, depth - 1, eval)
+			unsafe { *(*transposition_table).get(hash) = Transposition::new(hash, depth - 1, eval) };
 
 			if eval >= beta {
 				return eval;
@@ -461,15 +459,19 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 
 		let mut threads = Vec::new();
 
+		let tp_ptr = ptr::from_ref(transposition_table.as_ref()) as *mut TranspositionTable;
+
 		for m in &legal_moves {
 			let mut moved_position = position.clone();
 			moved_position.make_move(m.clone());
 
-			let tp = transposition_table.clone();
+			let tp = tp_ptr as usize;
 			let m = m.clone();
 
 			threads.push(thread::spawn(move || {
-				return (-alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth, tp), m);
+				let tp_ptr = tp as *mut TranspositionTable;
+
+				return (-alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth, tp_ptr), m);
 			}));
 		};
 

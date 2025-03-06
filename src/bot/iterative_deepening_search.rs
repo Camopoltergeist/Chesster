@@ -1,4 +1,4 @@
-use std::{sync::{Arc, RwLock}, time::Duration};
+use std::{sync::Arc, time::Duration};
 
 use crate::board::{moove::Move, position::Position};
 

@@ -1,9 +1,9 @@
-use std::{array, collections::HashMap, sync::Mutex};
+use std::{mem, sync::atomic::{AtomicU64, Ordering}};
 
-const TABLE_SIZE: usize = 400000000;
+const TABLE_SIZE: usize = 200000000;
 
 pub struct TranspositionTable {
-	map: Vec<Mutex<Option<Transposition>>>,
+	map: Vec<Transposition>,
 	lookups: u64,
 	hits: u64
 }
@@ -13,7 +13,7 @@ impl TranspositionTable {
 		let mut map = Vec::with_capacity(TABLE_SIZE);
 
 		for _ in 0..TABLE_SIZE {
-			map.push(Mutex::new(None));
+			map.push(Transposition::new(0, 0, 0));
 		}
 
 		Self {
@@ -23,21 +23,17 @@ impl TranspositionTable {
 		}
 	}
 
-	pub fn get(&self, hash: u64) -> &Mutex<Option<Transposition>> {
+	pub fn get(&mut self, hash: u64) -> &mut Transposition {
 		let index = hash as usize % TABLE_SIZE;
-		let res = &self.map[index];
-
-		// self.lookups += 1;
-
-		// if res.is_some() {
-		// 	self.hits += 1;
-		// }
+		let res = &mut self.map[index];
 
 		return res;
 	}
 
 	// pub fn set(&mut self, hash: u64, transposition: Transposition) {
-	// 	self.map.insert(hash, transposition);
+	// 	let index = hash as usize % TABLE_SIZE;
+
+	// 	self.map[index] = transposition;
 	// }
 
 	pub fn len(&self) -> usize {
@@ -62,31 +58,52 @@ impl TranspositionTable {
 	}
 }
 
-#[derive(Clone)]
 pub struct Transposition {
-	depth: u16,
-	evaluation: i32,
+	hash_check: AtomicU64,
+	value: AtomicU64,
 	// position: Position
 }
 
 impl Transposition {
-	pub fn new(depth: u16, evaluation: i32) -> Self {
+	pub fn new(hash: u64, depth: u32, evaluation: i32) -> Self {
+		let depth_u64 = (depth as u64) << 32;
+		let eval_u64 = unsafe { mem::transmute::<_, u32>(evaluation) } as u64;
+
+		let value = depth_u64 | eval_u64;
+		let hash_check = hash ^ value;
+
 		Self {
-			depth,
-			evaluation,
-			// position
+			hash_check: AtomicU64::new(hash_check),
+			value: AtomicU64::new(value)
 		}
 	}
 
-	pub fn depth(&self) -> u16 {
-		self.depth
+	pub fn depth(&self) -> u32 {
+		let depth = self.value.load(Ordering::Relaxed) >> 32;
+
+		return depth as u32;
 	}
 
 	pub fn evaluation(&self) -> i32 {
-		self.evaluation
+		let eval = (self.value.load(Ordering::Relaxed) | 0xFFFFFFFF) as u32;
+
+		return unsafe { mem::transmute(eval) }
+	}
+
+	pub fn hash_matches(&self, hash: u64) -> bool {
+		return (self.value.load(Ordering::Relaxed) ^ self.hash_check.load(Ordering::Relaxed)) == hash;
 	}
 
 	// pub fn position(&self) -> &Position {
 	// 	&self.position
 	// }
+}
+
+impl Clone for Transposition {
+	fn clone(&self) -> Self {
+		Self {
+			hash_check: AtomicU64::new(self.hash_check.load(Ordering::Relaxed)),
+			value: AtomicU64::new(self.value.load(Ordering::Relaxed)),
+		}
+	}
 }
