@@ -1,7 +1,7 @@
 
 use raylib::{color::Color, ffi::{KeyboardKey, MouseButton}, prelude::{RaylibDraw, RaylibDrawHandle}, RaylibHandle, RaylibThread};
 
-use crate::{board::{game_state::GameState, moove::{Move, PromotingMove}, position::Position, tile_position::TilePosition}, r#match::Match, piece::PieceType, player::Player, player_piece::PlayerPiece};
+use crate::{board::{game_state::GameState, moove::{Move, PromotingMove}, tile_position::TilePosition}, r#match::Match, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 use super::{board_renderer::BoardRenderer, text_area::TextArea, texture::{load_circle_texture, load_piece_textures}};
 
