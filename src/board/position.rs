@@ -658,7 +658,7 @@ impl Position {
             let tile_position = TilePosition::from_bit_offset(bit_offset);
             let piece = self.get_piece(tile_position).unwrap();
 
-            positioning_score += get_score_for_piece(piece, tile_position, game_phase);
+            positioning_score += get_score_for_piece(piece, tile_position, game_phase, self);
 
             player_pieces_mask.unset_bit(bit_offset);
         }
