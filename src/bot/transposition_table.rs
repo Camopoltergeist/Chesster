@@ -1,4 +1,4 @@
-use std::{array, collections::HashMap, sync::Mutex};
+use std::{array, collections::HashMap, mem, sync::Mutex};
 
 const TABLE_SIZE: usize = 400000000;
 
@@ -64,26 +64,38 @@ impl TranspositionTable {
 
 #[derive(Clone)]
 pub struct Transposition {
-	depth: u16,
-	evaluation: i32,
+	hash_check: u64,
+	value: u64
 	// position: Position
 }
 
 impl Transposition {
-	pub fn new(depth: u16, evaluation: i32) -> Self {
+	pub fn new(hash: u64, depth: u32, evaluation: i32) -> Self {
+		let depth_u64 = (depth as u64) << 32;
+		let eval_u64 = unsafe { mem::transmute::<_, u32>(evaluation) } as u64;
+
+		let value = depth_u64 | eval_u64;
+
 		Self {
-			depth,
-			evaluation,
-			// position
+			hash_check: hash ^ value,
+			value
 		}
 	}
 
-	pub fn depth(&self) -> u16 {
-		self.depth
+	pub fn depth(&self) -> u32 {
+		let depth = self.value >> 32;
+
+		return depth as u32;
 	}
 
 	pub fn evaluation(&self) -> i32 {
-		self.evaluation
+		let eval = (self.value | 0xFFFFFFFF) as u32;
+
+		return unsafe { mem::transmute(eval) }
+	}
+
+	pub fn hash_matches(&self, hash: u64) -> bool {
+		return (self.value ^ self.hash_check) == hash;
 	}
 
 	// pub fn position(&self) -> &Position {
