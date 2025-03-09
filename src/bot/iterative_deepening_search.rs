@@ -25,7 +25,6 @@ impl Bot for IterativeDeepeningSearch {
 
 enum SearchMessage {
 	FinishedIteration,
-	FinishedSearch,
 	Timeout,
 	Continue
 }
@@ -41,13 +40,22 @@ struct ThreadState {
 pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> i32, search_time: Duration, transposition_table: Arc<TranspositionTable>) -> (i32, Move) {
 	let end_time = Instant::now() + search_time;
 
+	// This is converted to usize so it can be sent into a thread
+	let tp_ptr_usize = ptr::from_ref(transposition_table.as_ref()) as usize;
+
 	let mut threads: Vec<ThreadState> = Vec::new();
 
+	// Create threads and ThreadState objects
 	for m in position.get_all_legal_moves() {
 		let (thread_sender, receiver) = mpsc::channel();
 		let (sender, thread_receiver) = mpsc::channel();
 
-		let join_handle = thread::spawn(move || { 3 });
+		let mut moved_position = position.clone();
+		moved_position.make_move(m.clone());
+
+		let join_handle = thread::spawn(move || {
+			iterative_deepening_thread(moved_position, evaluation_fn, thread_sender, thread_receiver, tp_ptr_usize as *mut TranspositionTable)
+		});
 
 		threads.push(ThreadState {
 			moove: m,
@@ -58,8 +66,15 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 		});
 	};
 
+	// Continue search until time runs out.
+	// This loop also synchronizes the threads so that any of the threads don't start next iteration while other threads are still calculating current one.
 	while Instant::now() < end_time {
+		// Read messages from all threads to check for finished iteration
 		for t in &mut threads {
+			if t.join_handle.is_finished() {
+				continue;
+			}
+
 			if let Ok(msg) = t.receiver.try_recv() {
 				match msg {
 					SearchMessage::FinishedIteration => t.finished_iteration = true,
@@ -68,10 +83,12 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 			}
 		}
 
+		// If all threads have finished searching their tree (hit checkmates or stalemates), do an early break
 		if threads.iter().all(|t| t.join_handle.is_finished()) {
 			break;
 		}
 
+		// If all threads have finished current iteration, start next iteration
 		if threads.iter().all(|t| t.finished_iteration || t.join_handle.is_finished()) {
 			for t in &threads {
 				if !t.join_handle.is_finished() {
@@ -81,6 +98,7 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 		}
 	};
 
+	// Send timeout message to non finished threads
 	for t in &threads {
 		if !t.join_handle.is_finished() {
 			_ = t.sender.send(SearchMessage::Timeout);
@@ -89,6 +107,7 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 
 	let mut evaluated_moves = Vec::with_capacity(threads.len());
 
+	// Join all threads
 	for t in threads {
 		let m = t.moove;
 		let eval = t.join_handle.join().unwrap();
@@ -101,6 +120,59 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 	});
 
 	return evaluated_moves[0].clone();
+}
+
+fn iterative_deepening_thread(position: Position, evaluation_fn: fn(&Position) -> i32, sender: Sender<SearchMessage>, receiver: Receiver<SearchMessage>, transposition_table: *mut TranspositionTable) -> i32 {
+	let mut depth = 0;
+
+	let mut evaled_moves: Vec<(i32, Move)> = position.get_all_legal_moves().iter().map(|e| (0, e.clone())).collect();
+	let mut current_moves = evaled_moves.clone();
+
+	'iterative: loop {
+		let alpha = i32::MIN + 1;
+		let beta = i32::MAX;
+
+		for (eval_ref, m) in &mut current_moves {
+			let mut moved_position = position.clone();
+			moved_position.make_move(m.clone());
+
+			let (mut eval, timeout) = alpha_beta(&position, evaluation_fn, -beta, -alpha, depth, &receiver, transposition_table);
+			eval = -eval;
+
+			if timeout {
+				break 'iterative;
+			}
+
+			*eval_ref = eval;
+		}
+
+		current_moves.sort_by(|a, b| a.0.cmp(&b.0));
+		evaled_moves = current_moves.clone();
+
+		if evaled_moves[0].0 > 100000 {
+			break;
+		}
+
+		depth += 1;
+
+		sender.send(SearchMessage::FinishedIteration).unwrap();
+
+		let msg = receiver.recv().unwrap();
+
+		if matches!(msg, SearchMessage::Timeout) {
+			break;
+		}
+	};
+
+	return evaled_moves[0].0;
+}
+
+fn alpha_beta(position: &Position, evaluation_fn: fn(&Position) -> i32, alpha: i32, beta: i32, depth: u32, receiver: &Receiver<SearchMessage>, transposition_table: *mut TranspositionTable) -> (i32, bool) {
+	if depth == 0 {
+		return (evaluation_fn(position), false);
+	};
+
+	
 }
 
 // pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> i32, search_time: Duration, transposition_table: Arc<TranspositionTable>) -> (i32, Move) {
