@@ -1,4 +1,4 @@
-use std::{ptr, sync::Arc, thread, time::{Duration, Instant}};
+use std::{ptr, sync::{mpsc::{self, Receiver, Sender}, Arc}, thread::{self, JoinHandle}, time::{Duration, Instant}};
 
 use crate::{board::{moove::Move, position::Position}, bot::transposition_table::Transposition};
 
@@ -23,102 +23,182 @@ impl Bot for IterativeDeepeningSearch {
 	}
 }
 
-pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> i32, search_time: Duration, transposition_table: Arc<TranspositionTable>) -> (i32, Move) {
-	let start_time = Instant::now();
-	let mut depth = 0;
-
-	let legal_moves = position.get_all_legal_moves();
-	let mut evaled_moves: Vec<(i32, Move)> = legal_moves.iter().map(|e| (0, e.clone())).collect();
-
-	while Instant::now() - start_time < search_time {
-		let alpha = i32::MIN + 1;
-		let beta = i32::MAX;
-
-		let mut threads = Vec::new();
-
-		let tp_ptr = ptr::from_ref(transposition_table.as_ref()) as *mut TranspositionTable;
-
-		for m in &legal_moves {
-			let mut moved_position = position.clone();
-			moved_position.make_move(m.clone());
-
-			let tp = tp_ptr as usize;
-			let m = m.clone();
-
-			threads.push(thread::spawn(move || {
-				let tp_ptr = tp as *mut TranspositionTable;
-
-				return (-alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth, tp_ptr), m);
-			}));
-		};
-
-		for (i, t) in threads.into_iter().enumerate() {
-			let (eval, m) = t.join().unwrap();
-
-			evaled_moves[i] = (eval, m.clone());
-		}
-		
-		evaled_moves.sort_by(|a, b| b.0.cmp(&a.0));
-		depth += 1;
-
-		if evaled_moves[0].0.abs() > 100000 {
-			break;
-		}
-	};
-
-	for (eval, m) in evaled_moves.iter() {
-		println!("{} | {}", m.debug_string(), eval);
-	}
-
-	println!("Depth: {}", depth);
-
-	return evaled_moves[0].clone();
+enum SearchMessage {
+	FinishedIteration,
+	FinishedSearch,
+	Timeout,
+	Continue
 }
 
-fn alpha_beta(position: &Position, evaluation_fn: fn(&Position) -> i32, mut alpha: i32, beta: i32, depth: u32, transposition_table: *mut TranspositionTable) -> i32 {
-	if depth == 0 {
-		return evaluation_fn(position);
+struct ThreadState {
+	pub moove: Move,
+	pub join_handle: JoinHandle<i32>,
+	pub sender: Sender<SearchMessage>,
+	pub receiver: Receiver<SearchMessage>,
+	pub finished_iteration: bool,
+}
+
+pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> i32, search_time: Duration, transposition_table: Arc<TranspositionTable>) -> (i32, Move) {
+	let end_time = Instant::now() + search_time;
+
+	let mut threads: Vec<ThreadState> = Vec::new();
+
+	for m in position.get_all_legal_moves() {
+		let (thread_sender, receiver) = mpsc::channel();
+		let (sender, thread_receiver) = mpsc::channel();
+
+		let join_handle = thread::spawn(move || { 3 });
+
+		threads.push(ThreadState {
+			moove: m,
+			join_handle,
+			sender,
+			receiver,
+			finished_iteration: false,
+		});
 	};
 
-	unsafe {
-		let tp = (*transposition_table).get(position.hash().value());
-
-		if tp.hash_matches(position.hash().value()) {
-			if tp.depth() >= depth {
-				let eval = tp.evaluation();
-				if eval.abs() < 1000000 {
-					return eval;
+	while Instant::now() < end_time {
+		for t in &mut threads {
+			if let Ok(msg) = t.receiver.try_recv() {
+				match msg {
+					SearchMessage::FinishedIteration => t.finished_iteration = true,
+					_ => ()
 				}
 			}
 		}
-	}
 
-	let legal_moves = position.get_all_legal_moves();
-
-	if legal_moves.len() == 0 {
-		if position.is_in_check(position.current_player()) {
-			return -1000000 * (depth as i32 + 1);
-		};
-		
-		return 0;
-	};
-
-	for m in legal_moves {
-		let mut moved_position = position.clone();
-		moved_position.make_move(m);
-
-		let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1, transposition_table);
-
-		let hash = position.hash().value();
-		// Transposition::new(hash, depth - 1, eval)
-		unsafe { *(*transposition_table).get(hash) = Transposition::new(hash, depth - 1, eval) };
-
-		if eval >= beta {
-			return eval;
+		if threads.iter().all(|t| t.join_handle.is_finished()) {
+			break;
 		}
 
-		alpha = eval.max(alpha);
+		if threads.iter().all(|t| t.finished_iteration || t.join_handle.is_finished()) {
+			for t in &threads {
+				if !t.join_handle.is_finished() {
+					_ = t.sender.send(SearchMessage::Continue);
+				}
+			}
+		}
 	};
 
-	return alpha;
+	for t in &threads {
+		if !t.join_handle.is_finished() {
+			_ = t.sender.send(SearchMessage::Timeout);
+		}
+	};
+
+	let mut evaluated_moves = Vec::with_capacity(threads.len());
+
+	for t in threads {
+		let m = t.moove;
+		let eval = t.join_handle.join().unwrap();
+
+		evaluated_moves.push((eval, m));
+	};
+
+	evaluated_moves.sort_by(|a, b| {
+		a.0.cmp(&b.0)
+	});
+
+	return evaluated_moves[0].clone();
 }
+
+// pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> i32, search_time: Duration, transposition_table: Arc<TranspositionTable>) -> (i32, Move) {
+// 	let start_time = Instant::now();
+// 	let mut depth = 0;
+
+// 	let legal_moves = position.get_all_legal_moves();
+// 	let mut evaled_moves: Vec<(i32, Move)> = legal_moves.iter().map(|e| (0, e.clone())).collect();
+
+// 	while Instant::now() - start_time < search_time {
+// 		let alpha = i32::MIN + 1;
+// 		let beta = i32::MAX;
+
+// 		let mut threads = Vec::new();
+
+// 		let tp_ptr = ptr::from_ref(transposition_table.as_ref()) as *mut TranspositionTable;
+
+// 		for m in &legal_moves {
+// 			let mut moved_position = position.clone();
+// 			moved_position.make_move(m.clone());
+
+// 			let tp = tp_ptr as usize;
+// 			let m = m.clone();
+
+// 			threads.push(thread::spawn(move || {
+// 				let tp_ptr = tp as *mut TranspositionTable;
+
+// 				return (-alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth, tp_ptr), m);
+// 			}));
+// 		};
+
+// 		for (i, t) in threads.into_iter().enumerate() {
+// 			let (eval, m) = t.join().unwrap();
+
+// 			evaled_moves[i] = (eval, m.clone());
+// 		}
+		
+// 		evaled_moves.sort_by(|a, b| b.0.cmp(&a.0));
+// 		depth += 1;
+
+// 		if evaled_moves[0].0.abs() > 100000 {
+// 			break;
+// 		}
+// 	};
+
+// 	for (eval, m) in evaled_moves.iter() {
+// 		println!("{} | {}", m.debug_string(), eval);
+// 	}
+
+// 	println!("Depth: {}", depth);
+
+// 	return evaled_moves[0].clone();
+// }
+
+// fn alpha_beta(position: &Position, evaluation_fn: fn(&Position) -> i32, mut alpha: i32, beta: i32, depth: u32, transposition_table: *mut TranspositionTable) -> i32 {
+// 	if depth == 0 {
+// 		return evaluation_fn(position);
+// 	};
+
+// 	unsafe {
+// 		let tp = (*transposition_table).get(position.hash().value());
+
+// 		if tp.hash_matches(position.hash().value()) {
+// 			if tp.depth() >= depth {
+// 				let eval = tp.evaluation();
+// 				if eval.abs() < 1000000 {
+// 					return eval;
+// 				}
+// 			}
+// 		}
+// 	}
+
+// 	let legal_moves = position.get_all_legal_moves();
+
+// 	if legal_moves.len() == 0 {
+// 		if position.is_in_check(position.current_player()) {
+// 			return -1000000 * (depth as i32 + 1);
+// 		};
+		
+// 		return 0;
+// 	};
+
+// 	for m in legal_moves {
+// 		let mut moved_position = position.clone();
+// 		moved_position.make_move(m);
+
+// 		let eval = -alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1, transposition_table);
+
+// 		let hash = position.hash().value();
+// 		// Transposition::new(hash, depth - 1, eval)
+// 		unsafe { *(*transposition_table).get(hash) = Transposition::new(hash, depth - 1, eval) };
+
+// 		if eval >= beta {
+// 			return eval;
+// 		}
+
+// 		alpha = eval.max(alpha);
+// 	};
+
+// 	return alpha;
+// }
