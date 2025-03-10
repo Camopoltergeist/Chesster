@@ -1,4 +1,4 @@
-use crate::{board::tile_position::TilePosition, piece::PieceType, player::Player, player_piece::PlayerPiece};
+use crate::{board::{position::Position, tile_position::TilePosition}, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 pub const BLACK_KING_PIECE_SQUARE_TABLE: [(i32,i32); 64] = [
     (-80,-20),(-70,-10),(-70,-10),(-70,-10),(-70,-10),(-70,-10),(-70,-10),(-80,-20),
@@ -21,6 +21,18 @@ pub const WHITE_KING_PIECE_SQUARE_TABLE: [(i32,i32); 64] = [
     (-60, -5),(-60,  0),(-60,  5),(-60,  5),(-60,  5),(-60,  5),(-60,  0),(-60, -5),
     (-80,-20),(-70,-10),(-70,-10),(-70,-10),(-70,-10),(-70,-10),(-70,-10),(-80,-20)
 ];
+
+pub const KING_PIECE_SQUARE_TABLE_CHECKMATE: [i32; 64] = [
+    -100,-80, -60, -30, -30, -60, -80,-100,
+    -80, -70, -40, -20, -20, -40, -70, -80,
+    -60, -40, -20, -10, -10, -20, -40, -60,
+    -50, -30, -10,   0,   0, -10, -30, -50,
+    -50, -30, -10,   0,   0, -10, -30, -50,
+    -60, -40, -20, -10, -10, -20, -40, -60,
+    -80, -70, -60, -20, -20, -60, -70, -80,
+    -100,-80, -60, -30, -30, -60, -80,-100,
+];
+
 
 pub const BLACK_PAWN_PIECE_SQUARE_TABLE: [(i32,i32); 64] = [
     (0,0),(0,0),(0,0),(0,0),(0,0),(0,0),(0,0),(0,0),
@@ -99,13 +111,13 @@ pub const KNIGHT_PIECE_SQUARE_TABLE: [i32; 64] = [
     -50,-40,-30,-30,-30,-30,-40,-50,
 ];
 
-pub fn get_score_for_piece(piece: PlayerPiece, tile_position: TilePosition, game_phase: (i32, i32)) -> i32 {
+pub fn get_score_for_piece(piece: PlayerPiece, tile_position: TilePosition, game_phase: (i32, i32), position: &Position) -> i32 {
     let index = tile_position.bit_offset() as usize;
 
     match piece.player() {
         Player::White => {
             match piece.piece() {
-                PieceType::King => calculate_score_for_white_king(index, game_phase),
+                PieceType::King => calculate_score_for_white_king(index, game_phase, position),
                 PieceType::Pawn => calculate_score_for_white_pawn(index, game_phase),
                 PieceType::Rook => WHITE_ROOK_PIECE_SQUARE_TABLE[index],
                 PieceType::Bishop => BISHOP_PIECE_SQUARE_TABLE[index],
@@ -115,7 +127,7 @@ pub fn get_score_for_piece(piece: PlayerPiece, tile_position: TilePosition, game
         },
         Player::Black => {
             match piece.piece() {
-                PieceType::King => calculate_score_for_black_king(index, game_phase),
+                PieceType::King => calculate_score_for_black_king(index, game_phase, position),
                 PieceType::Pawn => calculate_score_for_black_pawn(index, game_phase),
                 PieceType::Rook => BLACK_ROOK_PIECE_SQUARE_TABLE[index],
                 PieceType::Bishop => BISHOP_PIECE_SQUARE_TABLE[index],
@@ -126,14 +138,28 @@ pub fn get_score_for_piece(piece: PlayerPiece, tile_position: TilePosition, game
     }
 }
 
-pub fn calculate_score_for_white_king(index: usize, game_phase: (i32, i32)) -> i32 {
+pub fn calculate_score_for_white_king(index: usize, game_phase: (i32, i32), position: &Position) -> i32 {
+    let player_board = *position.board().get_player_bitboard(Player::White);
+    let rooks_and_queens = position.board().queens | position.board().rooks;
+
+    if player_board & rooks_and_queens == 0 {
+        return KING_PIECE_SQUARE_TABLE_CHECKMATE[index];
+    }
+    
     let square_values = WHITE_KING_PIECE_SQUARE_TABLE[index];
     let total_value = game_phase.0 * square_values.0 + game_phase.1 * square_values.1;
 
     total_value / 100
 }
 
-pub fn calculate_score_for_black_king(index: usize, game_phase: (i32, i32)) -> i32 {
+pub fn calculate_score_for_black_king(index: usize, game_phase: (i32, i32), position: &Position) -> i32 {
+    let player_board = *position.board().get_player_bitboard(Player::Black);
+    let rooks_and_queens = position.board().queens | position.board().rooks;
+
+    if player_board & rooks_and_queens == 0 {
+        return KING_PIECE_SQUARE_TABLE_CHECKMATE[index];
+    }
+    
     let square_values = BLACK_KING_PIECE_SQUARE_TABLE[index];
     let total_value = game_phase.0 * square_values.0 + game_phase.1 * square_values.1;
     total_value / 100
