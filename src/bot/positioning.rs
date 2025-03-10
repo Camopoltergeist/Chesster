@@ -140,7 +140,7 @@ pub fn get_score_for_piece(piece: PlayerPiece, tile_position: TilePosition, game
 
 pub fn calculate_score_for_white_king(index: usize, game_phase: (i32, i32), position: &Position) -> i32 {
     let player_board = *position.board().get_player_bitboard(Player::White);
-    let rooks_and_queens = position.board().queens & position.board().rooks;
+    let rooks_and_queens = position.board().queens | position.board().rooks;
 
     if player_board & rooks_and_queens == 0 {
         return KING_PIECE_SQUARE_TABLE_CHECKMATE[index];
@@ -154,7 +154,7 @@ pub fn calculate_score_for_white_king(index: usize, game_phase: (i32, i32), posi
 
 pub fn calculate_score_for_black_king(index: usize, game_phase: (i32, i32), position: &Position) -> i32 {
     let player_board = *position.board().get_player_bitboard(Player::Black);
-    let rooks_and_queens = position.board().queens & position.board().rooks;
+    let rooks_and_queens = position.board().queens | position.board().rooks;
 
     if player_board & rooks_and_queens == 0 {
         return KING_PIECE_SQUARE_TABLE_CHECKMATE[index];
