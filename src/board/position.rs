@@ -666,6 +666,25 @@ impl Position {
         return positioning_score;
     }
 
+    pub fn get_positioning_score_for_player_by_phase(&self, player: Player, game_phase: (i32, i32)) -> i32 {
+        let mut player_pieces_mask = self.board.get_player_bitboard(player).clone();
+
+        let mut positioning_score = 0;
+
+        while !player_pieces_mask.is_empty() {
+            let bit_offset = player_pieces_mask.0.trailing_zeros();
+
+            let tile_position = TilePosition::from_bit_offset(bit_offset);
+            let piece = self.get_piece(tile_position).unwrap();
+
+            positioning_score += get_score_for_piece(piece, tile_position, game_phase, self);
+
+            player_pieces_mask.unset_bit(bit_offset);
+        }
+
+        return positioning_score;
+    }
+
     pub fn generate_zobrist_hash(&mut self) {
         self.zobrist_hash = ZobristHash::from_position(&self);
     }

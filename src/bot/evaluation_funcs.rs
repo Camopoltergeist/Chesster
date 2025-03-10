@@ -1,6 +1,6 @@
 use crate::board::{game_state::GameState, position::Position};
 
-use super::evaluation::Evaluation;
+use super::{evaluation::Evaluation, utils::calculate_game_phase};
 
 pub fn evaluate_material_only(position: &Position) -> Evaluation {
 	let own_material = position.board().get_material_for_player(position.current_player()) as f32;
@@ -62,4 +62,15 @@ pub fn evaluate_material_and_positioning_debug(position: &Position) -> (i32, i32
 	let positioning_score = position.get_positioning_score_for_player(position.current_player()) - position.get_positioning_score_for_player(position.current_player().opposite());
 
 	return ((own_material - opponent_material) * 100 + positioning_score, own_material - opponent_material, positioning_score);
+}
+
+pub fn evaluate_material_and_positioning_by_phase(position: &Position) -> i32 {
+	let game_phase = calculate_game_phase(position);
+
+	let own_material = position.board().get_phase_material_for_player(position.current_player(), game_phase) as i32;
+	let opponent_material = position.board().get_phase_material_for_player(position.current_player().opposite(), game_phase) as i32;
+
+	let positioning_score = position.get_positioning_score_for_player_by_phase(position.current_player(), game_phase) - position.get_positioning_score_for_player_by_phase(position.current_player().opposite(), game_phase);
+
+	return (own_material - opponent_material) + positioning_score;
 }
