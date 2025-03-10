@@ -23,6 +23,7 @@ impl Bot for IterativeDeepeningSearch {
 	}
 }
 
+#[derive(Debug)]
 enum SearchMessage {
 	FinishedIteration,
 	Timeout,
@@ -85,17 +86,23 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 
 		// If all threads have finished searching their tree (hit checkmates or stalemates), do an early break
 		if threads.iter().all(|t| t.join_handle.is_finished()) {
+			println!("All finished!");
 			break;
 		}
 
 		// If all threads have finished current iteration, start next iteration
 		if threads.iter().all(|t| t.finished_iteration || t.join_handle.is_finished()) {
-			for t in &threads {
+			println!("Iteration finished!");
+
+			for t in &mut threads {
 				if !t.join_handle.is_finished() {
+					t.finished_iteration = false;
 					_ = t.sender.send(SearchMessage::Continue);
 				}
 			}
 		}
+
+		thread::yield_now();
 	};
 
 	// Send timeout message to non finished threads
@@ -116,7 +123,7 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 	};
 
 	evaluated_moves.sort_by(|a, b| {
-		a.0.cmp(&b.0)
+		b.0.cmp(&a.0)
 	});
 
 	return evaluated_moves[0].clone();
@@ -127,6 +134,14 @@ fn iterative_deepening_thread(position: Position, evaluation_fn: fn(&Position) -
 
 	let mut evaled_moves: Vec<(i32, Move)> = position.get_all_legal_moves().iter().map(|e| (0, e.clone())).collect();
 	let mut current_moves = evaled_moves.clone();
+
+	if current_moves.len() == 0 {
+		if position.is_in_check(position.current_player()) {
+			return -1000000 * (depth as i32 + 1);
+		};
+		
+		return 0;
+	};
 
 	'iterative: loop {
 		let alpha = i32::MIN + 1;
@@ -140,13 +155,14 @@ fn iterative_deepening_thread(position: Position, evaluation_fn: fn(&Position) -
 			eval = -eval;
 
 			if timeout {
+				// println!("Timeout root");
 				break 'iterative;
 			}
 
 			*eval_ref = eval;
 		}
 
-		current_moves.sort_by(|a, b| a.0.cmp(&b.0));
+		current_moves.sort_by(|a, b| b.0.cmp(&a.0));
 		evaled_moves = current_moves.clone();
 
 		if evaled_moves[0].0 > 100000 {
@@ -159,20 +175,74 @@ fn iterative_deepening_thread(position: Position, evaluation_fn: fn(&Position) -
 
 		let msg = receiver.recv().unwrap();
 
-		if matches!(msg, SearchMessage::Timeout) {
-			break;
+		match msg {
+			SearchMessage::Timeout => break,
+			SearchMessage::Continue => {
+				// println!("Contiue received!");
+				continue;
+			},
+			_ => unreachable!()
 		}
 	};
 
 	return evaled_moves[0].0;
 }
 
-fn alpha_beta(position: &Position, evaluation_fn: fn(&Position) -> i32, alpha: i32, beta: i32, depth: u32, receiver: &Receiver<SearchMessage>, transposition_table: *mut TranspositionTable) -> (i32, bool) {
+fn alpha_beta(position: &Position, evaluation_fn: fn(&Position) -> i32, mut alpha: i32, beta: i32, depth: u32, receiver: &Receiver<SearchMessage>, transposition_table: *mut TranspositionTable) -> (i32, bool) {
 	if depth == 0 {
 		return (evaluation_fn(position), false);
 	};
 
-	
+	unsafe {
+		let tp = (*transposition_table).get(position.hash().value());
+
+		if tp.hash_matches(position.hash().value()) {
+			if tp.depth() >= depth {
+				let eval = tp.evaluation();
+				if eval.abs() < 1000000 {
+					return (eval, false);
+				};
+			};
+		};
+	};
+
+	let legal_moves = position.get_all_legal_moves();
+
+	if legal_moves.len() == 0 {
+		if position.is_in_check(position.current_player()) {
+			return (-1000000 * (depth as i32 + 1), false);
+		};
+		
+		return (0, false);
+	};
+
+	if let Ok(msg) = receiver.try_recv() {
+		// println!("Message: {:?}", msg);
+		return (evaluation_fn(position), true);
+	};
+
+	for m in legal_moves {
+		let mut moved_position = position.clone();
+		moved_position.make_move(m);
+
+		let (mut eval, timeout) = alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1, receiver, transposition_table);
+		eval = -eval;
+
+		if timeout {
+			return (0, true);
+		}
+
+		let hash = position.hash().value();
+		unsafe { *(*transposition_table).get(hash) = Transposition::new(hash, depth - 1, eval) };
+
+		if eval >= beta {
+			return (eval, false);
+		}
+
+		alpha = eval.max(alpha);
+	};
+
+	return (alpha, false);
 }
 
 // pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> i32, search_time: Duration, transposition_table: Arc<TranspositionTable>) -> (i32, Move) {
