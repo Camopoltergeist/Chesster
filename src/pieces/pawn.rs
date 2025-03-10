@@ -74,6 +74,10 @@ impl Pawn {
     pub const fn material_value() -> u32 {
         1
     }
+
+    pub const fn phase_material_value() -> (i32, i32) {
+        (  82, 144)
+    }    
 }
 
 impl Piece for Pawn {

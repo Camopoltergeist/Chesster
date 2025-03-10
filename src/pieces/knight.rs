@@ -49,6 +49,10 @@ impl Knight {
     pub const fn material_value() -> u32 {
         3
     }
+
+    pub const fn phase_material_value() -> (i32, i32) {
+        ( 426, 475)
+    }    
 }
 
 impl Piece for Knight {

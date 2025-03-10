@@ -3,7 +3,7 @@ use super::{
 };
 use crate::{
     piece::PieceType,
-    pieces::{bishop::Bishop, knight::Knight, pawn::Pawn, queen::Queen, rook::Rook},
+    pieces::{bishop::Bishop, knight::{self, Knight}, pawn::Pawn, queen::Queen, rook::Rook},
     player::Player,
     player_piece::PlayerPiece,
 };
@@ -333,4 +333,32 @@ impl Board {
 
         material
     }
+
+    pub fn get_phase_material_for_player(&self, player: Player, game_phase: (i32, i32)) -> u32 {
+        let player_bitboard = *self.get_player_bitboard(player);
+        let mut material = 0;
+
+        let pawns = (self.pawns & player_bitboard).0.count_ones();
+        let pawn_phase_value = Pawn::phase_material_value().0 * game_phase.0 + Pawn::phase_material_value().1 + game_phase.1;
+        material += pawns * pawn_phase_value as u32 / 100;
+
+        let rooks = (self.rooks & player_bitboard).0.count_ones();
+        let rook_phase_value = Rook::phase_material_value().0 * game_phase.0 + Rook::phase_material_value().1 + game_phase.1;
+        material += rooks * rook_phase_value as u32 / 100;
+
+        let bishops = (self.bishops & player_bitboard).0.count_ones();
+        let bishop_phase_value = Bishop::phase_material_value().0 * game_phase.0 + Bishop::phase_material_value().1 + game_phase.1;
+        material += bishops * bishop_phase_value as u32 / 100;
+
+
+        let knights = (self.knights & player_bitboard).0.count_ones();
+        let knight_phase_value = Knight::phase_material_value().0 * game_phase.0 + Knight::phase_material_value().1 + game_phase.1;
+        material += knights * knight_phase_value as u32 / 100;
+
+        let queens = (self.queens & player_bitboard).0.count_ones();
+        let queen_phase_value = Queen::phase_material_value().0 * game_phase.0 + Queen::phase_material_value().1 + game_phase.1;
+        material += queens * queen_phase_value as u32 / 100;
+
+        material as u32
+    }    
 }
