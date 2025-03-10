@@ -107,6 +107,10 @@ impl Bishop {
     pub const fn material_value() -> u32 {
         3
     }
+
+    pub const fn phase_material_value() -> (i32, i32) {
+        ( 441, 510)
+    }
 }
 
 impl Piece for Bishop {

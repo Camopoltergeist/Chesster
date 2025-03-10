@@ -101,6 +101,10 @@ impl Rook {
     pub const fn material_value() -> u32 {
         5
     }
+
+    pub const fn phase_material_value() -> (i32, i32) {
+        ( 627, 803)
+    } 
 }
 
 impl Piece for Rook {

@@ -51,6 +51,10 @@ impl Queen {
     pub const fn material_value() -> u32 {
         9
     }
+
+    pub const fn phase_material_value() -> (i32, i32) {
+        (1292,1623)
+    }    
 }
 
 impl Piece for Queen {
