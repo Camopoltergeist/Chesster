@@ -9,6 +9,7 @@ pub struct UI {
 	board_renderer: BoardRenderer,
 	text_area: TextArea,
 	game_match: Match,
+	viewed_position: usize,
 
 	is_debug: bool,
 
@@ -43,6 +44,7 @@ impl UI {
 			background_color: Color { r: 0, g: 65, b: 119, a: 255 },
 			promotion_menu_open: false,
 			promoting_move: None,
+			viewed_position: 0,
 		}
 	}
 
@@ -121,6 +123,37 @@ impl UI {
 	pub fn handle_input(&mut self, rl: &RaylibHandle) {
 		if rl.is_key_pressed(KeyboardKey::KEY_SPACE) {
 			self.toggle_board_perspective();
+		}
+
+		if rl.is_key_pressed(KeyboardKey::KEY_LEFT) {
+			self.viewed_position += 1;
+
+			if let Some(pos) = self.game_match.get_position_n_moves_ago(self.viewed_position) {
+				self.board_renderer.set_board(pos.board());
+				self.board_renderer.set_last_move(None);
+			}
+			else {
+				self.viewed_position = self.game_match.position_count() - 1;
+			}
+		}
+
+		if rl.is_key_pressed(KeyboardKey::KEY_RIGHT) {
+			self.viewed_position = self.viewed_position.saturating_sub(1);
+
+			if let Some(pos) = self.game_match.get_position_n_moves_ago(self.viewed_position) {
+				self.board_renderer.set_board(pos.board());
+				self.board_renderer.set_last_move(None);
+			}
+		}
+
+		if rl.is_key_pressed(KeyboardKey::KEY_BACKSPACE) {
+			self.game_match.undo_to_n_moves_ago(self.viewed_position);
+			self.board_renderer.set_last_move(None);
+			self.viewed_position = 0;
+		}
+
+		if self.viewed_position != 0 {
+			return;
 		}
 
 		self.handle_promotion_menu(rl);

@@ -47,7 +47,15 @@ impl Match {
         self.position.get(index)
     }
 
+    pub fn position_count(&self) -> usize {
+        self.position.len()
+    }
+
     pub fn undo_to_n_moves_ago(&mut self, n: usize) -> &Position {
+        if !self.move_can_be_made() {
+            return self.position();
+        }
+
         let final_length = self.position.len().saturating_sub(n);
 
         self.position.truncate(final_length);
