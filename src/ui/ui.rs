@@ -109,6 +109,10 @@ impl UI {
 			self.text_area.draw_line(draw_handle, &format!("{} is thinking...", player_str));
 		}
 
+		if self.viewed_position != 0 {
+			self.text_area.draw_line(draw_handle, &format!("Viewing position: -{}", self.viewed_position));
+		}
+
 		if self.promotion_menu_open {
 			self.text_area.draw_line(draw_handle, "Promotion:");
 			self.text_area.draw_line(draw_handle, "1: Queen");
@@ -148,6 +152,12 @@ impl UI {
 
 		if rl.is_key_pressed(KeyboardKey::KEY_BACKSPACE) {
 			self.game_match.undo_to_n_moves_ago(self.viewed_position);
+			self.board_renderer.set_last_move(None);
+			self.viewed_position = 0;
+		}
+
+		if rl.is_key_pressed(KeyboardKey::KEY_ENTER) {
+			self.board_renderer.set_board(self.game_match.position().board());
 			self.board_renderer.set_last_move(None);
 			self.viewed_position = 0;
 		}
