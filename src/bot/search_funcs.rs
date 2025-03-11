@@ -508,7 +508,12 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 		evaled_moves.sort_by(|a, b| b.0.cmp(&a.0));
 		finished_moves = evaled_moves.clone();
 
-		depth += 1;
+		if depth < 2 {
+			depth += 1;
+		}
+		else {
+			depth += 2;
+		}
 
 		if finished_moves[0].0.abs() > 100000 {
 			break;
