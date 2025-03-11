@@ -18,8 +18,8 @@ pub fn calculate_game_phase(position: &Position) -> (i32, i32) {
     (midgame_percentage, endgame_percentage)
 }
 
-pub fn bishop_pair_bonus(position: &Position) -> i32 {
-    const BISHOP_PAIR_BONUS: i32 = 35;
+pub fn bishop_pair_bonus(position: &Position, game_phase: (i32, i32)) -> i32 {
+    const BISHOP_PAIR_BONUS: (i32, i32) = ( 22, 88);
     let mut score = 0;
 
     let player_board = position
@@ -33,10 +33,10 @@ pub fn bishop_pair_bonus(position: &Position) -> i32 {
     let bishop_board = &position.board().bishops;
 
     if (player_board.value() & bishop_board.value()).count_ones() == 2 {
-        score += BISHOP_PAIR_BONUS;
+        score += (BISHOP_PAIR_BONUS.0 * game_phase.0 + BISHOP_PAIR_BONUS.1 * game_phase.1) / 100;
     }
     if (enemy_board.value() & bishop_board.value()).count_ones() == 2 {
-        score -= BISHOP_PAIR_BONUS;
+        score -= (BISHOP_PAIR_BONUS.0 * game_phase.0 + BISHOP_PAIR_BONUS.1 * game_phase.1) / 100;
     }
 
     score
