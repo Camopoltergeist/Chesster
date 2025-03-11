@@ -25,16 +25,14 @@ impl Bot for IterativeDeepeningSearch {
 
 #[derive(Debug)]
 enum SearchMessage {
-	FinishedIteration,
 	Timeout,
 	Continue
 }
 
 struct ThreadState {
 	pub moove: Move,
-	pub join_handle: JoinHandle<i32>,
+	pub join_handle: JoinHandle<(i32, u32)>,
 	pub sender: Sender<SearchMessage>,
-	pub receiver: Receiver<SearchMessage>,
 	pub finished_iteration: bool,
 }
 
@@ -48,21 +46,19 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 
 	// Create threads and ThreadState objects
 	for m in position.get_all_legal_moves() {
-		let (thread_sender, receiver) = mpsc::channel();
 		let (sender, thread_receiver) = mpsc::channel();
 
 		let mut moved_position = position.clone();
 		moved_position.make_move(m.clone());
 
 		let join_handle = thread::spawn(move || {
-			iterative_deepening_thread(moved_position, evaluation_fn, thread_sender, thread_receiver, tp_ptr_usize as *mut TranspositionTable)
+			iterative_deepening_thread(moved_position, evaluation_fn, thread_receiver, tp_ptr_usize as *mut TranspositionTable)
 		});
 
 		threads.push(ThreadState {
 			moove: m,
 			join_handle,
 			sender,
-			receiver,
 			finished_iteration: false,
 		});
 	};
@@ -74,13 +70,6 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 		for t in &mut threads {
 			if t.join_handle.is_finished() {
 				continue;
-			}
-
-			if let Ok(msg) = t.receiver.try_recv() {
-				match msg {
-					SearchMessage::FinishedIteration => t.finished_iteration = true,
-					_ => ()
-				}
 			}
 		}
 
@@ -123,24 +112,31 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 	};
 
 	evaluated_moves.sort_by(|a, b| {
-		b.0.cmp(&a.0)
+		b.0.0.cmp(&a.0.0)
 	});
 
-	return evaluated_moves[0].clone();
+	for ((eval, depth), m) in &evaluated_moves {
+		println!("{} | {}, {}", m.debug_string(), eval, depth);
+	}
+
+	let best_eval = evaluated_moves[0].0.0;
+	let best_move = evaluated_moves[0].1.clone();
+
+	return (best_eval, best_move);
 }
 
-fn iterative_deepening_thread(position: Position, evaluation_fn: fn(&Position) -> i32, sender: Sender<SearchMessage>, receiver: Receiver<SearchMessage>, transposition_table: *mut TranspositionTable) -> i32 {
-	let mut depth = 0;
+fn iterative_deepening_thread(position: Position, evaluation_fn: fn(&Position) -> i32, receiver: Receiver<SearchMessage>, transposition_table: *mut TranspositionTable) -> (i32, u32) {
+	let mut depth = 1;
 
 	let mut evaled_moves: Vec<(i32, Move)> = position.get_all_legal_moves().iter().map(|e| (0, e.clone())).collect();
 	let mut current_moves = evaled_moves.clone();
 
 	if current_moves.len() == 0 {
 		if position.is_in_check(position.current_player()) {
-			return -1000000 * (depth as i32 + 1);
+			return (-1000000 * (depth as i32 + 1), depth);
 		};
 		
-		return 0;
+		return (0, depth);
 	};
 
 	'iterative: loop {
@@ -169,23 +165,21 @@ fn iterative_deepening_thread(position: Position, evaluation_fn: fn(&Position) -
 			break;
 		}
 
-		depth += 1;
+		depth += 2;
 
-		sender.send(SearchMessage::FinishedIteration).unwrap();
-
-		let msg = receiver.recv().unwrap();
-
-		match msg {
-			SearchMessage::Timeout => break,
-			SearchMessage::Continue => {
-				// println!("Contiue received!");
-				continue;
-			},
-			_ => unreachable!()
+		if let Ok(msg) = receiver.try_recv() {
+			match msg {
+				SearchMessage::Timeout => break,
+				SearchMessage::Continue => {
+					// println!("Contiue received!");
+					continue;
+				},
+			}
 		}
+
 	};
 
-	return evaled_moves[0].0;
+	return (evaled_moves[0].0, depth);
 }
 
 fn alpha_beta(position: &Position, evaluation_fn: fn(&Position) -> i32, mut alpha: i32, beta: i32, depth: u32, receiver: &Receiver<SearchMessage>, transposition_table: *mut TranspositionTable) -> (i32, bool) {
