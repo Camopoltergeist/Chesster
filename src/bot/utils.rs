@@ -63,7 +63,7 @@ pub fn rook_on_7th_rank_bonus(position: &Position, game_phase: (i32, i32)) -> i3
         let rook_position = TilePosition::from_bit_offset(bit_offset);
 
         if rook_position.rank() == 1 {
-            score += SEVENTH_RANK_BONUS.0 * game_phase.0 + SEVENTH_RANK_BONUS.1 * game_phase.1;
+            score -= SEVENTH_RANK_BONUS.0 * game_phase.0 + SEVENTH_RANK_BONUS.1 * game_phase.1;
         }
     }
 
