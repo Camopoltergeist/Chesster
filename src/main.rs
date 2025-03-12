@@ -17,6 +17,7 @@ pub mod perft;
 pub mod tests;
 mod performance_test;
 pub mod r#match;
+pub mod convert;
 
 fn main() {
     generate_zobrist_numbers();
