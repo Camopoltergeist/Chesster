@@ -1,7 +1,7 @@
 use std::{collections::{HashMap, HashSet}, env};
 
 use board::{position::Position, tile_position::TilePosition, zobrist_hash::generate_zobrist_numbers};
-use convert::{convert, NewBookEntry};
+use opening_book::{convert, load_opening_book};
 use jja::{polyglot::to_move, polyglotbook::PolyGlotBook};
 use performance_test::performance_test;
 use shakmaty::zobrist::{Zobrist64, ZobristHash};
@@ -20,24 +20,18 @@ pub mod perft;
 pub mod tests;
 mod performance_test;
 pub mod r#match;
-pub mod convert;
+pub mod opening_book;
 
 fn main() {
     generate_zobrist_numbers();
 
-    let old_book = PolyGlotBook::open("./komodo.bin").unwrap();
-
-    let default_pos = shakmaty::Chess::new();
-    let mut new_book: HashMap<u64, NewBookEntry> = HashMap::new();
-    let mut visited: HashSet<u64> = HashSet::new();
-
-    convert(&default_pos, &old_book, &mut new_book, &mut visited);
+    let new_book = load_opening_book();
 
     let out_pos = Position::default();
 
     println!("Entries: {}", new_book.len());
 
-    for m in new_book.get(&out_pos.hash().value()).unwrap().moves.iter() {
+    for m in new_book.get(&out_pos.hash().value()).unwrap().iter() {
         println!("{:?}", m);
         println!("{}", m.debug_string());
     }

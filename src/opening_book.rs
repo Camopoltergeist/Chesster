@@ -1,17 +1,23 @@
 use std::collections::{HashMap, HashSet};
 
 use jja::{polyglot::to_move, polyglotbook::PolyGlotBook};
-use shakmaty::{fen::Fen, zobrist::{Zobrist64, ZobristHash}, Chess, Position, Rank};
+use shakmaty::{fen::Fen, zobrist::{Zobrist64, ZobristHash}, Chess, Position};
 
 use crate::{board::{moove::{self, BasicMove, EnPassantMove, PromotingMove}, position, tile_position::TilePosition}, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
-#[derive(Debug)]
-pub struct NewBookEntry {
-	pub hash: u64,
-	pub moves: Vec<moove::Move>
+pub fn load_opening_book() -> HashMap<u64, Vec<moove::Move>> {
+	let old_book = PolyGlotBook::open("./komodo.bin").unwrap();
+
+    let default_pos = shakmaty::Chess::new();
+    let mut new_book: HashMap<u64, Vec<moove::Move>> = HashMap::new();
+    let mut visited: HashSet<u64> = HashSet::new();
+
+    convert(&default_pos, &old_book, &mut new_book, &mut visited);
+
+	return new_book;
 }
 
-pub fn convert(position: &Chess, old_book: &PolyGlotBook, new_book: &mut HashMap<u64, NewBookEntry>, visited: &mut HashSet<u64>) {
+pub fn convert(position: &Chess, old_book: &PolyGlotBook, new_book: &mut HashMap<u64, Vec<moove::Move>>, visited: &mut HashSet<u64>) {
 	let fen_string = Fen::from_position(position.clone(), shakmaty::EnPassantMode::Always).to_string();
 	let old_hash: u64 = position.zobrist_hash::<Zobrist64>(shakmaty::EnPassantMode::PseudoLegal).into();
 
@@ -25,17 +31,15 @@ pub fn convert(position: &Chess, old_book: &PolyGlotBook, new_book: &mut HashMap
 
 	let new_hash = our_position.hash().value();
 
-	let mut new_entry = NewBookEntry {
-		hash: new_hash,
-		moves: Vec::new(),
-	};
+	let mut new_entry = Vec::new();
+
 
 	if let Some(entries) = old_book.lookup_moves(old_hash) {
 		for e in entries {
 			if let Some(s_move) = to_move(position, e.mov) {
 				let our_move = s_move_to_our_move(&s_move, our_position.current_player());
 				
-				new_entry.moves.push(our_move);
+				new_entry.push(our_move);
 				
 				let moved_position = position.clone().play(&s_move).unwrap();
 				
@@ -44,7 +48,7 @@ pub fn convert(position: &Chess, old_book: &PolyGlotBook, new_book: &mut HashMap
 		}
 	}
 
-	if new_entry.moves.is_empty() {
+	if new_entry.is_empty() {
 		return;
 	}
 
