@@ -42,29 +42,39 @@ pub fn bishop_pair_bonus(position: &Position, game_phase: (i32, i32)) -> i32 {
     score
 }
 
-pub fn rook_pair_penalty(position: &Position) -> i32 {
-    let player_board = *position
-        .board()
-        .get_player_bitboard(position.current_player());
-    let rook_board = position.board().rooks;
-    let player_rook_board = (player_board & rook_board).value();
+pub fn rook_on_7th_rank_bonus(position: &Position, game_phase: (i32, i32)) -> i32 {
+    const SEVENTH_RANK_BONUS: (i32, i32) = (10, 40);
+    let mut score = 0;
 
-    if player_rook_board.count_ones() == 2 {
-        let rook1_position = TilePosition::from_bit_offset(player_rook_board.trailing_zeros());
-        let rook2_position = TilePosition::from_bit_offset(63 - player_rook_board.leading_zeros());
+    let mut white_rook_board = *position.board().get_player_bitboard(Player::White) & position.board().rooks;
+    let mut black_rook_board = *position.board().get_player_bitboard(Player::Black) & position.board().rooks;
 
-        let col_diff = (rook1_position.column() as i32 - rook2_position.column() as i32).abs() + 1;
-        let rank_diff = (rook1_position.rank() as i32 - rook2_position.rank() as i32).abs() + 1;
+    while white_rook_board != 0 {
+        let bit_offset = white_rook_board.pop_lsb();
+        let rook_position = TilePosition::from_bit_offset(bit_offset);
 
-        if col_diff < rank_diff {
-            return -20 / col_diff;
-        } else {
-            return -20 / rank_diff;
+        if rook_position.rank() == 6 {
+            score += SEVENTH_RANK_BONUS.0 * game_phase.0 + SEVENTH_RANK_BONUS.1 * game_phase.1;
         }
-    } else {
-        return 0;
     }
+
+    while black_rook_board != 0 {
+        let bit_offset = black_rook_board.pop_lsb();
+        let rook_position = TilePosition::from_bit_offset(bit_offset);
+
+        if rook_position.rank() == 1 {
+            score += SEVENTH_RANK_BONUS.0 * game_phase.0 + SEVENTH_RANK_BONUS.1 * game_phase.1;
+        }
+    }
+
+    if position.current_player() == Player::White {
+        score / 100
+    } else {
+        -score / 100
+    }
+
 }
+
 
 pub fn rook_open_column_bonus(position: &Position, game_phase: (i32, i32)) -> i32 {
     const OPEN_COLUMN_BONUS: (i32, i32) = (8, 20);
