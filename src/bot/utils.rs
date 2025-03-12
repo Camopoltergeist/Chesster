@@ -67,7 +67,7 @@ pub fn rook_pair_penalty(position: &Position) -> i32 {
 }
 
 pub fn rook_open_column_bonus(position: &Position, game_phase: (i32, i32)) -> i32 {
-    const OPEN_COLUMN_BONUS: (i32, i32) = (15, 40);
+    const OPEN_COLUMN_BONUS: (i32, i32) = (8, 20);
 
     let pawn_board = position.board().pawns;
     let mut score = 0;
