@@ -3,7 +3,7 @@ use super::{
 };
 use crate::{
     piece::PieceType,
-    pieces::{bishop::Bishop, knight::{self, Knight}, pawn::Pawn, queen::Queen, rook::Rook},
+    pieces::{bishop::Bishop, knight::Knight, pawn::Pawn, queen::Queen, rook::Rook},
     player::Player,
     player_piece::PlayerPiece,
 };

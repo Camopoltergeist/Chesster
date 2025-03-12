@@ -18,8 +18,8 @@ pub fn calculate_game_phase(position: &Position) -> (i32, i32) {
     (midgame_percentage, endgame_percentage)
 }
 
-pub fn bishop_pair_bonus(position: &Position) -> i32 {
-    const BISHOP_PAIR_BONUS: i32 = 35;
+pub fn bishop_pair_bonus(position: &Position, game_phase: (i32, i32)) -> i32 {
+    const BISHOP_PAIR_BONUS: (i32, i32) = ( 22, 88);
     let mut score = 0;
 
     let player_board = position
@@ -33,10 +33,10 @@ pub fn bishop_pair_bonus(position: &Position) -> i32 {
     let bishop_board = &position.board().bishops;
 
     if (player_board.value() & bishop_board.value()).count_ones() == 2 {
-        score += BISHOP_PAIR_BONUS;
+        score += (BISHOP_PAIR_BONUS.0 * game_phase.0 + BISHOP_PAIR_BONUS.1 * game_phase.1) / 100;
     }
     if (enemy_board.value() & bishop_board.value()).count_ones() == 2 {
-        score -= BISHOP_PAIR_BONUS;
+        score -= (BISHOP_PAIR_BONUS.0 * game_phase.0 + BISHOP_PAIR_BONUS.1 * game_phase.1) / 100;
     }
 
     score
@@ -63,6 +63,49 @@ pub fn rook_pair_penalty(position: &Position) -> i32 {
         }
     } else {
         return 0;
+    }
+}
+
+pub fn rook_open_column_bonus(position: &Position, game_phase: (i32, i32)) -> i32 {
+    const OPEN_COLUMN_BONUS: (i32, i32) = (8, 20);
+
+    let pawn_board = position.board().pawns;
+    let mut score = 0;
+
+    let white_board = *position.board().get_player_bitboard(Player::White);
+    let mut white_rook_board = white_board & position.board().rooks;
+
+    let black_board = *position.board().get_player_bitboard(Player::Black);
+    let mut black_rook_board = black_board & position.board().rooks;
+
+    while white_rook_board != 0 {
+        let bit_offset = white_rook_board.pop_lsb();
+        let rook_position = TilePosition::from_bit_offset(bit_offset);
+        let column_check_mask = Bitboard::generate_column_mask(rook_position.column());
+
+        if column_check_mask & pawn_board == 0 {
+            score += OPEN_COLUMN_BONUS.0 * game_phase.0 + OPEN_COLUMN_BONUS.1 * game_phase.1;
+        } else if column_check_mask & (pawn_board & white_board) == 0 {
+            score += (OPEN_COLUMN_BONUS.0 * game_phase.0 + OPEN_COLUMN_BONUS.1 * game_phase.1) / 2
+        }
+    }
+
+    while black_rook_board != 0 {
+        let bit_offset = black_rook_board.pop_lsb();
+        let rook_position = TilePosition::from_bit_offset(bit_offset);
+        let column_check_mask = Bitboard::generate_column_mask(rook_position.column());
+        
+        if column_check_mask & pawn_board == 0 {
+            score -= OPEN_COLUMN_BONUS.0 * game_phase.0 + OPEN_COLUMN_BONUS.1 * game_phase.1;
+        } else if column_check_mask & (pawn_board & black_board) == 0 {
+            score -= (OPEN_COLUMN_BONUS.0 * game_phase.0 + OPEN_COLUMN_BONUS.1 * game_phase.1) / 2
+        }
+    }
+
+    if position.current_player() == Player::White {
+        score / 100
+    } else {
+        -score / 100
     }
 }
 
