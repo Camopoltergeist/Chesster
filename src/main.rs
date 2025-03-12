@@ -1,4 +1,4 @@
-use std::{collections::HashMap, env};
+use std::{collections::{HashMap, HashSet}, env};
 
 use board::{position::Position, tile_position::TilePosition, zobrist_hash::generate_zobrist_numbers};
 use convert::{convert, NewBookEntry};
@@ -29,10 +29,13 @@ fn main() {
 
     let default_pos = shakmaty::Chess::new();
     let mut new_book: HashMap<u64, NewBookEntry> = HashMap::new();
+    let mut visited: HashSet<u64> = HashSet::new();
 
-    convert(&default_pos, &old_book, &mut new_book);
+    convert(&default_pos, &old_book, &mut new_book, &mut visited);
 
     let out_pos = Position::default();
+
+    println!("Entries: {}", new_book.len());
 
     for m in new_book.get(&out_pos.hash().value()).unwrap().moves.iter() {
         println!("{:?}", m);

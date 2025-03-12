@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use jja::{polyglot::to_move, polyglotbook::PolyGlotBook};
 use shakmaty::{fen::Fen, zobrist::{Zobrist64, ZobristHash}, Chess, Position, Rank};
@@ -11,8 +11,15 @@ pub struct NewBookEntry {
 	pub moves: Vec<moove::Move>
 }
 
-pub fn convert(position: &Chess, old_book: &PolyGlotBook, new_book: &mut HashMap<u64, NewBookEntry>) {
+pub fn convert(position: &Chess, old_book: &PolyGlotBook, new_book: &mut HashMap<u64, NewBookEntry>, visited: &mut HashSet<u64>) {
 	let fen_string = Fen::from_position(position.clone(), shakmaty::EnPassantMode::Always).to_string();
+	let old_hash: u64 = position.zobrist_hash::<Zobrist64>(shakmaty::EnPassantMode::PseudoLegal).into();
+
+	if visited.contains(&old_hash) {
+		return;
+	}
+
+	visited.insert(old_hash);
 
 	let our_position = position::Position::from_fen_str(&fen_string).unwrap();
 
@@ -23,16 +30,16 @@ pub fn convert(position: &Chess, old_book: &PolyGlotBook, new_book: &mut HashMap
 		moves: Vec::new(),
 	};
 
-	if let Some(entries) = old_book.lookup_moves(position.zobrist_hash::<Zobrist64>(shakmaty::EnPassantMode::Always).into()) {
+	if let Some(entries) = old_book.lookup_moves(old_hash) {
 		for e in entries {
 			if let Some(s_move) = to_move(position, e.mov) {
 				let our_move = s_move_to_our_move(&s_move, our_position.current_player());
-
+				
 				new_entry.moves.push(our_move);
-
+				
 				let moved_position = position.clone().play(&s_move).unwrap();
-
-				convert(&moved_position, old_book, new_book);
+				
+				convert(&moved_position, old_book, new_book, visited);
 			}
 		}
 	}

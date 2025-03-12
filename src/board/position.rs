@@ -115,7 +115,7 @@ impl Position {
             _ => Some(TilePosition::from_tile_str(en_passant_target_str).unwrap())
         };
 
-        Ok(Self{
+        let mut s = Self{
             board,
             current_player,
             white_short_castling,
@@ -124,7 +124,11 @@ impl Position {
             black_long_castling,
             en_passant_target,
             ..Default::default()
-        })
+        };
+
+        s.generate_zobrist_hash();
+
+        Ok(s)
     }
 
     pub fn print_all_legal_moves(&self) {
