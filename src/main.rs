@@ -25,19 +25,6 @@ pub mod opening_book;
 fn main() {
     generate_zobrist_numbers();
 
-    let new_book = load_opening_book();
-
-    let out_pos = Position::default();
-
-    println!("Entries: {}", new_book.len());
-
-    for m in new_book.get(&out_pos.hash().value()).unwrap().iter() {
-        println!("{:?}", m);
-        println!("{}", m.debug_string());
-    }
-
-    return;
-
     let args: Vec<String> = env::args().collect();
 
     if args.contains(&"--performance-test".to_owned()) {

@@ -6,7 +6,7 @@ use shakmaty::{fen::Fen, zobrist::{Zobrist64, ZobristHash}, Chess, Position};
 use crate::{board::{moove::{self, BasicMove, EnPassantMove, PromotingMove}, position, tile_position::TilePosition}, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 pub fn load_opening_book() -> HashMap<u64, Vec<moove::Move>> {
-	let old_book = PolyGlotBook::open("./komodo.bin").unwrap();
+	let old_book = PolyGlotBook::open("./baron30.bin").unwrap();
 
     let default_pos = shakmaty::Chess::new();
     let mut new_book: HashMap<u64, Vec<moove::Move>> = HashMap::new();
