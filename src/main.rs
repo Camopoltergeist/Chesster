@@ -1,7 +1,10 @@
-use std::env;
+use std::{collections::HashMap, env};
 
-use board::zobrist_hash::generate_zobrist_numbers;
+use board::{position::Position, tile_position::TilePosition, zobrist_hash::generate_zobrist_numbers};
+use convert::{convert, NewBookEntry};
+use jja::{polyglot::to_move, polyglotbook::PolyGlotBook};
 use performance_test::performance_test;
+use shakmaty::zobrist::{Zobrist64, ZobristHash};
 use ui::start_ui;
 
 pub mod board;
@@ -21,6 +24,22 @@ pub mod convert;
 
 fn main() {
     generate_zobrist_numbers();
+
+    let old_book = PolyGlotBook::open("./komodo.bin").unwrap();
+
+    let default_pos = shakmaty::Chess::new();
+    let mut new_book: HashMap<u64, NewBookEntry> = HashMap::new();
+
+    convert(&default_pos, &old_book, &mut new_book);
+
+    let out_pos = Position::default();
+
+    for m in new_book.get(&out_pos.hash().value()).unwrap().moves.iter() {
+        println!("{:?}", m);
+        println!("{}", m.debug_string());
+    }
+
+    return;
 
     let args: Vec<String> = env::args().collect();
 

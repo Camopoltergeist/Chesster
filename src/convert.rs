@@ -5,6 +5,7 @@ use shakmaty::{fen::Fen, zobrist::{Zobrist64, ZobristHash}, Chess, Position, Ran
 
 use crate::{board::{moove::{self, BasicMove, EnPassantMove, PromotingMove}, position, tile_position::TilePosition}, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
+#[derive(Debug)]
 pub struct NewBookEntry {
 	pub hash: u64,
 	pub moves: Vec<moove::Move>
@@ -55,7 +56,7 @@ fn s_move_to_our_move(s_move: &shakmaty::Move, player: Player) -> moove::Move {
 	let to_square = s_move.to();
 
 	let from = TilePosition::new(from_square.file().into(), from_square.rank().into());
-	let to = TilePosition::new(to_square.file().into(), to_square.file().into());
+	let to = TilePosition::new(to_square.file().into(), to_square.rank().into());
 
 	if s_move.is_promotion() {
 		let piece_type = match s_move.promotion().unwrap() {
