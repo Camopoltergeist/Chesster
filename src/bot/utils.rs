@@ -66,8 +66,8 @@ pub fn rook_pair_penalty(position: &Position) -> i32 {
     }
 }
 
-pub fn rook_open_column_bonus(position: &Position) -> i32 {
-    const OPEN_COLUMN_BONUS: i32 = 20;
+pub fn rook_open_column_bonus(position: &Position, game_phase: (i32, i32)) -> i32 {
+    const OPEN_COLUMN_BONUS: (i32, i32) = (15, 40);
 
     let pawn_board = position.board().pawns;
     let mut score = 0;
@@ -84,9 +84,9 @@ pub fn rook_open_column_bonus(position: &Position) -> i32 {
         let column_check_mask = Bitboard::generate_column_mask(rook_position.column());
 
         if column_check_mask & pawn_board == 0 {
-            score += OPEN_COLUMN_BONUS;
+            score += OPEN_COLUMN_BONUS.0 * game_phase.0 + OPEN_COLUMN_BONUS.1 * game_phase.1;
         } else if column_check_mask & (pawn_board & white_board) == 0 {
-            score += OPEN_COLUMN_BONUS / 2
+            score += (OPEN_COLUMN_BONUS.0 * game_phase.0 + OPEN_COLUMN_BONUS.1 * game_phase.1) / 2
         }
     }
 
@@ -96,16 +96,16 @@ pub fn rook_open_column_bonus(position: &Position) -> i32 {
         let column_check_mask = Bitboard::generate_column_mask(rook_position.column());
         
         if column_check_mask & pawn_board == 0 {
-            score += OPEN_COLUMN_BONUS;
+            score -= OPEN_COLUMN_BONUS.0 * game_phase.0 + OPEN_COLUMN_BONUS.1 * game_phase.1;
         } else if column_check_mask & (pawn_board & black_board) == 0 {
-            score += OPEN_COLUMN_BONUS / 2
+            score -= (OPEN_COLUMN_BONUS.0 * game_phase.0 + OPEN_COLUMN_BONUS.1 * game_phase.1) / 2
         }
     }
 
     if position.current_player() == Player::White {
-        score
+        score / 100
     } else {
-        -score
+        -score / 100
     }
 }
 

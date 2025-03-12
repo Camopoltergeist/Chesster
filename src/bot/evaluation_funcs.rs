@@ -95,7 +95,7 @@ pub fn evaluate_phase_and_bishop_pair_and_rook_open_column(position: &Position) 
 
 	let positioning_score = position.get_positioning_score_for_player_by_phase(position.current_player(), game_phase) - position.get_positioning_score_for_player_by_phase(position.current_player().opposite(), game_phase);
 	
-	let rook_open_column_bonus = rook_open_column_bonus(position);
+	let rook_open_column_bonus = rook_open_column_bonus(position, game_phase);
 	let bishop_pair_bonus = bishop_pair_bonus(position, game_phase);
 
 	return (own_material - opponent_material) + positioning_score + bishop_pair_bonus + rook_open_column_bonus;
