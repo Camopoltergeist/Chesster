@@ -557,15 +557,12 @@ impl Position {
                             self.white_long_castling = false;
                             self.zobrist_hash.update_castling_availability(Player::White, CastleSide::QueenSide);
                         }
-                        return;
                     }
-
-                    if from_pos == TilePosition::new(7, 0) {
+                    else if from_pos == TilePosition::new(7, 0) {
                         if self.white_short_castling {
                             self.white_short_castling = false;
                             self.zobrist_hash.update_castling_availability(Player::White, CastleSide::KingSide);
                         }
-                        return;
                     }
                 },
                 Player::Black => {
@@ -574,20 +571,15 @@ impl Position {
                             self.black_long_castling = false;
                             self.zobrist_hash.update_castling_availability(Player::Black, CastleSide::QueenSide);
                         }
-                        return;
                     }
-
-                    if from_pos == TilePosition::new(7, 7) {
+                    else if from_pos == TilePosition::new(7, 7) {
                         if self.black_short_castling {
                             self.black_short_castling = false;
                             self.zobrist_hash.update_castling_availability(Player::Black, CastleSide::KingSide);
                         }
-                        return;
                     }
                 }
             }
-
-            return;
         }
 
         // Handle capturing moves for opponent's castling
