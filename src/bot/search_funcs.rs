@@ -399,13 +399,13 @@ pub fn alpha_beta_search_multithreaded(position: &Position, evaluation_fn: fn(&P
 }
 
 pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> i32, search_time: Duration, transposition_table: Arc<TranspositionTable>) -> (i32, Move) {
-	fn alpha_beta(position: &Position, evaluation_fn: fn(&Position) -> i32, mut alpha: i32, beta: i32, depth: u32, end_time: Instant, transposition_table: *mut TranspositionTable) -> (i32, bool) {
+	fn alpha_beta(position: Position, evaluation_fn: fn(&Position) -> i32, mut alpha: i32, beta: i32, depth: u32, mut extensions_left: u32, end_time: Instant, transposition_table: *mut TranspositionTable) -> (i32, bool) {
 		if Instant::now() > end_time {
 			return (0, false);
 		}
 		
 		if depth == 0 {
-			return (evaluation_fn(position), true);
+			return (evaluation_fn(&position), true);
 		};
 
 		unsafe {
@@ -432,10 +432,21 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 		};
 
 		for m in legal_moves {
+			let mut new_depth = depth;
+
+			if extensions_left > 0 {
+				if position.get_piece(m.to_position()).is_some() {
+					if depth == 1 {
+						new_depth += 1;
+						extensions_left -= 1;
+					}
+				}
+			}
+
 			let mut moved_position = position.clone();
 			moved_position.make_move(m);
 
-			let (mut eval, complete_search) = alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth - 1, end_time, transposition_table);
+			let (mut eval, complete_search) = alpha_beta(moved_position, evaluation_fn, -beta, -alpha, new_depth - 1, extensions_left, end_time, transposition_table);
 			eval = -eval;
 
 			if !complete_search {
@@ -482,7 +493,7 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 			threads.push(thread::spawn(move || {
 				let tp_ptr = tp as *mut TranspositionTable;
 
-				let (mut eval, complete_search) = alpha_beta(&moved_position, evaluation_fn, -beta, -alpha, depth, end_time, tp_ptr);
+				let (mut eval, complete_search) = alpha_beta(moved_position, evaluation_fn, -beta, -alpha, depth, 4, end_time, tp_ptr);
 				eval = -eval;
 
 				return (eval, m.clone(), complete_search);
