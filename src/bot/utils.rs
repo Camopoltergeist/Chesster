@@ -43,7 +43,7 @@ pub fn bishop_pair_bonus(position: &Position, game_phase: (i32, i32)) -> i32 {
 }
 
 pub fn rook_on_7th_rank_bonus(position: &Position, game_phase: (i32, i32)) -> i32 {
-    const SEVENTH_RANK_BONUS: (i32, i32) = (10, 40);
+    const SEVENTH_RANK_BONUS: (i32, i32) = (5, 25);
     let mut score = 0;
 
     let mut white_rook_board = *position.board().get_player_bitboard(Player::White) & position.board().rooks;
