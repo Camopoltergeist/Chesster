@@ -342,8 +342,6 @@ dependencies = [
  "rand 0.9.0",
  "rand_chacha 0.9.0",
  "raylib",
- "serde",
- "serde_json",
  "shakmaty",
 ]
 

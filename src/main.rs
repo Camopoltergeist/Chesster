@@ -1,10 +1,7 @@
-use std::{collections::{HashMap, HashSet}, env};
+use std::env;
 
-use board::{position::Position, tile_position::TilePosition, zobrist_hash::generate_zobrist_numbers};
-use opening_book::{convert, load_opening_book};
-use jja::{polyglot::to_move, polyglotbook::PolyGlotBook};
+use board::zobrist_hash::generate_zobrist_numbers;
 use performance_test::performance_test;
-use shakmaty::zobrist::{Zobrist64, ZobristHash};
 use ui::start_ui;
 
 pub mod board;
