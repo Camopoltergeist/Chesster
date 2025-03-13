@@ -3,7 +3,7 @@ use std::time::{Duration, Instant};
 use crate::{board::{moove::Move, position::Position}, bot::{evaluation_funcs::evaluate_material_and_positioning, iterative_deepening_search::IterativeDeepeningSearch}, r#match::Match};
 
 pub fn performance_test() -> Duration {
-    let mut match_ = Match::new(&Position::default(), Some(Box::new(IterativeDeepeningSearch::new(evaluate_material_and_positioning))), Some(Box::new(IterativeDeepeningSearch::new(evaluate_material_and_positioning))), Duration::from_secs(10000));
+    let mut match_ = Match::new(&Position::default(), Some(Box::new(IterativeDeepeningSearch::new(evaluate_material_and_positioning, true))), Some(Box::new(IterativeDeepeningSearch::new(evaluate_material_and_positioning, true))), Duration::from_secs(10000));
 
     let start_time = Instant::now();
 

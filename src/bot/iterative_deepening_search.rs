@@ -4,21 +4,23 @@ use rand::seq::IndexedRandom;
 
 use crate::{board::{moove::Move, position::Position}, opening_book::load_opening_book};
 
-use super::{search_funcs::iterative_deepening, transposition_table::TranspositionTable, Bot};
+use super::{search_funcs::{iterative_deepening, iterative_deepening_no_ext}, transposition_table::TranspositionTable, Bot};
 
 #[derive(Clone)]
 pub struct IterativeDeepeningSearch {
 	transposition_table: Arc<TranspositionTable>,
 	evaluation_fn: fn(&Position) -> i32,
 	opening_book: HashMap<u64, Vec<Move>>,
+	use_extensions: bool,
 }
 
 impl IterativeDeepeningSearch {
-	pub fn new(evaluation_fn: fn(&Position) -> i32) -> Self {
+	pub fn new(evaluation_fn: fn(&Position) -> i32, use_extensions: bool) -> Self {
 		Self {
 			transposition_table: Arc::new(TranspositionTable::new()),
 			evaluation_fn,
-			opening_book: load_opening_book()
+			opening_book: load_opening_book(),
+			use_extensions
 		}
 	}
 }
@@ -38,6 +40,11 @@ impl Bot for IterativeDeepeningSearch {
 			}
 		}
 
-		iterative_deepening(position, self.evaluation_fn, search_time, self.transposition_table.clone())
+		if self.use_extensions {
+			iterative_deepening(position, self.evaluation_fn, search_time, self.transposition_table.clone())
+		}
+		else {
+			iterative_deepening_no_ext(position, self.evaluation_fn, search_time, self.transposition_table.clone())
+		}
 	}
 }
