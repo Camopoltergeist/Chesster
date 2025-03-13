@@ -22,8 +22,8 @@ pub fn start_ui(white_bot: bool, black_bot: bool) {
 
 	let position = Position::default();
 
-	let white_bot: Option<Box<dyn Bot>> = if white_bot { Some(Box::new(IterativeDeepeningSearch::new(evaluate_phase_and_bishop_pair_and_rook_open_column))) } else { None };
-	let black_bot: Option<Box<dyn Bot>> = if black_bot { Some(Box::new(IterativeDeepeningSearch::new(evaluate_phase_and_bishop_pair_and_rook_open_column))) } else { None };
+	let white_bot: Option<Box<dyn Bot>> = if white_bot { Some(Box::new(IterativeDeepeningSearch::new(evaluate_phase_and_bishop_pair_and_rook_open_column, true))) } else { None };
+	let black_bot: Option<Box<dyn Bot>> = if black_bot { Some(Box::new(IterativeDeepeningSearch::new(evaluate_phase_and_bishop_pair_and_rook_open_column, true))) } else { None };
 
 	let game_match = Match::new(&position, white_bot, black_bot, Duration::from_secs(5));
 
