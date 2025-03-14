@@ -1,3 +1,5 @@
+//! Implementations for basic, castling, en passant and romoting moves.
+
 use crate::{player::Player, player_piece::PlayerPiece};
 
 use super::tile_position::TilePosition;

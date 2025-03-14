@@ -154,7 +154,6 @@ impl Board {
         self.remove_piece(basic_move.from_position());
     }
 
-    /// The following functions handle castling, en passant and promoting moves
     pub fn move_piece_castling(&mut self, castling_move: CastlingMove) {
         self.move_piece_basic(castling_move.king_basic_move());
         self.move_piece_basic(castling_move.rook_basic_move());
@@ -173,11 +172,12 @@ impl Board {
         );
     }
 
-    /// The following functions work as queries and checkers for different pieces and combinations.
+    /// Returns PieceType (or none) from the mailbox.
     pub fn get_piece_from_offset(&self, bit_offset: u32) -> Option<PlayerPiece> {
         self.mailbox.get_piece(bit_offset)
     }
 
+        /// Returns PieceType (or none) from the bitboard.
     pub fn get_piece_from_offset_bitboard(&self, bit_offset: u32) -> Option<PlayerPiece> {
         let player = if Bitboard::check_bit(&self.white_pieces, bit_offset) {
             Player::White
@@ -240,7 +240,6 @@ impl Board {
         }
     }
 
-    /// The following functions remove and set pieces from and into the board.
     pub fn remove_piece_from_offset(&mut self, bit_offset: u32) {
         self.white_pieces.unset_bit(bit_offset);
         self.black_pieces.unset_bit(bit_offset);
@@ -291,7 +290,6 @@ impl Board {
         return self.get_piece_from_offset(tile_pos.bit_offset());
     }
 
-    /// The following functions remove and set a piece using TilePosition struct.
     pub fn remove_piece(&mut self, tile_pos: TilePosition) {
         self.remove_piece_from_offset(tile_pos.bit_offset());
     }
@@ -342,7 +340,6 @@ impl Board {
         attack_mask
     }
 
-    /// The following functions return a player's material value as u32, the latter one taking game phase into account.
     pub fn get_material_for_player(&self, player: Player) -> u32 {
         let player_bitboard = *self.get_player_bitboard(player);
 

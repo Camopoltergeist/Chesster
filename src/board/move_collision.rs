@@ -1,4 +1,4 @@
-//! This module stores functions to generate final movement masks for PlayerPieces, detecting collisions on their original movement mask.
+//! Functions to generate movement masks for PlayerPieces after detecting collisions on their original movement mask.
 
 use crate::{
     piece::PieceType,
