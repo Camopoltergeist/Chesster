@@ -1,3 +1,5 @@
+//! This module defines the `Mailbox` struct, which holds an array of PlayerPieces indexed by their bit offset.
+
 use crate::player_piece::PlayerPiece;
 
 #[derive(Clone, PartialEq, Eq, Debug)]
