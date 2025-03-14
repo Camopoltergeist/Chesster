@@ -1,3 +1,5 @@
+//! Frontend implementation.
+
 pub mod board_renderer;
 pub mod texture;
 pub mod text_area;

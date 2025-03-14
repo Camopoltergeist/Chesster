@@ -1,3 +1,5 @@
+//! Functions with different evaluation criteria combinations.
+
 use crate::board::{game_state::GameState, position::Position};
 
 use super::{evaluation::Evaluation, utils::{bishop_pair_bonus, calculate_game_phase, rook_open_column_bonus}};

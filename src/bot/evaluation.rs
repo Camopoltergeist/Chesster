@@ -1,3 +1,5 @@
+//! Base evaluation stats.
+
 use std::{cmp::Ordering, ops::Neg};
 
 #[derive(Debug, Clone, PartialEq)]

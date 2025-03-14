@@ -1,3 +1,5 @@
+//! PERFormance Test debugging function.
+
 use crate::board::{moove::Move, position::Position};
 
 pub fn perft(position: &Position, depth: u32) -> Vec<(Move, u64)> {

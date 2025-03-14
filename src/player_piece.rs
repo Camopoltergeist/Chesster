@@ -1,3 +1,5 @@
+//! Struct to hold a piece's player and piece type information.
+
 use crate::{piece::PieceType, player::Player};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

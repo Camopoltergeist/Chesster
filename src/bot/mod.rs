@@ -1,3 +1,5 @@
+//! Logic for evaluation and search algorithms.
+
 use std::time::Duration;
 
 use dyn_clone::DynClone;

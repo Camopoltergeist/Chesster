@@ -1,4 +1,4 @@
-///! Additional evaluation functions are in this module.
+//! Additional evaluation/scoring functions
 
 use crate::{
     board::{bitboard::Bitboard, position::Position, tile_position::TilePosition},

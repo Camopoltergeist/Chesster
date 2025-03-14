@@ -1,3 +1,5 @@
+//! Piece-square tables for all PlayerPiece variants.
+
 use crate::{board::{position::Position, tile_position::TilePosition}, piece::PieceType, player::Player, player_piece::PlayerPiece};
 
 pub const BLACK_KING_PIECE_SQUARE_TABLE: [(i32,i32); 64] = [

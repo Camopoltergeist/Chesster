@@ -1,3 +1,5 @@
+//! Negamax, alpha-beta pruning and their multithreading
+
 use std::{collections::HashMap, ptr, sync::{Arc, Mutex}, thread, time::{Duration, Instant}};
 
 use crate::{board::{moove::Move, position::Position}, bot::{evaluation::Evaluation, transposition_table::Transposition}};
