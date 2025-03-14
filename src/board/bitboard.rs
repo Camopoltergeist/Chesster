@@ -1,9 +1,7 @@
-/**
- * Module for handling a 64-bit chess bitboard.
- *
- * Includes various bit manipulation and mask generation functions,
- * forming the basis of chessboard representation in bitboards.
- */
+ //! Module for handling a 64-bit chess bitboard.
+ //!
+ //! Includes various bit manipulation and mask generation functions,
+ //! forming the basis of chessboard representation in bitboards.
 
 use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not, Shl, Shr};
 
@@ -13,23 +11,19 @@ use crate::player::Player;
 
 use super::{moove::CastleSide, tile_position::TilePosition};
 
-/**
- * Represents a 64-bit bitboard used in the chess engine.
- */
+/// Represents a 64-bit bitboard used in the chess engine.
 #[derive(Clone, Copy, Hash, PartialEq, Eq)]
 
 pub struct Bitboard(pub u64);
 
 impl Bitboard {
-    ///@return the 64-bit binary number representing the Bitboard state
+    /// Returns the 64-bit binary number representing the Bitboard state
     pub const fn value(&self) -> u64 {
         self.0
     }
 
-    /**
-     * Prints the Bitboard as an 8x8 grid.
-     * @note This is purely for debugging purposes.
-     */
+    /// Prints the Bitboard as an 8x8 grid.
+    /// This is purely for debugging purposes.
     pub fn print_bitboard(&self) {
         let bin_str: String = format!("{:064b}", self.value()).chars().rev().collect();
         let out_str = format!(
@@ -47,59 +41,44 @@ impl Bitboard {
         println!("{}", out_str);
     }
 
-    /**
-     * Checks if a specific bit is set.
-     * @param bit_offset The position of the bit to check.
-     * @return True if the bit is set, otherwise false.
-     */
+  
+    /// Checks if a specific bit is set (0 = not set, 1 = set)
+    /// bit_offset = The position of the bit to check.
+    /// Returns true for 1, false for 0
     pub const fn check_bit(&self, bit_offset: u32) -> bool {
         let bitmask: u64 = 1 << bit_offset;
         (self.0 & bitmask) != 0
     }
 
-    /**
-     * Sets a specific bit.
-     * @param bit_offset The position of the bit to set.
-     */
+    /// Sets a specific bit.
     pub fn set_bit(&mut self, bit_offset: u32) {
         let mask = 1 << bit_offset;
 
         self.0 |= mask;
     }
 
-    /**
-     * Unsets a specific bit.
-     * @param bit_offset The position of the bit to unset.
-     */
+
+    /// Unsets a specific bit.
     pub fn unset_bit(&mut self, bit_offset: u32) {
         let mask = !(1 << bit_offset);
 
         self.0 &= mask;
     }
 
-    /**
-     * Pops the least significant bit and returns its offset.
-     * @return The offset of the least significant bit.
-     */
+    /// Pops the least significant bit and returns its offset.
     pub fn pop_lsb(&mut self) -> u32 {
         let lsb_offset = self.0.trailing_zeros();
         self.0 &= self.0 - 1;
         lsb_offset
     }
 
-    /**
-     * Checks if the Bitboard is empty.
-     * @return True if the Bitboard is empty, otherwise false.
-     */
+    /// Checks if the Bitboard is empty (== 0).
     pub const fn is_empty(&self) -> bool {
         self.0 == 0
     }
 
-    /**
-     * Moves a bit from one offset to another.
-     * @param from_offset The source bit position.
-     * @param to_offset The target bit position.
-     */
+
+    /// Moves a bit from one offset to another.
     pub fn move_bit(&mut self, from_offset: u32, to_offset: u32) {
         if self.check_bit(from_offset) {
             let rmv_bitmask = 1 << from_offset;
@@ -110,12 +89,10 @@ impl Bitboard {
         }
     }
 
-    /**
-     * The following functions generate movement masks for different chess pieces on a bitboard.
-     * @param rank The rank (0-7).
-     * @param column The column (0-7).
-     * @return The mask as Bitboard
-     */
+    /// The following functions generate movement masks for different chess pieces on a bitboard
+    /// (= how the piece would move without colliding into anything.) (These are used for some other purposes too.)
+    /// Parameters: rank (0-7) and column (0-7).
+    /// Returns the mask as Bitboard
     pub const fn generate_rank_mask(rank: u32) -> Bitboard {
         debug_assert!(rank <= 7);
         let rank_mask = 0xff << rank * 8;
@@ -258,12 +235,10 @@ impl Bitboard {
         Bitboard(pawn_mask)
     }
 
-    /**
-     * Generates a mask used in castling checks.
-     * @param rank The player color.
-     * @param side The side of castling.
-     * @return The mask as Bitboard
-     */
+    /// Generates a mask used in castling checks.
+    /// player: player color.
+    /// side: the side of castling (queen or king side).
+    /// Returns the mask as Bitboard
     pub fn generate_castling_block_mask(player: Player, side: CastleSide) -> Bitboard {
         match (player, side) {
             (Player::White, CastleSide::KingSide) => Bitboard::from(0b01100000),
@@ -282,21 +257,16 @@ impl Bitboard {
         }
     }
 
-    /**
-     * Generates a bitboard with a horizontal line of 1's in it.
-     * @param length Length of the line.
-     * @return A Bitboard with the line in its least significant bits.
-     */
+    /// Returns a bitboard with a horizontal line of 1's in it starting from the least significant bit.
+    /// length = length of the line
     pub const fn generate_horizontal_line(length: u32) -> Bitboard {
         Bitboard((1u64 << length) - 1)
     }
 }
 
-/**
- * The following functions implement various bitwise and conversion traits,
- * allowing common bit manipulation operations and seamless conversion between
- * `Bitboard` and `u64`.
- */
+/// The following functions implement various bitwise and conversion traits,
+/// allowing common bit manipulation operations and conversion between
+/// `Bitboard` and `u64`.
 impl From<u64> for Bitboard {
     fn from(value: u64) -> Self {
         Bitboard(value)
