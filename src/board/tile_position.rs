@@ -1,3 +1,5 @@
+//! A struct defining board's tile information.
+
 use crate::player::Player;
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Hash)]

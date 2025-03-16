@@ -1,3 +1,5 @@
+// Piece's type information.
+
 use crate::{board::{bitboard::Bitboard, tile_position::TilePosition}, player::Player};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]

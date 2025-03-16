@@ -1,3 +1,5 @@
+//! Functions to generate movement masks for PlayerPieces after detecting collisions on their original movement mask.
+
 use crate::{
     piece::PieceType,
     pieces::{bishop::Bishop, king::King, knight::Knight, pawn::Pawn, queen::Queen, rook::Rook},
@@ -6,6 +8,12 @@ use crate::{
 
 use super::{bitboard::Bitboard, board::Board, tile_position::TilePosition};
 
+/// Generates the collision mask for a piece on a given tile position.
+/// Returns an empty mask if no piece is found on the tile.
+///
+/// # Arguments
+/// * `board` - The Board struct.
+/// * `tile_pos` - The position of the tile to check as TilePosition struct.
 pub fn get_collision_mask(board: Board, tile_pos: TilePosition) -> Bitboard {
     let square_cont = board.get_piece(tile_pos);
 
@@ -31,6 +39,8 @@ pub fn get_collision_mask(board: Board, tile_pos: TilePosition) -> Bitboard {
     }
 }
 
+/// The following cut_mask functions return a Bitboard used to cut out the bits on a piece's movement mask
+/// after collision.
 pub fn n_collision_cut_mask(board: &Board, n_collision: Bitboard, player: Player) -> Bitboard {
     let first_collision = TilePosition::from_bit_offset(n_collision.value().trailing_zeros());
 
@@ -179,6 +189,7 @@ pub fn se_collision_cut_mask(board: &Board, se_collision: Bitboard, player: Play
     }
 }
 
+/// Returns the pawn's capture tiles diagonally above or below it
 pub const fn get_pawn_capture(player: Player, tile_pos: TilePosition) -> u64 {
     let mut attack_tiles = 0;
     let attack_mask = 1u64 << tile_pos.bit_offset();

@@ -1,3 +1,5 @@
+//! Match initiation and handling.
+
 use std::{thread::{self, JoinHandle}, time::Duration};
 
 use crate::{board::{game_state::GameState, moove::Move, position::Position}, bot::Bot, player::Player};

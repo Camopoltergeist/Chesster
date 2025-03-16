@@ -1,3 +1,7 @@
+//! Board representation and manipulation module.
+//! 
+//! This module defines the `Board` struct, which represents the chessboard state and provides methods for manipulating and querying the board.
+
 use super::{
     bitboard::Bitboard, mailbox::Mailbox, moove::{BasicMove, CastleSide, CastlingMove, EnPassantMove, PromotingMove}, move_collision::{get_collision_mask, get_pawn_capture}, tile_position::TilePosition
 };
@@ -8,6 +12,7 @@ use crate::{
     player_piece::PlayerPiece,
 };
 
+/// Represents the chessboard state using bitboards and a mailbox array.
 #[derive(Clone, PartialEq, Eq)]
 pub struct Board {
     pub white_pieces: Bitboard,
@@ -22,6 +27,7 @@ pub struct Board {
     mailbox: Mailbox,
 }
 
+/// Provides the default starting position of the board.
 impl Default for Board {
     fn default() -> Self {
         Self {
@@ -94,6 +100,7 @@ impl Default for Board {
 }
 
 impl Board {
+    /// Creates an empty board with no pieces.
     pub fn empty() -> Self {
         Self {
             white_pieces: Bitboard(0),
@@ -108,10 +115,12 @@ impl Board {
         }
     }
 
+    /// Checks for overlapping pieces between two bitboards.
     pub fn check_overlaps(a: Bitboard, b: Bitboard) -> bool {
         a & b != 0
     }
 
+    /// Validates that no two different piece types occupy the same tile.
     pub fn validate(&self) -> bool {
         !(Board::check_overlaps(self.pawns, self.rooks)
             || Board::check_overlaps(self.pawns, self.knights)
@@ -130,10 +139,12 @@ impl Board {
             || Board::check_overlaps(self.queens, self.kings))
     }
 
+    /// Returns a reference to the mailbox.
     pub fn mailbox(&self) -> &Mailbox {
         &self.mailbox
     }
 
+    /// Moves a piece
     pub fn move_piece_basic(&mut self, basic_move: BasicMove) {
         let piece = self
             .get_piece(basic_move.from_position())
@@ -161,10 +172,12 @@ impl Board {
         );
     }
 
+    /// Returns PieceType (or none) from the mailbox.
     pub fn get_piece_from_offset(&self, bit_offset: u32) -> Option<PlayerPiece> {
         self.mailbox.get_piece(bit_offset)
     }
 
+        /// Returns PieceType (or none) from the bitboard.
     pub fn get_piece_from_offset_bitboard(&self, bit_offset: u32) -> Option<PlayerPiece> {
         let player = if Bitboard::check_bit(&self.white_pieces, bit_offset) {
             Player::White
@@ -252,10 +265,12 @@ impl Board {
         self.mailbox.set_piece(piece, bit_offset);
     }
 
+    /// Returns a Bitboard mask of all pieces on the board.
     pub const fn get_all_pieces_mask(&self) -> Bitboard {
         Bitboard(self.black_pieces.value() | self.white_pieces.value())
     }
 
+    /// Returns the player color on a specific TilePosition. (None = The square is empty.)
     pub fn get_player_at(&self, tile_pos: TilePosition) -> Option<Player> {
         let bit_offset = tile_pos.bit_offset();
 
@@ -270,6 +285,7 @@ impl Board {
         return None;
     }
 
+    /// Returns the PlayerPiece on a specifc TilePosition. (None = the square is empty.)
     pub fn get_piece(&self, tile_pos: TilePosition) -> Option<PlayerPiece> {
         return self.get_piece_from_offset(tile_pos.bit_offset());
     }
@@ -282,12 +298,14 @@ impl Board {
         self.set_piece_to_offset(piece, tile_pos.bit_offset());
     }
 
+    /// A debugging function using string format for tile selection (a1, b2 etc.)
     pub fn get_piece_debug(&self, tile_str: &str) -> Option<PlayerPiece> {
         let tile_pos = TilePosition::from_tile_str(tile_str).expect("invalid tile str passed");
 
         self.get_piece(tile_pos)
     }
 
+    /// Checks if castling is possible for player and side of castling, returns true or false
     pub fn is_castling_possible(&self, player: Player, side: CastleSide) -> bool {
         let castling_block_mask = Bitboard::generate_castling_block_mask(player, side.clone());
         let castling_threat_mask = Bitboard::generate_castling_threat_mask(player, side);
@@ -298,6 +316,7 @@ impl Board {
         return is_blocking.is_empty() && is_attacked.is_empty();
     }
 
+    /// Returns a player's all possible tiles they can move to as a Bitboard mask
     pub fn get_attack_mask(&self, player: Player) -> Bitboard {
         let mut player_board = self.get_player_bitboard(player).clone();
 

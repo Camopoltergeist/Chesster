@@ -1,3 +1,5 @@
+//! A module for handling game position and legal moves.
+
 use std::hash::Hash;
 
 use crate::{board::moove::CastleSide, bot::{positioning::get_score_for_piece, utils::calculate_game_phase}, piece::PieceType, pieces::{king::King, pawn::Pawn}, player::Player, player_piece::PlayerPiece};

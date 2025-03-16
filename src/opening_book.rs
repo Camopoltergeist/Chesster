@@ -1,3 +1,5 @@
+//! Opening book implementation
+
 use std::collections::{HashMap, HashSet};
 
 use jja::{polyglot::to_move, polyglotbook::PolyGlotBook};

@@ -1,8 +1,12 @@
+//! Additional evaluation/scoring functions
+
 use crate::{
     board::{bitboard::Bitboard, position::Position, tile_position::TilePosition},
     player::Player,
 };
 
+/// Calculates game's phase based on amount of pieces on the board.
+/// Returns a tuple that works as percentages: (100, 0) = 100% in early/midgame, (0 , 100) = 100% in lategame.
 pub fn calculate_game_phase(position: &Position) -> (i32, i32) {
     let mut position_materials = 0;
     let full_board = 24;

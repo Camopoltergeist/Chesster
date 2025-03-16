@@ -1,3 +1,6 @@
+ //! Module for handling a 64-bit chess 'Bitboard'.
+ //! Includes base struct, bit manipulation and mask generation functions.
+
 use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not, Shl, Shr};
 
 use const_for::const_for;
@@ -6,17 +9,19 @@ use crate::player::Player;
 
 use super::{moove::CastleSide, tile_position::TilePosition};
 
+/// Represents a 64-bit bitboard used in the chess engine.
 #[derive(Clone, Copy, Hash, PartialEq, Eq)]
 
 pub struct Bitboard(pub u64);
 
-//Bitwise operation reminder: |= offset -> place a piece, &= !offset -> remove a piece
-
 impl Bitboard {
+    /// Returns a 64-bit binary number representing the Bitboard state.
     pub const fn value(&self) -> u64 {
         self.0
     }
 
+    /// Prints the Bitboard as an 8x8 grid.
+    /// This is purely for debugging purposes.
     pub fn print_bitboard(&self) {
         let bin_str: String = format!("{:064b}", self.value()).chars().rev().collect();
         let out_str = format!(
@@ -34,61 +39,72 @@ impl Bitboard {
         println!("{}", out_str);
     }
 
+  
+    /// Checks if a specific bit is set (0 = not set, 1 = set)  
+    /// **bit_offset** = The position of the bit to check.  
+    /// Returns true for 1, false for 0
     pub const fn check_bit(&self, bit_offset: u32) -> bool {
         let bitmask: u64 = 1 << bit_offset;
         (self.0 & bitmask) != 0
     }
 
+    /// Sets a specific bit.
     pub fn set_bit(&mut self, bit_offset: u32) {
         let mask = 1 << bit_offset;
 
         self.0 |= mask;
     }
 
+
+    /// Unsets a specific bit.
     pub fn unset_bit(&mut self, bit_offset: u32) {
         let mask = !(1 << bit_offset);
 
         self.0 &= mask;
     }
 
+    /// Pops the least significant bit and returns its offset.
     pub fn pop_lsb(&mut self) -> u32 {
         let lsb_offset = self.0.trailing_zeros();
         self.0 &= self.0 - 1;
         lsb_offset
     }
 
+    /// Checks if the Bitboard is empty (== 0).
     pub const fn is_empty(&self) -> bool {
         self.0 == 0
     }
 
+
+    /// Moves a bit from one offset to another.
     pub fn move_bit(&mut self, from_offset: u32, to_offset: u32) {
-        //The basis of moving a bit: checks if there is a 1 there, makes it a 0, and makes another field a 1.
         if self.check_bit(from_offset) {
             let rmv_bitmask = 1 << from_offset;
             *self &= !rmv_bitmask;
 
-            //Thinking ahead, there could be some logic here to know if it's stepping on a 1?
             let add_bitmask = 1 << to_offset;
             *self |= add_bitmask;
         }
     }
 
+    /// A function to generate a mask through whole board along the given direction  
+    /// Returns the mask as Bitboard
     pub const fn generate_rank_mask(rank: u32) -> Bitboard {
         debug_assert!(rank <= 7);
-
-        //A bitboard that goes through the first rank, then moved by column
         let rank_mask = 0xff << rank * 8;
         Bitboard(rank_mask)
     }
 
+    /// A function to generate a mask through whole board along the given direction  
+    /// Returns the mask as Bitboard
     pub const fn generate_column_mask(column: u32) -> Bitboard {
         debug_assert!(column <= 7);
-
-        //^The other way around: a bitboard going through the first column, then nudged left
         let column_mask = 0x101010101010101 << column;
         Bitboard(column_mask)
     }
 
+    /// A function to generate a mask through whole board along the given direction  
+    /// Returns the mask as Bitboard
     // "/"-direction
     pub const fn get_diagonal_mask_asc(column: u32, rank: u32) -> Bitboard {
         let diff = column as i32 - rank as i32;
@@ -111,6 +127,8 @@ impl Bitboard {
         Bitboard(asc_mask)
     }
 
+    /// A function to generate a mask through whole board along the given direction  
+    /// Returns the mask as Bitboard
     pub const fn get_diagonal_mask_des(column: u32, rank: u32) -> Bitboard {
         let sum = column as i32 + rank as i32;
 
@@ -132,11 +150,12 @@ impl Bitboard {
         Bitboard(des_mask)
     }
 
+    /// A function to generate a mask for the named piece type's move locations.  
+    /// Returns the mask as Bitboard
     pub const fn generate_knight_mask(tile_position: TilePosition) -> Bitboard {
         let column = tile_position.column();
         let rank = tile_position.rank();
 
-        // All possible knight directions from its place
         let moves: [(i32, i32); 8] = [
             (2, 1),
             (2, -1),
@@ -150,7 +169,6 @@ impl Bitboard {
 
         let mut knight_mask: u64 = 0;
 
-        // Iterate through directions
         const_for!(i in 0..moves.len() => {
             let (x, y) = moves[i];
             let new_column = column as i32 + x;
@@ -164,7 +182,6 @@ impl Bitboard {
                 continue;
             }
 
-            // Calculate the bit index for the new position if it is, and add it to the mask
             let offset = new_rank * 8 + new_column;
             knight_mask |= 1 << offset;
         });
@@ -172,12 +189,12 @@ impl Bitboard {
         Bitboard(knight_mask)
     }
 
+    /// A function to generate a mask for the named piece type's move locations.  
+    /// Returns the mask as Bitboard
     pub const fn get_king_mask(column: u32, rank: u32) -> Bitboard {
-        //A square-shaped mask in hexXx, initial offset 9
         let mut king_mask: u64 = 0x70507;
         let offset_diff = 9 - (rank as i32 * 8 + column as i32);
 
-        //Make a mask in the shape of the edge you're on and cut it out of the mask
         if column == 0 || column == 7 {
             let cover_mask = 0x10101 << column / 3;
             king_mask &= !cover_mask;
@@ -196,6 +213,8 @@ impl Bitboard {
         Bitboard(king_mask)
     }
 
+    /// A function to generate a mask for the named piece type's move locations.  
+    /// Returns the mask as Bitboard
     pub const fn get_white_pawn_mask(column: u32, rank: u32) -> Bitboard {
         if rank == 7 {
             return Bitboard(0);
@@ -210,6 +229,8 @@ impl Bitboard {
         Bitboard(pawn_mask)
     }
 
+    /// A function to generate a mask for the named piece type's move locations.  
+    /// Returns the mask as Bitboard
     pub const fn get_black_pawn_mask(column: u32, rank: u32) -> Bitboard {
         if rank == 0 {
             return Bitboard(0);
@@ -224,6 +245,10 @@ impl Bitboard {
         Bitboard(pawn_mask)
     }
 
+    /// Generates a mask used in castling checks.  
+    /// **player**: player color.  
+    /// **side**: the side of castling (queen or king side).  
+    /// Returns the mask as Bitboard
     pub fn generate_castling_block_mask(player: Player, side: CastleSide) -> Bitboard {
         match (player, side) {
             (Player::White, CastleSide::KingSide) => Bitboard::from(0b01100000),
@@ -233,6 +258,10 @@ impl Bitboard {
         }
     }
 
+    /// Generates a mask used in castling checks.  
+    /// **player**: player color.  
+    /// **side**: the side of castling (queen or king side).  
+    /// Returns the mask as Bitboard
     pub fn generate_castling_threat_mask(player: Player, side: CastleSide) -> Bitboard {
         match (player, side) {
             (Player::White, CastleSide::KingSide) => Bitboard::from(0b01100000),
@@ -242,6 +271,8 @@ impl Bitboard {
         }
     }
 
+    /// Returns a bitboard with a horizontal line of 1's in it starting from the least significant bit.
+    /// length = length of the line
     pub const fn generate_horizontal_line(length: u32) -> Bitboard {
         Bitboard((1u64 << length) - 1)
     }

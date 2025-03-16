@@ -1,3 +1,5 @@
+//! Player information.
+
 use crate::board::tile_position::TilePosition;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
