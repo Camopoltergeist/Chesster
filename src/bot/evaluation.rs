@@ -1,4 +1,4 @@
-//! Base evaluation stats.
+//! Unused enum formerly used to represent evaluation.
 
 use std::{cmp::Ordering, ops::Neg};
 

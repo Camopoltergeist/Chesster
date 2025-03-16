@@ -1,4 +1,4 @@
-//! Match initiation and handling.
+//! Match initiation and handling. Also handles bot moves.
 
 use std::{thread::{self, JoinHandle}, time::Duration};
 
