@@ -63,14 +63,14 @@ impl Bitboard {
         self.0 &= mask;
     }
 
-    /// Pops the least significant bit and returns its offset.
+    /// Unsets the least significant bit which was set and returns its offset.
     pub fn pop_lsb(&mut self) -> u32 {
         let lsb_offset = self.0.trailing_zeros();
         self.0 &= self.0 - 1;
         lsb_offset
     }
 
-    /// Checks if the Bitboard is empty (== 0).
+    /// Checks if the Bitboard is empty.
     pub const fn is_empty(&self) -> bool {
         self.0 == 0
     }

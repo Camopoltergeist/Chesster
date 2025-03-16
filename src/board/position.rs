@@ -6,6 +6,7 @@ use crate::{board::moove::CastleSide, bot::{positioning::get_score_for_piece, ut
 
 use super::{board::Board, game_state::GameState, moove::{BasicMove, CastlingMove, EnPassantMove, Move, PromotingMove}, move_collision::get_collision_mask, tile_position::TilePosition, zobrist_hash::ZobristHash};
 
+/// Represents an entire chess position.
 #[derive(Clone, PartialEq, Eq)]
 pub struct Position {
     board: Board,
@@ -28,14 +29,17 @@ impl Hash for Position {
 }
 
 impl Position {
+    /// [`Player`] who's turn it is.
     pub fn current_player(&self) -> Player {
         self.current_player
     }
 
+    /// Reference to contained [`Board`]
     pub fn board(&self) -> &Board {
         &self.board
     }
 
+    /// Construct a position from a FEN-notation `&str`.
     pub fn from_fen_str(fen: &str) -> Result<Self, FenParseError> {
         let mut board = Board::empty();
 
@@ -133,6 +137,7 @@ impl Position {
         Ok(s)
     }
 
+    /// Print all found legal moves.
     pub fn print_all_legal_moves(&self) {
         let mut counter = 1;
 
@@ -142,6 +147,7 @@ impl Position {
 		}
     }
 
+    /// Print all castling availabilities.
     pub fn print_castling_availability(&self) {
         println!("Castling available:");
         println!("White King side: {}", self.white_short_castling);
@@ -150,6 +156,7 @@ impl Position {
         println!("Black Queen side: {}", self.black_long_castling);
     }
 
+    /// Return `true` if current position contains a check against [`player`][Player].
     pub fn is_in_check(&self, player: Player) -> bool {
         let king_mask = *self.board.get_piece_bitboard(PieceType::King) & *self.board.get_player_bitboard(player);
         let attack_mask = self.board.get_attack_mask(player.opposite());
@@ -171,6 +178,7 @@ impl Position {
         return GameState::Stalemate;
     }
 
+    /// Generate all legal moves and return them.
     pub fn get_all_legal_moves(&self) -> Vec<Move> {
         let piece_mask = self.board.get_player_bitboard(self.current_player);
 
@@ -379,6 +387,11 @@ impl Position {
         return None;
     }
 
+    /// Get [`PlayerPiece`] at [`tile_pos`][TilePosition].
+    /// 
+    /// Returns [`None`] if no piece is located at the position.
+    /// 
+    /// [`None`]: Option#variant.None
     pub fn get_piece(&self, tile_pos: TilePosition) -> Option<PlayerPiece> {
         self.board.get_piece(tile_pos)
     }
@@ -407,7 +420,6 @@ impl Position {
         return base_legal && !leaves_king_threatened;
     }
 
-    /// Checks if a BasicMove is legal
     fn is_legal_basic_move(&self, basic_move: &BasicMove) -> bool {
         let collision_mask = get_collision_mask(self.board.clone(), basic_move.from_position());
         if !collision_mask.check_bit(basic_move.to_position().bit_offset()) {
@@ -439,12 +451,16 @@ impl Position {
         return self.is_legal_basic_move(&promoting_move.clone().into()) && promoting_move.promotion_piece().player() == self.current_player;
     }
 
+    /// Makes a chess move and passes turn to other player.
     pub fn make_move(&mut self, moove: Move) {
         debug_assert!(self.is_legal_move(&moove));
 
         self.make_move_unchecked(moove);
     }
 
+    /// Makes a chess move and passes turn to other player.
+    /// 
+    /// This move does not check move legality.
     pub fn make_move_unchecked(&mut self, moove: Move) {
         self.change_castling_availability_if_needed(&moove);
 
@@ -491,6 +507,7 @@ impl Position {
         self.current_player = self.current_player.opposite();
     }
 
+    /// [`ZobristHash`] for current position.
     pub fn hash(&self) -> &ZobristHash {
         &self.zobrist_hash
     }

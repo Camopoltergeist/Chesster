@@ -543,7 +543,7 @@ pub fn iterative_deepening(position: &Position, evaluation_fn: fn(&Position) -> 
 }
 
 pub fn iterative_deepening_no_ext(position: &Position, evaluation_fn: fn(&Position) -> i32, search_time: Duration, transposition_table: Arc<TranspositionTable>) -> (i32, Move) {
-	fn alpha_beta(position: Position, evaluation_fn: fn(&Position) -> i32, mut alpha: i32, beta: i32, depth: u32, mut extensions_left: u32, end_time: Instant, transposition_table: *mut TranspositionTable) -> (i32, bool) {
+	fn alpha_beta(position: Position, evaluation_fn: fn(&Position) -> i32, mut alpha: i32, beta: i32, depth: u32, extensions_left: u32, end_time: Instant, transposition_table: *mut TranspositionTable) -> (i32, bool) {
 		if Instant::now() > end_time {
 			return (0, false);
 		}
@@ -576,7 +576,7 @@ pub fn iterative_deepening_no_ext(position: &Position, evaluation_fn: fn(&Positi
 		};
 
 		for m in legal_moves {
-			let mut new_depth = depth;
+			let new_depth = depth;
 
 			// if extensions_left > 0 {
 			// 	if position.get_piece(m.to_position()).is_some() {
